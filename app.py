@@ -7,13 +7,14 @@ import base64, io
 
 # Initialize app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
-server = app.server  # Required for Render deployment
+server = app.server  # Needed for Render
 
 # -------------------- LAYOUT --------------------
 app.layout = dbc.Container([
     html.H2("🏏 Cricket Analysis Dashboard (Dash)"),
     html.Hr(),
 
+    # File upload section
     dcc.Upload(
         id='upload-data',
         children=html.Div(['📁 Drag & Drop or ', html.A('Select Hawkeye CSV File')]),
@@ -25,11 +26,14 @@ app.layout = dbc.Container([
         multiple=False
     ),
 
+    # Filters: Team → Batsman → Delivery
     dbc.Row([
-        dbc.Col(dcc.Dropdown(id='batsman', placeholder="Select Batsman"), width=6),
-        dbc.Col(dcc.Dropdown(id='delivery', placeholder="Select Delivery Type"), width=6),
+        dbc.Col(dcc.Dropdown(id='team', placeholder="Select Batting Team"), width=4),
+        dbc.Col(dcc.Dropdown(id='batsman', placeholder="Select Batsman"), width=4),
+        dbc.Col(dcc.Dropdown(id='delivery', placeholder="Select Delivery Type"), width=4),
     ], className="mb-3"),
 
+    # Charts
     dbc.Row([
         dbc.Col(dcc.Graph(id='crease-beehive'), width=6),
         dbc.Col(dcc.Graph(id='pitch-map'), width=6)
@@ -38,88 +42,125 @@ app.layout = dbc.Container([
 
 
 # -------------------- CALLBACKS --------------------
-@app.callback(
-    [Output('batsman', 'options'),
-     Output('delivery', 'options'),
-     Output('crease-beehive', 'figure'),
-     Output('pitch-map', 'figure')],
-    [Input('upload-data', 'contents')],
-    [State('upload-data', 'filename')]
-)
-def update_dashboard(contents, filename):
-    if contents is None:
-        # Empty charts before upload
-        return [], [], go.Figure(), go.Figure()
 
-    # Decode uploaded file
+# Store uploaded data
+@app.callback(
+    Output('team', 'options'),
+    Input('upload-data', 'contents')
+)
+def load_data(contents):
+    if contents is None:
+        return []
+
     content_type, content_string = contents.split(',')
     decoded = base64.b64decode(content_string)
     df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
 
-    # Check required columns
-    required_cols = ["BatsmanName", "DeliveryType", "Wicket", "StumpsY", "StumpsZ", "BounceY", "BounceX"]
+    # Validate columns
+    required_cols = ["BattingTeam", "BatsmanName", "DeliveryType", "Wicket",
+                     "StumpsY", "StumpsZ", "BounceY", "BounceX"]
     if not all(col in df.columns for col in required_cols):
-        fig_error = go.Figure()
-        fig_error.add_annotation(text="Missing required columns in CSV!", x=0.5, y=0.5, showarrow=False)
-        return [], [], fig_error, fig_error
+        return []
 
-    # Dropdown options
-    batsman_opts = [{'label': b, 'value': b} for b in df['BatsmanName'].dropna().unique()]
-    delivery_opts = [{'label': d, 'value': d} for d in df['DeliveryType'].dropna().unique()]
+    teams = [{'label': t, 'value': t} for t in df["BattingTeam"].dropna().unique()]
+    # Store df in dcc.Store for later use
+    app.server.df = df
+    return teams
 
-    # --- Chart 1: Crease Beehive ---
+
+# Update batsman dropdown based on team
+@app.callback(
+    Output('batsman', 'options'),
+    Input('team', 'value')
+)
+def update_batsmen(team):
+    df = getattr(app.server, 'df', None)
+    if df is None or team is None:
+        return []
+    batsmen = df[df["BattingTeam"] == team]["BatsmanName"].dropna().unique()
+    return [{'label': b, 'value': b} for b in batsmen]
+
+
+# Update delivery dropdown based on batsman
+@app.callback(
+    Output('delivery', 'options'),
+    [Input('team', 'value'), Input('batsman', 'value')]
+)
+def update_deliveries(team, batsman):
+    df = getattr(app.server, 'df', None)
+    if df is None or team is None or batsman is None:
+        return []
+    deliveries = df[(df["BattingTeam"] == team) & (df["BatsmanName"] == batsman)]["DeliveryType"].dropna().unique()
+    return [{'label': d, 'value': d} for d in deliveries]
+
+
+# Update charts when filters change
+@app.callback(
+    [Output('crease-beehive', 'figure'),
+     Output('pitch-map', 'figure')],
+    [Input('team', 'value'),
+     Input('batsman', 'value'),
+     Input('delivery', 'value')]
+)
+def update_charts(team, batsman, delivery):
+    df = getattr(app.server, 'df', None)
+    if df is None:
+        return go.Figure(), go.Figure()
+
+    # Apply filters
+    if team:
+        df = df[df["BattingTeam"] == team]
+    if batsman:
+        df = df[df["BatsmanName"] == batsman]
+    if delivery:
+        df = df[df["DeliveryType"] == delivery]
+
+    if df.empty:
+        fig_empty = go.Figure()
+        fig_empty.add_annotation(text="No data for selected filters", x=0.5, y=0.5, showarrow=False)
+        return fig_empty, fig_empty
+
+    # --- Crease Beehive ---
     wickets = df[df["Wicket"] == True]
     non_wickets = df[df["Wicket"] == False]
 
     fig_cbh = go.Figure()
     fig_cbh.add_trace(go.Scatter(
         x=non_wickets["StumpsY"], y=non_wickets["StumpsZ"],
-        mode='markers', marker=dict(color='lightgrey', size=8, opacity=0.8),
-        name="No Wicket"
+        mode='markers', marker=dict(color='lightgrey', size=8, opacity=0.8)
     ))
     fig_cbh.add_trace(go.Scatter(
         x=wickets["StumpsY"], y=wickets["StumpsZ"],
-        mode='markers', marker=dict(color='red', size=10, opacity=0.9),
-        name="Wicket"
+        mode='markers', marker=dict(color='red', size=10, opacity=0.9)
     ))
 
-    # Stump lines
-    fig_cbh.add_vline(x=-0.18, line=dict(color="black", dash="dot", width=1.2))
-    fig_cbh.add_vline(x=0.18, line=dict(color="black", dash="dot", width=1.2))
+    fig_cbh.add_vline(x=-0.18, line=dict(color="black", dash="dot", width=1))
+    fig_cbh.add_vline(x=0.18, line=dict(color="black", dash="dot", width=1))
 
     fig_cbh.update_layout(
-        title="Crease Beehive View",
+        title=f"Crease Beehive - {batsman or 'All'}",
         xaxis=dict(range=[-1.6, 1.6], visible=False),
         yaxis=dict(range=[0, 2.5], visible=False),
         plot_bgcolor="white", paper_bgcolor="white", showlegend=False
     )
 
-    # --- Chart 2: Pitch Map ---
-    pitch_wickets = df[df["Wicket"] == True]
-    pitch_non_wickets = df[df["Wicket"] == False]
-
+    # --- Pitch Map ---
     fig_pitch = go.Figure()
     fig_pitch.add_trace(go.Scatter(
-        x=pitch_non_wickets["BounceY"], y=pitch_non_wickets["BounceX"],
-        mode='markers', marker=dict(color='lightblue', size=8, opacity=0.8),
-        name="No Wicket"
+        x=df["BounceY"], y=df["BounceX"],
+        mode='markers', marker=dict(color='dodgerblue', size=8, opacity=0.85)
     ))
-    fig_pitch.add_trace(go.Scatter(
-        x=pitch_wickets["BounceY"], y=pitch_wickets["BounceX"],
-        mode='markers', marker=dict(color='crimson', size=10, opacity=0.9),
-        name="Wicket"
-    ))
-
     fig_pitch.update_layout(
-        title="Pitch Map",
+        title=f"Pitch Map - {batsman or 'All'}",
         xaxis=dict(range=[-2, 2], visible=False),
         yaxis=dict(range=[-1, 20], visible=False),
-        plot_bgcolor="#f0f0f0", paper_bgcolor="white", showlegend=False
+        plot_bgcolor="#f5f5f5", paper_bgcolor="white", showlegend=False
     )
 
-    return batsman_opts, delivery_opts, fig_cbh, fig_pitch
+    return fig_cbh, fig_pitch
 
 
 # -------------------- RUN APP --------------------
 if __name__ == "__main__":
-    app.run_server(debug=True, host='0.0.0.0', port=8050)
+    app.run_server(debug=True, host="0.0.0.0", port=8050)
+
