@@ -414,7 +414,7 @@ def create_wagon_wheel(df_in):
 # For a deployed Render app, the data must be included in the repository. 
 # We'll use a placeholder structure for the final production code.
 # In a real deployed app, you'd load the CSV directly here:
-# df = pd.read_csv("your_data_file.csv")
+df = pd.read_csv(r"odi sample data.csv")
 
 # Temporary data loading to enable app structure if deployed
 try:
