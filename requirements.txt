@@ -1,5 +1,10 @@
-dash
-dash-bootstrap-components
 pandas
+numpy
 plotly
+dash
+dash-core-components
+dash-html-components
+dash-bootstrap-components
 gunicorn
+matplotlib
+scipy # Often needed for numpy/matplotlib features
