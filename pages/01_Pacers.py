@@ -1,14 +1,6 @@
 import streamlit as st
 import pandas as pd
 # Import the new function and necessary existing functions from utils
-from utils import ( 
-    create_pitch_map, 
-    create_interception_side_on, 
-    create_directional_split, 
-    create_crease_beehive,
-    create_zonal_analysis
-    # Add any other required chart functions from utils here
-)
 
 # Set page configuration
 st.set_page_config(
@@ -72,47 +64,3 @@ if bowler != "All":
         df_filtered = df_filtered[df_filtered["BowlerName"] == bowler]
     else:
         st.warning("BowlerName column not found for filtering.")
-
-# =========================================================
-# 5. INITIAL CHART LAYOUT
-# =========================================================
-
-heading_text = bowler.upper() if bowler != "All" else "SEAM GLOBAL ANALYSIS"
-st.header(f"**{heading_text}**")
-st.markdown(f"Total Seam Deliveries in Selection: **{len(df_filtered)}**")
-
-st.divider()
-
-# Row 1: Pitch Length Distribution (New Chart)
-st.markdown("### Pitch Length Analysis")
-st.pyplot(create_seam_length_distribution(df_filtered), use_container_width=True)
-
-
-# Row 2: Beehive and Pitch Map (Reusing Batter Charts)
-st.markdown("### Line & Length Performance")
-col_beehive, col_pitch_map = st.columns(2)
-
-with col_beehive:
-    st.markdown("###### CREASE BEEHIVE (IMPACT LOCATION)")
-    st.plotly_chart(create_crease_beehive(df_filtered, "Seam"), use_container_width=True)
-
-with col_pitch_map:
-    st.markdown("###### PITCHMAP (BOUNCE LOCATION)")
-    st.plotly_chart(create_pitch_map(df_filtered, "Seam"), use_container_width=True)
-
-
-# Row 3: Interception Side-On and Directional Split
-st.markdown("### Interception and Movement")
-col_interception, col_directional = st.columns(2)
-
-with col_interception:
-    st.markdown("###### INTERCEPTION SIDE-ON (HEIGHT)")
-    st.pyplot(create_interception_side_on(df_filtered, "Seam"), use_container_width=True)
-
-with col_directional:
-    st.markdown("###### SWING DIRECTION")
-    st.pyplot(create_directional_split(df_filtered, "Swing", "Swing", "Seam"), use_container_width=True)
-
-# You can continue adding more sections here, reusing functions like 
-# create_zonal_analysis, create_lateral_performance_boxes, etc. 
-# to view the bowler's data from the batsman's perspective.
