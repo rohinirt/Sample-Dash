@@ -172,8 +172,8 @@ def create_pacer_lateral_performance_boxes(df_in, handedness_label):
     plt.tight_layout(pad=0.5)
     return fig_boxes
 
-# Place this function inside pages/Pacers.py, along with create_pacer_crease_beehive
 # --- CHART 2b: LATERAL PERFORMANCE BOXES (BOWLING AVERAGE) ---
+
 def create_pacer_lateral_performance_boxes(df_in, handedness_label):
     # This function now correctly reverses the lateral zones for LHB for visual consistency.
     df_lateral = df_in.copy()
@@ -282,7 +282,106 @@ def create_pacer_lateral_performance_boxes(df_in, handedness_label):
     plt.tight_layout(pad=0.5)
     return fig_boxes
     
+import matplotlib.pyplot as plt
+from matplotlib import cm, patches
+import matplotlib.colors as mcolors
+import pandas as pd
 
+# --- CHART 2: ZONAL ANALYSIS (CBH Boxes) ---
+def create_pacer_zonal_analysis(df_in, handedness_label):
+    if df_in.empty:
+        # Assuming plt is imported
+        fig, ax = plt.subplots(figsize=(3, 2)); ax.text(0.5, 0.5, f"No Data ({handedness_label})", ha='center', va='center'); ax.axis('off'); return fig
+
+    # 1. Handedness Determination and Zone Layout
+    is_right_handed_batsman = (handedness_label == "RHB")
+    
+    # RHB Zones: Off side (negative Y) to Leg side (positive Y)
+    # Y-axis (lateral): -0.72 (Wide Off) to 0.72 (Wide Leg)
+    # Z-axis (height): 0 (Stump Base) to 1.91 (Above Head)
+    right_hand_zones = { "Z1": (-0.72, 0, -0.45, 1.91), "Z2": (-0.45, 0, -0.18, 0.71), "Z3": (-0.18, 0, 0.18, 0.71), "Z4": (-0.45, 0.71, -0.18, 1.31), "Z5": (-0.18, 0.71, 0.18, 1.31), "Z6": (-0.18, 1.31, 0.18, 1.91)}
+    
+    # LHB Zones: Leg side (negative Y) to Off side (positive Y)
+    left_hand_zones = { "Z1": (0.45, 0, 0.72, 1.91), "Z2": (0.18, 0, 0.45, 0.71), "Z3": (-0.18, 0, 0.18, 0.71), "Z4": (0.18, 0.71, 0.45, 1.31), "Z5": (-0.18, 0.71, 0.18, 1.31), "Z6": (-0.18, 1.31, 0.18, 1.91)}
+    
+    zones_layout = right_hand_zones if is_right_handed_batsman else left_hand_zones
+        
+    def assign_zone(row):
+        x, y = row["CreaseY"], row["CreaseZ"]
+        for zone, (x1, y1, x2, y2) in zones_layout.items():
+            if x1 <= x <= x2 and y1 <= y <= y2: return zone
+        return "Other"
+
+    df_chart2 = df_in.copy(); 
+    df_chart2["Zone"] = df_chart2.apply(assign_zone, axis=1)
+    df_chart2 = df_chart2[df_chart2["Zone"] != "Other"]
+        
+    # 2. Calculate Summary Metrics (Bowler Focus)
+    summary = (
+        df_chart2.groupby("Zone").agg(
+            Runs=("Runs", "sum"), 
+            Wickets=("Wicket", lambda x: (x == True).sum()), 
+            Balls=("Wicket", "count")
+        )
+        .reindex([f"Z{i}" for i in range(1, 7)]).fillna(0)
+    )
+    
+    # Bowling Average (Runs / Wickets)
+    summary["Avg Runs/Wicket"] = summary.apply(lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else 0, axis=1)
+    
+    # Bowling Strike Rate (Balls / Wickets)
+    summary["BowlingSR"] = summary.apply(lambda row: row["Balls"] / row["Wickets"] if row["Wickets"] > 0 else 0, axis=1)
+
+    # 3. Color Scaling (Based on Bowling Average)
+    avg_values = summary["Avg Runs/Wicket"]
+    avg_max = avg_values.max() if avg_values.max() > 0 else 100 
+    avg_max_cap = 50 # Cap max at 50 for visualization consistency
+    
+    # Assuming mcolors is imported
+    norm = mcolors.Normalize(vmin=0, vmax=avg_max if avg_max > avg_max_cap else avg_max_cap)
+    # Assuming cm is imported
+    cmap = cm.get_cmap('Reds') # Higher Average (worse bowling) is darker red
+
+    # Assuming plt and patches are imported
+    fig_boxes, ax = plt.subplots(figsize=(3,2), subplot_kw={'xticks': [], 'yticks': []}) 
+        
+    # 4. Plotting Zones and Labels
+    for zone, (x1, y1, x2, y2) in zones_layout.items():
+        w, h = x2 - x1, y2 - y1
+        z_key = zone.replace("Zone ", "Z")
+            
+        runs, wkts, bowling_avg, bowling_sr = (0, 0, 0, 0)
+        
+        if z_key in summary.index:
+            runs = int(summary.loc[z_key, "Runs"])
+            wkts = int(summary.loc[z_key, "Wickets"])
+            bowling_avg = summary.loc[z_key, "Avg Runs/Wicket"]
+            bowling_sr = summary.loc[z_key, "BowlingSR"]
+            
+        color = cmap(norm(bowling_avg)) if summary.loc[z_key, "Balls"] > 0 else 'white'
+
+        ax.add_patch(patches.Rectangle((x1, y1), w, h, edgecolor="black", facecolor=color, linewidth=0.8))
+        
+        # Calculate text color for contrast
+        text_color = "black"
+        if summary.loc[z_key, "Balls"] > 0:
+            r, g, b, a = color
+            # Simple luminance check for text contrast
+            luminosity = 0.2126 * r + 0.7152 * g + 0.0722 * b
+            text_color = 'white' if luminosity < 0.5 else 'black'
+
+        ax.text(x1 + w / 2, y1 + h / 2, 
+        f"R: {runs}\nW: {wkts}\nSR: {bowling_sr:.1f}\nA: {bowling_avg:.1f}", 
+        ha="center", 
+        va="center", 
+        fontsize=5,
+        color=text_color, 
+        linespacing=1.2)
+        
+    ax.set_xlim(-0.75, 0.75); ax.set_ylim(0, 2); ax.axis('off'); 
+    plt.tight_layout(pad=0.5) 
+    return fig_boxes
+    
 # =========================================================
 # PAGE SETUP AND FILTERING
 # =========================================================
@@ -367,9 +466,8 @@ with col_rhb:
     # Chart 1b: Lateral Performance Boxes (Bowling Avg)
     st.pyplot(create_pacer_lateral_performance_boxes(df_rhb, "RHB"), use_container_width=True)
     
-    # Placeholder for other charts (e.g., Pitch Map, Interception, etc.)
-    st.markdown("---")
-    st.info("Additional charts for RHB go here.")
+    # Chart 2: ZONAL ANALYSIS (CBH Boxes)
+    st.pyplot(def create_pacer_zonal_analysis(df_rhb, "RHB"), use_container_width=True)
 
 
 # === RIGHT COLUMN: AGAINST LEFT-HANDED BATSMEN (LHB) ===
@@ -383,6 +481,5 @@ with col_lhb:
     # Chart 1b: Lateral Performance Boxes (Bowling Avg)
     st.pyplot(create_pacer_lateral_performance_boxes(df_lhb, "LHB"), use_container_width=True)
 
-    # Placeholder for other charts (e.g., Pitch Map, Interception, etc.)
-    st.markdown("---")
-    st.info("Additional charts for LHB go here.")
+    # Chart 2: ZONAL ANALYSIS (CBH Boxes)
+    st.pyplot(def create_pacer_zonal_analysis(df_lhb, "LHB"), use_container_width=True)
