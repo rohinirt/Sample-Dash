@@ -13,7 +13,7 @@ st.set_page_config(
     page_title="BATTERS",
     layout="wide"
 )
-
+st.title("BATTERS")
 # =========================================================
 # 💥 1. CRITICAL: GET DATA FROM SESSION STATE
 # This check ensures the page cannot run without data uploaded via Home.py
