@@ -751,7 +751,7 @@ def create_pacer_release_zone_map(df_in, handedness_label):
     # Add KPI Headers
     for label, _, x_data_pos in kpi_data:
         fig.add_annotation(
-            x=paper_x_map[x_data_pos], y=-0.25, xref="paper", yref="paper", 
+            x=paper_x_map[x_data_pos], y=-0.15, xref="paper", yref="paper", 
             text=f"<b>{label.upper()}</b>", showarrow=False, xanchor='center',
             font=dict(size=11, color="grey")
         )
@@ -759,7 +759,7 @@ def create_pacer_release_zone_map(df_in, handedness_label):
     # Add KPI Values
     for _, value, x_data_pos in kpi_data:
         fig.add_annotation(
-            x=paper_x_map[x_data_pos], y=-0.35, xref="paper", yref="paper", 
+            x=paper_x_map[x_data_pos], y=-0.25, xref="paper", yref="paper", 
             text=f"<b>{value}</b>", showarrow=False, xanchor='center',
             font=dict(size=16, color="black")
         )
