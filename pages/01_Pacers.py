@@ -1,6 +1,14 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import plotly.graph_objects as go
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import matplotlib.cm as cm
+import matplotlib.colors as mcolors
+from io import StringIO
+import base64
+import matplotlib.patheffects as pe
 
 
 # =========================================================
@@ -236,7 +244,6 @@ def create_pacer_lateral_performance_boxes(df_in, handedness_label):
     
     # 4. Chart Setup
     fig_boxes, ax_boxes = plt.subplots(figsize=(7, 1)) 
-    
     num_regions = len(ordered_zones)
     box_width = 1 / num_regions # Fixed width for each box (total width = 1)
     left = 0
