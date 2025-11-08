@@ -657,7 +657,7 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
         
         if pct > 0:
             # Display percentage and raw count (e.g., 25.4% (32 balls))
-            label_text = f'{pct:.1f}%'
+            label_text = f'{pct:.0f}%'
             
             # Placement logic: Inside if bar is > 10%, otherwise outside
             x_pos = pct - 1 if pct > 10 else pct + 0.5
