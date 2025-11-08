@@ -85,10 +85,7 @@ def create_zonal_analysis(df_in, batsman_name, delivery_type):
         fontsize=5,
         color="black" if norm(avg) < 0.6 else "white", 
         linespacing=1.2)
-    ax.set_title(f"STRIKE RATE", 
-                 fontsize=8, 
-                 weight='bold', 
-                 pad=10)
+
     ax.set_xlim(-0.75, 0.75); ax.set_ylim(0, 2); ax.axis('off'); 
     plt.tight_layout(pad=0.5) 
     return fig_boxes
