@@ -675,10 +675,10 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
     max_pct = plot_data["Percentage"].max()
     ax.set_xlim(0, max(max_pct * 1.1, 10)) 
     ax.set_xticklabels([])
-    ax.spines['top'].set_visible(False
-    ax.spines['bottom'].set_visible(False
-    ax.spines['left'].set_visible(False
-    ax.spines['right'].set_visible(False
+    ax.spines['top'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    ax.spines['right'].set_visible(False)
     
     # Remove legend as there is only one series
     plt.tight_layout()
