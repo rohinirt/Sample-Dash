@@ -822,7 +822,7 @@ def create_directional_split(df_in, column_name, handedness_label):
     fig, ax = plt.subplots(figsize=(8, 1.5))
     
     # Define Colormap: 'Reds_r' is reversed Reds, applying a darker shade to the larger percentage
-    cmap = cm.get_cmap('Reds_r') 
+    cmap = cm.get_cmap('Reds') 
     norm = mcolors.Normalize(vmin=0, vmax=100)
     
     # Plotting order: LEFT first (starts at 0), then RIGHT
@@ -855,7 +855,7 @@ def create_directional_split(df_in, column_name, handedness_label):
             ax.text(
                 left + pct / 2, 
                 0, 
-                f'{category.upper()}\n{pct:.1f}%', 
+                f'{category.upper()}\n{pct:.0f}%', 
                 ha='center', va='center', 
                 color=text_color, fontsize=14, fontweight='bold',
                 # Path effects give text a sharp edge against the background
