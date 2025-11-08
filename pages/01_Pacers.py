@@ -903,8 +903,8 @@ with col_lhb:
     st.pyplot(create_pacer_release_speed_distribution(df_lhb, "LHB"), use_container_width=True)
 
     # Chart 4/5: RELEASE
-    PACE_col, release_col = st.columns([2, 2]) 
-    with release_col:
+    pace_col, release_col = st.columns([2, 2]) 
+    with pace_col:
         st.markdown("###### RELEASE")
         st.plotly_chart(create_pacer_release_zone_map(df_rhb, "RHB"), use_container_width=True)   
     with release_col:
