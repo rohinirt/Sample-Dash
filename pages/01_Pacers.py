@@ -584,6 +584,122 @@ def create_pacer_pitch_length_metrics(df_in):
     plt.tight_layout(pad=0.9)
     return fig_stack
 
+# --- CHART 4: RELEASE SPEED DISTRIBUTION ---
+def create_pacer_release_speed_distribution(df_in, handedness_label):
+    from matplotlib import pyplot as plt
+    import pandas as pd
+    
+    # 1. Define Speed Bins (in km/h)
+    SPEED_BINS = {
+        "Slower (Below 120)": [0, 120],
+        "Standard (120-130)": [120, 130],
+        "Brisk (130-140)": [130, 140],
+        "Express (140-150)": [140, 150],
+        "Rapid (Above 150)": [150, 200]
+    }
+    # Define plotting order (slowest to fastest)
+    ordered_bins = list(SPEED_BINS.keys())
+    
+    if df_in.empty or "ReleaseSpeed" not in df_in.columns:
+        fig, ax = plt.subplots(figsize=(8, 4))
+        ax.text(0.5, 0.5, "No Data or Missing 'ReleaseSpeed'", ha='center', va='center', fontsize=12)
+        ax.axis('off')
+        return fig
+
+    # 2. Assign Balls to Speed Bins and Outcomes
+    def assign_speed_bin(speed):
+        for label, bounds in SPEED_BINS.items():
+            if bounds[0] <= speed < bounds[1]:
+                return label
+        return None
+
+    df_speed = df_in.copy()
+    df_speed["SpeedBin"] = df_speed["ReleaseSpeed"].apply(assign_speed_bin)
+    
+    # Define outcomes for stacking
+    df_speed["Outcome"] = "Other"
+    df_speed.loc[df_speed["Runs"].isin([4, 6]) & (df_speed["Wicket"] == False), "Outcome"] = "Boundary"
+    df_speed.loc[df_speed["Wicket"] == True, "Outcome"] = "Wicket"
+
+    # 3. Aggregate Data
+    # Calculate counts per bin and outcome
+    df_counts = df_speed.groupby(["SpeedBin", "Outcome"]).size().reset_index(name="Count")
+    
+    # Calculate total balls per speed bin
+    total_balls = df_counts.groupby("SpeedBin")["Count"].sum().reset_index(name="Total")
+    df_counts = pd.merge(df_counts, total_balls, on="SpeedBin")
+    
+    # Calculate percentage
+    df_counts["Percentage"] = (df_counts["Count"] / df_counts["Total"]) * 100
+
+    # Pivot data for stacking
+    df_pivot = df_counts.pivot(index="SpeedBin", columns="Outcome", values="Percentage").fillna(0)
+    
+    # Reindex to ensure correct plotting order
+    df_pivot = df_pivot.reindex(ordered_bins, fill_value=0)
+
+    # Reorder columns for stacking (Wickets on top, Other on bottom)
+    outcome_order = ["Other", "Boundary", "Wicket"]
+    df_pivot = df_pivot.reindex(columns=[col for col in outcome_order if col in df_pivot.columns], fill_value=0)
+    
+    # 4. Chart Generation (Horizontal Stacked Bar)
+    
+    fig, ax = plt.subplots(figsize=(8, 4))
+    
+    # Define colors
+    colors = {
+        "Wicket": "red",
+        "Boundary": "royalblue",
+        "Other": "lightgrey"
+    }
+
+    # Plot the stacked bars
+    left = 0
+    for outcome in df_pivot.columns:
+        # Plot each segment for the current outcome
+        ax.barh(
+            df_pivot.index, 
+            df_pivot[outcome], 
+            left=left, 
+            color=colors[outcome], 
+            label=outcome,
+            height=0.6,
+            edgecolor='black',
+            linewidth=0.5
+        )
+        # Update 'left' position for the next segment
+        left += df_pivot[outcome].values
+
+    # 5. Add Labels and Formatting
+    ax.set_title(f"Release Speed Distribution vs. {handedness_label}", fontsize=14, fontweight='bold')
+    ax.set_xlabel("Percentage of Balls (%)", fontsize=10)
+    ax.set_ylabel("Release Speed Bin (km/h)", fontsize=10)
+    
+    # Add percentage labels inside the bars
+    left_cumulative = pd.Series([0.0] * len(df_pivot))
+    for outcome in df_pivot.columns:
+        percentages = df_pivot[outcome].values
+        for i, (pct, total) in enumerate(zip(percentages, df_pivot['Total'])):
+            if pct > 3: # Only label segments greater than 3%
+                x_pos = left_cumulative.iloc[i] + (pct / 2)
+                y_pos = i
+                # Ensure the text color contrasts with the background
+                text_color = 'black' if colors[outcome] == 'lightgrey' else 'white'
+                
+                ax.text(
+                    x_pos, 
+                    y_pos, 
+                    f'{pct:.0f}%', 
+                    ha='center', va='center', fontsize=8, color=text_color, fontweight='bold'
+                )
+        left_cumulative += df_pivot[outcome].values
+        
+    ax.legend(title="Outcome", bbox_to_anchor=(1.05, 1), loc='upper left')
+    ax.set_xlim(0, 100)
+    ax.grid(axis='x', linestyle='--', alpha=0.5)
+    plt.tight_layout()
+    return fig
+
 # =========================================================
 # PAGE SETUP AND FILTERING
 # =========================================================
@@ -680,6 +796,11 @@ with col_rhb:
         st.markdown("##### ")
         st.pyplot(create_pacer_pitch_length_metrics(df_rhb), use_container_width=True)
 
+    st.markdown("###### RELEASE SPEED DISTRIBUTION")
+    st.pyplot(create_pacer_release_speed_distribution(df_rhb, "RHB"), use_container_width=True)
+    # ... and repeat for df_lhb ...
+    st.pyplot(create_pacer_release_speed_distribution(df_rhb, "RHB"), use_container_width=True)
+
 
 # === RIGHT COLUMN: AGAINST LEFT-HANDED BATSMEN (LHB) ===
 with col_lhb:
@@ -703,3 +824,9 @@ with col_lhb:
     with run_pct_col:
         st.markdown("##### ")
         st.pyplot(create_pacer_pitch_length_metrics(df_lhb), use_container_width=True)
+
+    st.markdown("###### RELEASE SPEED DISTRIBUTION")
+    st.pyplot(create_pacer_release_speed_distribution(df_lhb, "LHB"), use_container_width=True)
+    # ... and repeat for df_lhb ...
+    st.pyplot(create_pacer_release_speed_distribution(df_lhb, "LHB"), use_container_width=True)
+
