@@ -424,21 +424,35 @@ def create_pacer_pitch_map(df_in):
     fig_pitch.add_vline(x=0.18, line=dict(color="#777777", dash="dot", width=1.2))
     fig_pitch.add_vline(x=0, line=dict(color="#777777", dash="dot", width=0.8))
 
-    # 3. Plot Data (Wickets vs. Non-Wickets)
+   # 3. Plot Data (Wickets, Boundaries, and Others)
+    
+    # 1. Wickets (Highest priority, Red)
     pitch_wickets = df_in[df_in["Wicket"] == True]
-    pitch_non_wickets = df_in[df_in["Wicket"] == False]
 
-    # Non-Wickets (light grey)
-    fig_pitch.add_trace(go.Scatter(
-        x=pitch_non_wickets["BounceY"], y=pitch_non_wickets["BounceX"], mode='markers', name="No Wicket",
-        marker=dict(color='#D3D3D3', size=10, line=dict(width=1, color="white"), opacity=0.9)
-    ))
+    # 2. Boundaries (Non-Wicket, Runs = 4 or 6, Royal Blue)
+    pitch_boundaries = df_in[(df_in["Wicket"] == False) & (df_in["Runs"].isin([4, 6]))]
 
-    # Wickets (red)
+    # 3. Other Balls (Non-Wicket, Non-Boundary, Light Grey)
+    # This filters for balls that are NOT wickets AND NOT boundaries (i.e., 0, 1, 2, 3 runs)
+    pitch_other = df_in[(df_in["Wicket"] == False) & (~df_in["Runs"].isin([4, 6]))]
+
+    # Plot Wickets (Top Layer - Red)
     fig_pitch.add_trace(go.Scatter(
         x=pitch_wickets["BounceY"], y=pitch_wickets["BounceX"], mode='markers', name="Wicket",
         marker=dict(color='red', size=12, line=dict(width=1, color="white")), opacity=0.95)
     )
+
+    # Plot Boundaries (Middle Layer - Royal Blue)
+    fig_pitch.add_trace(go.Scatter(
+        x=pitch_boundaries["BounceY"], y=pitch_boundaries["BounceX"], mode='markers', name="Boundary",
+        marker=dict(color='royalblue', size=11, line=dict(width=1, color="white")), opacity=0.95)
+    )
+
+    # Plot Other Balls (Bottom Layer - Light Grey)
+    fig_pitch.add_trace(go.Scatter(
+        x=pitch_other["BounceY"], y=pitch_other["BounceX"], mode='markers', name="Other",
+        marker=dict(color='#D3D3D3', size=10, line=dict(width=1, color="white"), opacity=0.9)
+    ))
 
     # 4. Layout
     fig_pitch.update_layout(
