@@ -469,7 +469,7 @@ with col_rhb:
     st.pyplot(create_pacer_lateral_performance_boxes(df_rhb, "RHB"), use_container_width=True)
     
     # Chart 2: ZONAL ANALYSIS (CBH Boxes)
-    st.pyplot(def create_pacer_zonal_analysis(df_rhb, "RHB"), use_container_width=True)
+    st.pyplot(create_pacer_zonal_analysis(df_rhb, "RHB"), use_container_width=True)
 
 
 # === RIGHT COLUMN: AGAINST LEFT-HANDED BATSMEN (LHB) ===
@@ -484,4 +484,4 @@ with col_lhb:
     st.pyplot(create_pacer_lateral_performance_boxes(df_lhb, "LHB"), use_container_width=True)
 
     # Chart 2: ZONAL ANALYSIS (CBH Boxes)
-    st.pyplot(def create_pacer_zonal_analysis(df_lhb, "LHB"), use_container_width=True)
+    st.pyplot(create_pacer_zonal_analysis(df_lhb, "LHB"), use_container_width=True)
