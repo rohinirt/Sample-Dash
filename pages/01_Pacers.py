@@ -602,7 +602,7 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
     ordered_bins = list(SPEED_BINS.keys())
     
     if df_in.empty or "ReleaseSpeed" not in df_in.columns:
-        fig, ax = plt.subplots(figsize=(4, 5))
+        fig, ax = plt.subplots(figsize=(8, 4))
         ax.text(0.5, 0.5, "No Data or Missing 'ReleaseSpeed'", ha='center', va='center', fontsize=12)
         ax.axis('off')
         return fig
