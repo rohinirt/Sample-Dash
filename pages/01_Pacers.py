@@ -786,8 +786,6 @@ with col_rhb:
 
     st.markdown("###### RELEASE SPEED DISTRIBUTION")
     st.pyplot(create_pacer_release_speed_distribution(df_rhb, "RHB"), use_container_width=True)
-    # ... and repeat for df_lhb ...
-    st.pyplot(create_pacer_release_speed_distribution(df_rhb, "RHB"), use_container_width=True)
 
 
 # === RIGHT COLUMN: AGAINST LEFT-HANDED BATSMEN (LHB) ===
@@ -814,7 +812,5 @@ with col_lhb:
         st.pyplot(create_pacer_pitch_length_metrics(df_lhb), use_container_width=True)
 
     st.markdown("###### RELEASE SPEED DISTRIBUTION")
-    st.pyplot(create_pacer_release_speed_distribution(df_lhb, "LHB"), use_container_width=True)
-    # ... and repeat for df_lhb ...
     st.pyplot(create_pacer_release_speed_distribution(df_lhb, "LHB"), use_container_width=True)
 
