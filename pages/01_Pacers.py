@@ -590,15 +590,15 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
     from matplotlib import pyplot as plt
     import pandas as pd
     
-    # 1. Define Speed Bins (in km/h)
+    # 1. Define Speed Bins (in km/h) with simplified labels
     SPEED_BINS = {
-        "Slower (Below 120)": [0, 120],
-        "Standard (120-130)": [120, 130],
-        "Brisk (130-140)": [130, 140],
-        "Express (140-150)": [140, 150],
-        "Rapid (Above 150)": [150, 200]
+        "<120": [0, 120],
+        "120-130": [120, 130],
+        "130-140": [130, 140],
+        "140-150": [140, 150],
+        ">150": [150, 200]
     }
-    # Define plotting order (slowest to fastest)
+    # Define plotting order (Slowest to Fastest)
     ordered_bins = list(SPEED_BINS.keys())
     
     if df_in.empty or "ReleaseSpeed" not in df_in.columns:
@@ -607,7 +607,7 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
         ax.axis('off')
         return fig
 
-    # 2. Assign Balls to Speed Bins and Outcomes
+    # 2. Assign Balls to Speed Bins
     def assign_speed_bin(speed):
         for label, bounds in SPEED_BINS.items():
             if bounds[0] <= speed < bounds[1]:
@@ -617,95 +617,73 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
     df_speed = df_in.copy()
     df_speed["SpeedBin"] = df_speed["ReleaseSpeed"].apply(assign_speed_bin)
     
-    # Define outcomes for stacking
-    df_speed["Outcome"] = "Other"
-    df_speed.loc[df_speed["Runs"].isin([4, 6]) & (df_speed["Wicket"] == False), "Outcome"] = "Boundary"
-    df_speed.loc[df_speed["Wicket"] == True, "Outcome"] = "Wicket"
-
-    # 3. Aggregate Data
-    # Calculate counts per bin and outcome
-    df_counts = df_speed.groupby(["SpeedBin", "Outcome"]).size().reset_index(name="Count")
+    # 3. Aggregate Data (Total balls and Percentage)
+    total_balls = len(df_speed) 
     
-    # Calculate total balls per speed bin
-    total_balls = df_counts.groupby("SpeedBin")["Count"].sum().reset_index(name="Total")
-    df_counts = pd.merge(df_counts, total_balls, on="SpeedBin")
+    if total_balls == 0:
+        fig, ax = plt.subplots(figsize=(8, 4))
+        ax.text(0.5, 0.5, "No Deliveries Found", ha='center', va='center', fontsize=12)
+        ax.axis('off')
+        return fig
+
+    # Count balls in each bin
+    df_summary = df_speed.groupby("SpeedBin").size().reset_index(name="Count")
     
     # Calculate percentage
-    df_counts["Percentage"] = (df_counts["Count"] / df_counts["Total"]) * 100
+    df_summary["Percentage"] = (df_summary["Count"] / total_balls) * 100
 
-    # PIVOT DATA FIX: Pivot on Percentage, then merge the Total column back in
-    df_pivot_pct = df_counts.pivot(index="SpeedBin", columns="Outcome", values="Percentage").fillna(0)
+    # Prepare for plotting, ensuring correct order
+    df_summary = df_summary.set_index("SpeedBin").reindex(ordered_bins, fill_value=0).reset_index()
+    plot_data = df_summary.set_index("SpeedBin")
     
-    # Merge the Total back in using the index (SpeedBin)
-    df_pivot = pd.merge(df_pivot_pct, total_balls.set_index("SpeedBin"), 
-                        left_index=True, right_index=True, how="left").fillna(0)
-    
-    # Reindex to ensure correct plotting order
-    df_pivot = df_pivot.reindex(ordered_bins, fill_value=0)
-
-    # Reorder columns for stacking (Wickets on top, Other on bottom)
-    outcome_order = ["Other", "Boundary", "Wicket"]
-    # Filter the list of columns to ensure "Total" isn't included in the bar plotting logic
-    plot_columns = [col for col in outcome_order if col in df_pivot.columns]
-    
-    # 4. Chart Generation (Horizontal Stacked Bar)
+    # 4. Chart Generation (Simple Horizontal Bar)
     
     fig, ax = plt.subplots(figsize=(8, 4))
     
-    # Define colors
-    colors = {
-        "Wicket": "red",
-        "Boundary": "royalblue",
-        "Other": "lightgrey"
-    }
-
-    # Plot the stacked bars
-    left = 0
-    for outcome in plot_columns: # Use the filtered list of plot columns
-        # Plot each segment for the current outcome
-        ax.barh(
-            df_pivot.index, 
-            df_pivot[outcome], 
-            left=left, 
-            color=colors[outcome], 
-            label=outcome,
-            height=0.6,
-            edgecolor='black',
-            linewidth=0.5
-        )
-        # Update 'left' position for the next segment
-        left += df_pivot[outcome].values
+    # Plot a single horizontal bar series
+    ax.barh(
+        plot_data.index,
+        plot_data["Percentage"],
+        color='steelblue', # Single, uniform color
+        height=0.6,
+        edgecolor='black',
+        linewidth=0.5
+    )
 
     # 5. Add Labels and Formatting
-    ax.set_title(f"Release Speed Distribution vs. {handedness_label}", fontsize=14, fontweight='bold')
-    ax.set_xlabel("Percentage of Balls (%)", fontsize=10)
-    ax.set_ylabel("Release Speed Bin (km/h)", fontsize=10)
+    ax.set_title(f"Release Speed Distribution vs. {handedness_label} (Total Balls: {total_balls})", fontsize=14, fontweight='bold')
+    ax.set_xlabel("Percentage of Total Balls (%)", fontsize=10)
+    ax.set_ylabel("Release Speed (km/h)", fontsize=10)
     
-    # Add percentage labels inside the bars
-    left_cumulative = pd.Series([0.0] * len(df_pivot))
-    for outcome in plot_columns: # Use the filtered list of plot columns
-        percentages = df_pivot[outcome].values
+    # Add percentage and count labels
+    for i, (bin_label, row) in enumerate(plot_data.iterrows()):
+        pct = row["Percentage"]
+        count = row["Count"]
         
-        # Get the corresponding totals
-        total_in_bin = df_pivot['Total'].values 
-        
-        for i, (pct, total) in enumerate(zip(percentages, total_in_bin)):
-            if pct > 3: # Only label segments greater than 3%
-                x_pos = left_cumulative.iloc[i] + (pct / 2)
-                y_pos = i
-                # Ensure the text color contrasts with the background
-                text_color = 'black' if colors[outcome] == 'lightgrey' else 'white'
-                
-                ax.text(
-                    x_pos, 
-                    y_pos, 
-                    f'{pct:.0f}%', 
-                    ha='center', va='center', fontsize=8, color=text_color, fontweight='bold'
-                )
-        left_cumulative += df_pivot[outcome].values
-        
-    ax.legend(title="Outcome", bbox_to_anchor=(1.05, 1), loc='upper left')
-    ax.set_xlim(0, 100)
+        if pct > 0:
+            # Display percentage and raw count (e.g., 25.4% (32 balls))
+            label_text = f'{pct:.1f}% ({int(count)} balls)'
+            
+            # Placement logic: Inside if bar is > 10%, otherwise outside
+            x_pos = pct - 1 if pct > 10 else pct + 0.5
+            ha = 'right' if pct > 10 else 'left'
+            text_color = 'white' if pct > 10 else 'black'
+            
+            ax.text(
+                x_pos, 
+                i, 
+                label_text, 
+                ha=ha, va='center', fontsize=9, color=text_color, fontweight='bold'
+            )
+
+    # Set X-axis limit slightly higher than the max percentage for clean labels
+    max_pct = plot_data["Percentage"].max()
+    ax.set_xlim(0, max(max_pct * 1.1, 10)) 
+    
+    # Invert Y-axis to potentially show fastest at top, or keep as is. Keeping natural order (slowest at bottom)
+    # ax.invert_yaxis() 
+    
+    # Remove legend as there is only one series
     ax.grid(axis='x', linestyle='--', alpha=0.5)
     plt.tight_layout()
     return fig
