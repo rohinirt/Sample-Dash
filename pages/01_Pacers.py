@@ -380,40 +380,29 @@ def create_pacer_zonal_analysis(df_in, handedness_label):
     plt.tight_layout(pad=0.5) 
     return fig_boxes
 
-# --- CHART 3a: PITCH MAP (BOUNCE LOCATION) ---
 # --- Helper function for Pitch Bins (Centralized) ---
-def get_pitch_bins(delivery_type):
-    """Defines the pitch length ranges based on delivery type."""
-    if delivery_type == "Seam":
-        # Seam Bins: 1.2-6: Full, 6-8 Length, 8-10 Short, 10-15 Bouncer (Distance from batsman's stumps)
-        return {
-            "Full": [1.2, 6.0],
-            "Length": [6.0, 8.0],
-            "Short": [8.0, 10.0],
-            "Bouncer": [10.0, 15.0],
-        }
-    elif delivery_type == "Spin":
-        # Spin Bins: 1.22-2.22: OP, 2.22-4: full, 4-6: Good, 6-15: short
-        return {
-            "Over Pitched": [1.22, 2.22],
-            "Full": [2.22, 4.0],
-            "Good": [4.0, 6.0],
-            "Short": [6.0, 15.0],
-        }
-    return {} # Default
+def get_pitch_bins():
+    """Defines the pitch length ranges for Seam bowling."""
+    # Seam Bins: 1.2-6: Full, 6-8 Length, 8-10 Short, 10-15 Bouncer (Distance from batsman's stumps in meters)
+    return {
+        "Full": [1.2, 6.0],
+        "Length": [6.0, 8.0],
+        "Short": [8.0, 10.0],
+        "Bouncer": [10.0, 15.0],
+    }
     
-def create_pacer_pitch_map(df_in, delivery_type):
+# --- CHART 3a: PITCH MAP (BOUNCE LOCATION) ---
+def create_pacer_pitch_map(df_in):
+    # Imports needed if not at the top of the file
     import plotly.graph_objects as go
-    if df_in.empty:
-        return go.Figure().update_layout(title=f"No data for Pitch Map ({delivery_type})", height=300)
-
-    PITCH_BINS = get_pitch_bins(delivery_type)
     
-    # Add a catch-all bin for plotting range/data outside the defined bins if needed
-    if delivery_type == "Seam":
-        PITCH_BINS["Full Toss"] = [-4.0, 1.2]  
-    elif delivery_type == "Spin":
-        PITCH_BINS["Full Toss"] = [-4.0, 1.22]  
+    if df_in.empty:
+        return go.Figure().update_layout(title=f"No data for Pitch Map (Seam)", height=300)
+
+    PITCH_BINS = get_pitch_bins() # Simplified call
+    
+    # Add a catch-all bin for Full Tosses (always Seam logic)
+    PITCH_BINS["Full Toss"] = [-4.0, 1.2]  
         
     fig_pitch = go.Figure()
     
@@ -435,7 +424,7 @@ def create_pacer_pitch_map(df_in, delivery_type):
     fig_pitch.add_vline(x=0.18, line=dict(color="#777777", dash="dot", width=1.2))
     fig_pitch.add_vline(x=0, line=dict(color="#777777", dash="dot", width=0.8))
 
-    # 3. Plot Data
+    # 3. Plot Data (Wickets vs. Non-Wickets)
     pitch_wickets = df_in[df_in["Wicket"] == True]
     pitch_non_wickets = df_in[df_in["Wicket"] == False]
 
@@ -462,9 +451,11 @@ def create_pacer_pitch_map(df_in, delivery_type):
     )
     
     return fig_pitch
+
 # --- CHART 3b: PITCH LENGTH METRICS (BOWLER FOCUS) ---
-def create_pacer_pitch_length_metrics(df_in, delivery_type):
-    from matplotlib import cm, patches
+def create_pacer_pitch_length_metrics(df_in):
+    # Imports needed if not at the top of the file
+    from matplotlib import cm
     import matplotlib.pyplot as plt
     import matplotlib.colors as mcolors
     import pandas as pd
@@ -477,22 +468,12 @@ def create_pacer_pitch_length_metrics(df_in, delivery_type):
         ax.axis('off'); 
         return fig
 
-    # Get the pitch bins from the helper function
-    PITCH_BINS_DICT = get_pitch_bins(delivery_type)
+    PITCH_BINS_DICT = get_pitch_bins() # Simplified call
         
-    # Define ordered keys for plotting order (far to near)
-    if delivery_type == "Seam":
-        ordered_keys = ["Bouncer", "Short", "Length", "Full"]
-        COLORMAP = 'Reds' # Reds: high run percentage / high average (bad) is darker
-    elif delivery_type == "Spin":
-        ordered_keys = ["Short", "Good", "Full", "Over Pitched"]
-        COLORMAP = 'Reds'
-    else:
-        fig, ax = plt.subplots(figsize=(2, FIG_HEIGHT)); 
-        ax.text(0.5, 0.5, "Invalid Type", ha='center', va='center', rotation=90); 
-        ax.axis('off'); 
-        return fig
-
+    # Define ordered keys for plotting order (far to near) - Only Seam
+    ordered_keys = ["Bouncer", "Short", "Length", "Full"]
+    COLORMAP = 'Reds' # Red indicates higher runs/run percentage (worse for bowler)
+    
     # 1. Data Preparation
     def assign_pitch_length(x):
         for length, bounds in PITCH_BINS_DICT.items():
@@ -524,7 +505,7 @@ def create_pacer_pitch_length_metrics(df_in, delivery_type):
         # Bowling Strike Rate (Balls / Wickets)
         lambda row: row["Balls"] / row["Wickets"] if row["Wickets"] > 0 else (0), axis=1
     )
-    # --- Calculate Run Percentage (still useful for color contrast) ---
+    # --- Calculate Run Percentage (for color mapping) ---
     total_runs = df_summary["Runs"].sum()
     df_summary["RunPercentage"] = (df_summary["Runs"] / total_runs) * 100 if total_runs > 0 else 0
 
@@ -681,10 +662,10 @@ with col_rhb:
     pitch_map_col, run_pct_col = st.columns([3, 1]) 
     with pitch_map_col:
         st.markdown("###### PITCHMAP (BOUNCE LOCATION)")
-        st.plotly_chart(create_pacer_pitch_map(df_rhb, DELIVERY_TYPE), use_container_width=True)    
+        st.plotly_chart(create_pacer_pitch_map(df_rhb), use_container_width=True)    
     with run_pct_col:
         st.markdown(" ")
-        st.pyplot(create_pacer_pitch_length_metrics(df_rhb, DELIVERY_TYPE), use_container_width=True)
+        st.pyplot(create_pacer_pitch_length_metrics(df_rhb), use_container_width=True)
 
 
 # === RIGHT COLUMN: AGAINST LEFT-HANDED BATSMEN (LHB) ===
@@ -705,7 +686,7 @@ with col_lhb:
     pitch_map_col, run_pct_col = st.columns([3, 1]) 
     with pitch_map_col:
         st.markdown("###### PITCHMAP (BOUNCE LOCATION)")
-        st.plotly_chart(create_pacer_pitch_map(df_lhb, DELIVERY_TYPE), use_container_width=True)    
+        st.plotly_chart(create_pacer_pitch_map(df_lhb), use_container_width=True)    
     with run_pct_col:
         st.markdown(" ")
-        st.pyplot(create_pacer_pitch_length_metrics(df_lhb, DELIVERY_TYPE), use_container_width=True)
+        st.pyplot(create_pacer_pitch_length_metrics(df_lhb), use_container_width=True)
