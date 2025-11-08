@@ -876,6 +876,7 @@ def create_directional_split(df_in, column_name, handedness_label):
     
     plt.tight_layout()
     return fig
+
 # =========================================================
 # PAGE SETUP AND FILTERING
 # =========================================================
@@ -894,7 +895,7 @@ df_raw = st.session_state['data_df']
 # 2. BASE FILTER: ONLY SEAM DELIVERIES
 df_seam_base = df_raw[df_raw["DeliveryType"] == "Seam"]
 
-st.title("⚡ Pacers Dashboard (Seam Bowling Analysis)")
+st.title("PACERS")
 
 # 3. FILTERS (Bowling Team and Bowler)
 filter_col1, filter_col2 = st.columns(2) 
@@ -948,16 +949,16 @@ col_rhb, col_lhb = st.columns(2)
 
 # === LEFT COLUMN: AGAINST RIGHT-HANDED BATSMEN (RHB) ===
 with col_rhb:
-    st.markdown("###  Right-Handed Batsmen (RHB)")
-    
+    st.markdown("###  Right-Handed Batsmen (RHB)")    
     # Chart 1a: Crease Beehive (using the new local function)
-    st.markdown("###### CREASE BEEHIVE (IMPACT LOCATION)")
+    st.markdown("###### CREASE BEEHIVE ")
     st.plotly_chart(create_pacer_crease_beehive(df_rhb, "RHB"), use_container_width=True)
 
     # Chart 1b: Lateral Performance Boxes (Bowling Avg)
     st.pyplot(create_pacer_lateral_performance_boxes(df_rhb, "RHB"), use_container_width=True)
     
     # Chart 2: ZONAL ANALYSIS (CBH Boxes)
+    st.markdown("###### CREASE BEEHIVE ZONES")
     st.pyplot(create_pacer_zonal_analysis(df_rhb, "RHB"), use_container_width=True)
 
     # Chart 3: PITCHMAP
@@ -973,7 +974,7 @@ with col_rhb:
      # Chart 4/5: RELEASE
     pace_col, release_col = st.columns([2, 2])
     with pace_col:
-        st.markdown("###### RELEASE SPEED DISTRIBUTION")
+        st.markdown("###### RELEASE SPEED")
         st.pyplot(create_pacer_release_speed_distribution(df_rhb, "RHB"), use_container_width=True)
     with release_col:
         st.markdown("###### RELEASE")
@@ -994,13 +995,14 @@ with col_lhb:
     st.markdown("###  Left-Handed Batsmen (LHB)")
 
     # Chart 1a: Crease Beehive (using the new local function)
-    st.markdown("###### CREASE BEEHIVE (IMPACT LOCATION)")
+    st.markdown("###### CREASE BEEHIVE")
     st.plotly_chart(create_pacer_crease_beehive(df_lhb, "LHB"), use_container_width=True)
 
     # Chart 1b: Lateral Performance Boxes (Bowling Avg)
     st.pyplot(create_pacer_lateral_performance_boxes(df_lhb, "LHB"), use_container_width=True)
 
     # Chart 2: ZONAL ANALYSIS (CBH Boxes)
+    st.markdown("###### CREASE BEEHIVE ZONES")
     st.pyplot(create_pacer_zonal_analysis(df_lhb, "LHB"), use_container_width=True)
 
     # Chart 3: PITCHMAP
@@ -1015,7 +1017,7 @@ with col_lhb:
     # Chart 4/5: RELEASE
     pace_col, release_col = st.columns([2, 2]) 
     with pace_col:
-        st.markdown("###### RELEASE SPEED DISTRIBUTION")
+        st.markdown("###### RELEASE SPEED")
         st.pyplot(create_pacer_release_speed_distribution(df_lhb, "LHB"), use_container_width=True)
     with release_col:
         st.markdown("###### RELEASE")
