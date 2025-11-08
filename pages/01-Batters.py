@@ -1,5 +1,3 @@
-# your_project/pages/Batters.py
-
 import streamlit as st
 import pandas as pd
 # 💥 Import ALL chart functions from the centralized utility file
@@ -12,7 +10,7 @@ from utils import (
 
 # Set page title (optional, but good practice)
 st.set_page_config(
-    page_title="Batters Dashboard",
+    page_title="BATTERS",
     layout="wide"
 )
 
@@ -27,8 +25,6 @@ if 'data_df' not in st.session_state:
     
 # Retrieve the full raw DataFrame
 df_raw = st.session_state['data_df']
-
-st.title("🏏 Batters Dashboard")
 
 # =========================================================
 # 🌟 FILTERS 🌟
@@ -119,7 +115,7 @@ col1, col2 = st.columns(2)
     
 # --- LEFT COLUMN: SEAM ANALYSIS ---
 with col1:
-    st.markdown("### 💨 SEAM BOWLING PERFORMANCE")
+    st.markdown("### SEAM")
 
     # Row 1: Zonal Analysis (Beehive Zones)
     st.markdown("###### CREASE BEEHIVE ZONES")
@@ -136,32 +132,28 @@ with col1:
     pitch_map_col, run_pct_col = st.columns([3, 1]) # 3:1 ratio
 
     with pitch_map_col:
-        st.markdown("###### PITCHMAP (BOUNCE LOCATION)")
-        st.plotly_chart(create_pitch_map(df_seam, "Seam"), use_container_width=True)
-        
+        st.markdown("###### PITCHMAP")
+        st.plotly_chart(create_pitch_map(df_seam, "Seam"), use_container_width=True)    
     with run_pct_col:
-        st.markdown("###### LENGTH RUN %")
+        st.markdown("###### ")
         st.pyplot(create_pitch_length_run_pct(df_seam, "Seam"), use_container_width=True)
         
     st.divider()
 
     # Row 5: Interception Side-On (Wide View)
-    st.markdown("###### INTERCEPTION SIDE-ON (HEIGHT)")
+    st.markdown("###### INTERCEPTION SIDE-ON")
     st.pyplot(create_interception_side_on(df_seam, "Seam"), use_container_width=True)
-
     # Row 6: Interception Side-On Bins (Length Bins)
-    st.markdown("###### INTERCEPTION DISTANCE SPLIT (RUN RATE)")
     st.pyplot(create_crease_width_split(df_seam, "Seam"), use_container_width=True)
 
     # Row 7: Interception Front-On and Scoring Areas (Side-by-Side)
     bottom_col_left, bottom_col_right = st.columns(2)
-
     with bottom_col_left:
-        st.markdown("###### INTERCEPTION TOP-ON (LATERAL WIDTH)")
+        st.markdown("###### INTERCEPTION TOP-ON")
         st.pyplot(create_interception_front_on(df_seam, "Seam"), use_container_width=True)
         
     with bottom_col_right:
-        st.markdown("###### WAGON WHEEL SCORING AREAS")    
+        st.markdown("###### SCORING AREAS")    
         # Two charts stacked vertically in the right column
         st.pyplot(create_wagon_wheel(df_seam, "Seam"), use_container_width=True)
         st.pyplot(create_left_right_split(df_seam, "Seam"), use_container_width=True)
@@ -172,17 +164,17 @@ with col1:
     final_col_swing, final_col_deviation = st.columns(2)
 
     with final_col_swing:
-        st.markdown("###### SWING DIRECTION")
+        st.markdown("###### SWING")
         st.pyplot(create_directional_split(df_seam, "Swing", "Swing", "Seam"), use_container_width=True)
 
     with final_col_deviation:
-        st.markdown("###### DEVIATION DIRECTION")
+        st.markdown("###### DEVIATION")
         st.pyplot(create_directional_split(df_seam, "Deviation", "Deviation", "Seam"), use_container_width=True)    
 
 
 # --- RIGHT COLUMN: SPIN ANALYSIS ---
 with col2:
-    st.markdown("### 🌀 SPIN BOWLING PERFORMANCE")
+    st.markdown("### SPINE")
     
     # Row 1: Zonal Analysis (Beehive Zones)
     st.markdown("###### CREASE BEEHIVE ZONES")
@@ -191,40 +183,37 @@ with col2:
     # Row 2: Crease Beehive Scatter
     st.markdown("###### CREASE BEEHIVE")
     st.plotly_chart(create_crease_beehive(df_spin, "Spin"), use_container_width=True)
-
     # Row 3: Lateral Performance Boxes
     st.pyplot(create_lateral_performance_boxes(df_spin, "Spin", batsman), use_container_width=True)
 
     # Row 4: Pitch Map and Vertical Run % Bar (Side-by-Side)
     pitch_map_col, run_pct_col = st.columns([3, 1]) 
-
     with pitch_map_col:
-        st.markdown("###### PITCHMAP (BOUNCE LOCATION)")
+        st.markdown("###### PITCHMAP")
         st.plotly_chart(create_pitch_map(df_spin, "Spin"), use_container_width=True)    
         
     with run_pct_col:
-        st.markdown("###### LENGTH RUN %")
+        st.markdown("###### ")
         st.pyplot(create_pitch_length_run_pct(df_spin, "Spin"), use_container_width=True)
         
     st.divider()
     
     # Row 5: Interception Side-On (Wide View)
-    st.markdown("###### INTERCEPTION SIDE-ON (HEIGHT)")
+    st.markdown("###### INTERCEPTION SIDE-ON")
     st.pyplot(create_interception_side_on(df_spin, "Spin"), use_container_width=True)
 
     # Row 6: Interception Side-On Bins (Length Bins)
-    st.markdown("###### INTERCEPTION DISTANCE SPLIT (RUN RATE)")
     st.pyplot(create_crease_width_split(df_spin, "Spin"), use_container_width=True)
 
     # Row 7: Interception Front-On and Scoring Areas (Side-by-Side)
     bottom_col_left, bottom_col_right = st.columns(2)
 
     with bottom_col_left:
-        st.markdown("###### INTERCEPTION TOP-ON (LATERAL WIDTH)")
+        st.markdown("###### INTERCEPTION TOP-ON")
         st.pyplot(create_interception_front_on(df_spin, "Spin"), use_container_width=True)
         
     with bottom_col_right:
-        st.markdown("###### WAGON WHEEL SCORING AREAS")
+        st.markdown("###### SCORING AREAS")
         st.pyplot(create_wagon_wheel(df_spin, "Spin"), use_container_width=True)
         st.pyplot(create_left_right_split(df_spin, "Spin"), use_container_width=True)
             
@@ -234,11 +223,11 @@ with col2:
     final_col_swing, final_col_deviation = st.columns(2)
 
     with final_col_swing:
-        st.markdown("###### DRIFT DIRECTION")
+        st.markdown("###### DRIFT")
         # For spin, we often look at 'Drift' instead of 'Swing'
         st.pyplot(create_directional_split(df_spin, "Swing", "Drift", "Spin"), use_container_width=True)
 
     with final_col_deviation:
-        st.markdown("###### TURN/SPIN DIRECTION")
+        st.markdown("###### TURN")
         # For spin, we often look at 'Turn' instead of 'Deviation'
         st.pyplot(create_directional_split(df_spin, "Deviation", "Turn", "Spin"), use_container_width=True)
