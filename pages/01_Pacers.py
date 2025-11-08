@@ -25,7 +25,7 @@ def create_pacer_crease_beehive(df_in, handedness_label):
         fig = go.Figure().update_layout(
             title=f"No data for Beehive ({handedness_label})", height=400,
             xaxis={'visible': False}, yaxis={'visible': False}
-        )
+        ) 
         return fig
 
     # --- Data Filtering ---
@@ -639,7 +639,7 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
     
     # 4. Chart Generation (Simple Horizontal Bar)
     
-    fig, ax = plt.subplots(figsize=(8, 4))
+    fig, ax = plt.subplots(figsize=(4,8))
     
     # Plot a single horizontal bar series
     ax.barh(
@@ -765,7 +765,7 @@ def create_pacer_release_zone_map(df_in, handedness_label):
         )
     # 6. Layout and Styling
     fig.update_layout(
-        height = 300,
+        height = 250,
         margin=dict(l=0, r=0, t=0, b=0), # Increased bottom margin for KPIs
         xaxis=dict(
             range=[-1.5, 1.5], 
