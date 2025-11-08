@@ -857,7 +857,7 @@ def create_directional_split(df_in, column_name, handedness_label):
                 0, 
                 f'{category.upper()}\n{pct:.0f}%', 
                 ha='center', va='center', 
-                color=text_color, fontsize=16, fontweight='bold',
+                color=text_color, fontsize=18, fontweight='bold',
                 # Path effects give text a sharp edge against the background
                 path_effects=[pe.withStroke(linewidth=2, foreground='none')] 
             )
@@ -881,7 +881,6 @@ def create_directional_split(df_in, column_name, handedness_label):
 # =========================================================
 
 st.set_page_config(
-    page_title="Pacers Dashboard",
     layout="wide"
 )
 
@@ -915,7 +914,7 @@ with filter_col1:
 
 with filter_col2:
     bowler = st.selectbox("Bowler Name", all_bowlers, index=0)
-
+st.header(f"{selected_pacer}")
 # 4. Apply Filters to the Base Seam Data
 df_filtered = df_seam_base.copy()
 
@@ -942,8 +941,6 @@ if "IsBatsmanRightHanded" not in df_filtered.columns:
 df_rhb = df_filtered[df_filtered["IsBatsmanRightHanded"] == True]
 df_lhb = df_filtered[df_filtered["IsBatsmanRightHanded"] == False]
 
-st.header(f"**Analysis Split: Right-Handed vs. Left-Handed Batsmen**")
-st.markdown(f"**RHB Deliveries:** {len(df_rhb)} | **LHB Deliveries:** {len(df_lhb)}")
 st.divider()
 
 # --- Display Layout ---
@@ -951,7 +948,7 @@ col_rhb, col_lhb = st.columns(2)
 
 # === LEFT COLUMN: AGAINST RIGHT-HANDED BATSMEN (RHB) ===
 with col_rhb:
-    st.markdown("### 🧍 Right-Handed Batsmen (RHB)")
+    st.markdown("###  Right-Handed Batsmen (RHB)")
     
     # Chart 1a: Crease Beehive (using the new local function)
     st.markdown("###### CREASE BEEHIVE (IMPACT LOCATION)")
@@ -994,7 +991,7 @@ with col_rhb:
 
 # === RIGHT COLUMN: AGAINST LEFT-HANDED BATSMEN (LHB) ===
 with col_lhb:
-    st.markdown("### 👤 Left-Handed Batsmen (LHB)")
+    st.markdown("###  Left-Handed Batsmen (LHB)")
 
     # Chart 1a: Crease Beehive (using the new local function)
     st.markdown("###### CREASE BEEHIVE (IMPACT LOCATION)")
