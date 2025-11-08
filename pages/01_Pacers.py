@@ -685,6 +685,97 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
     plt.tight_layout()
     return fig
 
+# --- CHART 5: RELEASE ZONE MAP ---
+def create_pacer_release_zone_map(df_in, handedness_label):
+    import plotly.graph_objects as go
+    
+    if df_in.empty:
+        return go.Figure().update_layout(title=f"No data for Release Zone Map vs. {handedness_label}", height=450)
+
+    # 1. Calculate KPIs
+    runs = df_in["Runs"].sum()
+    wickets = (df_in["Wicket"] == True).sum()
+    balls = len(df_in)
+    
+    average = runs / wickets if wickets > 0 else 0
+    strike_rate = balls / wickets if wickets > 0 else 0
+    
+    # Format KPIs
+    kpi_wickets = str(wickets)
+    kpi_average = f"{average:.1f}" if average > 0 else "-"
+    kpi_sr = f"{strike_rate:.1f}" if strike_rate > 0 else "-"
+
+    # 2. Setup Figure
+    fig = go.Figure()
+    
+    # Filter data for plotting
+    release_wickets = df_in[df_in["Wicket"] == True]
+    release_non_wickets = df_in[df_in["Wicket"] == False]
+    
+    # 3. Plot Data
+    
+    # Non-Wickets (light grey)
+    fig.add_trace(go.Scatter(
+        x=release_non_wickets["ReleaseY"], y=release_non_wickets["ReleaseZ"], mode='markers', name="No Wicket",
+        marker=dict(color='#D3D3D3', size=7, opacity=0.8), hoverinfo='none'
+    ))
+
+    # Wickets (red)
+    fig.add_trace(go.Scatter(
+        x=release_wickets["ReleaseY"], y=release_wickets["ReleaseZ"], mode='markers', name="Wicket",
+        marker=dict(color='red', size=9, line=dict(width=1, color="white")), opacity=1.0, hoverinfo='text',
+        text=[f"Wicket<br>Speed: {s:.1f} km/h" for s in release_wickets["ReleaseSpeed"]]
+    ))
+    
+    # 4. Add Stump Lines (Vertical)
+    # Lines for Off Stump (-0.18), Middle (0), Leg Stump (0.18)
+    stump_lines = [-0.18, 0, 0.18]
+    for y_val in stump_lines:
+        fig.add_vline(x=y_val, line=dict(color="#777777", dash="dot", width=1.0))
+        
+    # 5. Add KPI Annotations
+    kpi_data = [
+        ("Wickets", kpi_wickets, -1.0, "Total Wickets"),
+        ("Avg", kpi_average, 0.0, "Bowling Average"),
+        ("SR", kpi_sr, 1.0, "Strike Rate"),
+    ]
+    
+    # Add KPI Headers
+    for label, _, x_pos, _ in kpi_data:
+        fig.add_annotation(
+            x=x_pos, y=-0.25, xref="x", yref="paper", 
+            text=f"<b>{label.upper()}</b>", showarrow=False, 
+            font=dict(size=11, color="grey")
+        )
+
+    # Add KPI Values
+    for _, value, x_pos, _ in kpi_data:
+        fig.add_annotation(
+            x=x_pos, y=-0.35, xref="x", yref="paper", 
+            text=f"<b>{value}</b>", showarrow=False, 
+            font=dict(size=16, color="black")
+        )
+    
+    # 6. Layout and Styling
+    fig.update_layout(
+        title=f"RELEASE ZONE MAP vs. {handedness_label} (N={balls})",
+        height = 450,
+        margin=dict(l=30, r=30, t=50, b=100), # Increased bottom margin for KPIs
+        xaxis=dict(
+            title="Release Y (Lateral - meters)",
+            range=[-1.5, 1.5], 
+            showgrid=False, zeroline=False
+        ),
+        yaxis=dict(
+            title="Release Z (Vertical - meters)",
+            range=[0, 2.5], 
+            showgrid=False, zeroline=False
+        ), 
+        plot_bgcolor="white", paper_bgcolor="white", showlegend=False
+    )
+    
+    return fig
+
 # =========================================================
 # PAGE SETUP AND FILTERING
 # =========================================================
@@ -811,3 +902,11 @@ with col_lhb:
     st.markdown("###### RELEASE SPEED DISTRIBUTION")
     st.pyplot(create_pacer_release_speed_distribution(df_lhb, "LHB"), use_container_width=True)
 
+    # Chart 4/5: RELEASE
+    PACE_col, release_col = st.columns([2, 2]) 
+    with release_col:
+        st.markdown("###### RELEASE")
+        st.plotly_chart(create_pacer_release_zone_map(df_rhb, "RHB"), use_container_width=True)   
+    with release_col:
+        st.markdown("###### RELEASE")
+        st.plotly_chart(create_pacer_release_zone_map(df_rhb, "RHB"), use_container_width=True)
