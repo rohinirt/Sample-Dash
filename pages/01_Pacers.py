@@ -28,17 +28,9 @@ def create_pacer_crease_beehive(df_in, handedness_label):
 
     # --- Data Filtering ---
     wickets = df_in[df_in["Wicket"] == True]
-    non_wickets_all = df_in[df_in["Wicket"] == False]
-
-    # Boundaries (Runs = 4 or 6) from Non-Wickets
-    boundaries = non_wickets_all[
-        (non_wickets_all["Runs"] == 4) | (non_wickets_all["Runs"] == 6)
-    ]
+    rregular_balls = df_in[df_in["Wicket"] == False]
     
-    # Regular Balls (Runs != 4 and Runs != 6)
-    regular_balls = non_wickets_all[
-        (non_wickets_all["Runs"] != 4) & (non_wickets_all["Runs"] != 6)
-    ]
+
     
     fig_cbh = go.Figure()
 
@@ -46,12 +38,6 @@ def create_pacer_crease_beehive(df_in, handedness_label):
     fig_cbh.add_trace(go.Scatter(
         x=regular_balls["CreaseY"], y=regular_balls["CreaseZ"], mode='markers', name="Regular Ball",
         marker=dict(color='lightgrey', size=10, line=dict(width=1, color="white"), opacity=0.95)
-    ))
-
-    # 2. NEW TRACE: Boundary Balls (Runs 4 or 6) - Royal Blue
-    fig_cbh.add_trace(go.Scatter(
-        x=boundaries["CreaseY"], y=boundaries["CreaseZ"], mode='markers', name="Boundary",
-        marker=dict(color='royalblue', size=12, line=dict(width=1, color="white"), opacity=0.95)
     ))
 
     # 3. TRACE: Wickets - Red
