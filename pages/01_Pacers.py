@@ -28,7 +28,7 @@ def create_pacer_crease_beehive(df_in, handedness_label):
 
     # --- Data Filtering ---
     wickets = df_in[df_in["Wicket"] == True]
-    rregular_balls = df_in[df_in["Wicket"] == False]
+    regular_balls = df_in[df_in["Wicket"] == False]
     
 
     
