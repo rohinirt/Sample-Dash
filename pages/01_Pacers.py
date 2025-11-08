@@ -781,12 +781,20 @@ def create_pacer_release_zone_map(df_in, handedness_label):
     return fig
 
 # --- CHARTS 6 & 7: SWING/DEVIATION DIRECTIONAL SPLIT (100% Stacked Bar) ---
+# --- CHARTS 6 & 7: SWING/DEVIATION DIRECTIONAL SPLIT (100% Stacked Bar) ---
 def create_directional_split(df_in, column_name, handedness_label):
+    from matplotlib import pyplot as plt
+    import pandas as pd
+    import matplotlib.patheffects as pe 
+    import matplotlib.colors as mcolors
+    import matplotlib.cm as cm
+
     if df_in.empty or column_name not in df_in.columns:
         fig, ax = plt.subplots(figsize=(8, 1)); ax.text(0.5, 0.5, f"No Data or Missing '{column_name}'", ha='center', va='center'); ax.axis('off'); return fig
 
     # 1. Categorization (IF < 0 THEN "LEFT" ELSE "RIGHT")
     df = df_in.copy()
+    # Note: Assuming negative value means movement towards the left
     df['Direction'] = df[column_name].apply(lambda x: 'LEFT' if x < 0 else 'RIGHT')
     
     # 2. Calculation
@@ -798,7 +806,7 @@ def create_directional_split(df_in, column_name, handedness_label):
     df_counts.columns = ['Direction', 'Count']
     df_counts['Percentage'] = (df_counts['Count'] / total_balls) * 100
     
-    # 3. Preparation for Stacked Bar (Ensuring both categories are present)
+    # 3. Preparation for Stacked Bar
     df_plot = pd.DataFrame({
         'Direction': ['LEFT', 'RIGHT'],
         'Percentage': [0.0, 0.0]
@@ -811,13 +819,11 @@ def create_directional_split(df_in, column_name, handedness_label):
     
     # 4. Chart Generation
     
-    fig, ax = plt.subplots(figsize=(8, 1.5)) # Slightly taller for title/padding
+    fig, ax = plt.subplots(figsize=(8, 1.5))
     
-    # Define colors (Red hue as requested)
-    colors = {
-        'LEFT': 'lightcoral', # Lighter shade for Left movement
-        'RIGHT': 'darkred'    # Darker shade for Right movement
-    }
+    # Define Colormap: 'Reds_r' is reversed Reds, applying a darker shade to the larger percentage
+    cmap = cm.get_cmap('Reds_r') 
+    norm = mcolors.Normalize(vmin=0, vmax=100)
     
     # Plotting order: LEFT first (starts at 0), then RIGHT
     categories = ['LEFT', 'RIGHT']
@@ -826,55 +832,48 @@ def create_directional_split(df_in, column_name, handedness_label):
     for category in categories:
         pct = df_plot.loc['Percentage', category]
         
+        # Get dynamic color based on percentage
+        bar_color = cmap(norm(pct))
+        
         # Plot the bar segment
         ax.barh(
             y=[0], 
             width=pct, 
             left=left, 
-            color=colors[category], 
+            color=bar_color, 
             label=category,
             height=0.8,
             edgecolor='black',
             linewidth=0.5
         )
         
-        # Add percentage label (using outline for visibility on both colors)
-        if pct > 0.5: # Only label segments greater than 0.5%
+        # Add percentage label (using outline for visibility)
+        if pct > 0.5:
+            # Use black text if segment is light (low percentage), white otherwise
+            text_color = 'black' if pct < 30 else 'white'
+            
             ax.text(
                 left + pct / 2, 
                 0, 
-                f'{pct:.1f}%', 
+                f'{category.upper()}\n{pct:.1f}%', 
                 ha='center', va='center', 
-                color='white', fontsize=12, fontweight='bold',
-                path_effects=[pe.withStroke(linewidth=2, foreground='black')]
+                color=text_color, fontsize=12, fontweight='bold',
+                # Path effects give text a sharp edge against the background
+                path_effects=[pe.withStroke(linewidth=2, foreground='none')] 
             )
         
         left += pct
 
-    # 5. Formatting
-    
-    # Title
-    title_map = {
-        'Swing': 'SWING DIRECTION SPLIT',
-        'Deviation': 'DEVIATION DIRECTION SPLIT'
-    }
-    chart_title = title_map.get(column_name, f'{column_name.upper()} DIRECTION SPLIT')
-    
-    ax.set_title(f"{chart_title} vs. {handedness_label} (N={total_balls})", fontsize=14, fontweight='bold', pad=15)
-    
-    # Clean up axes
+    # 5. Formatting (Minimalist Look)
+    # Hide all axis ticks, labels, and borders
     ax.set_xlim(0, 100)
-    ax.set_xticks([]) # Hide x-axis ticks
-    ax.set_yticks([0])
-    ax.set_yticklabels([f"Total {column_name} Movement"])
+    ax.set_xticks([]) 
+    ax.set_yticks([]) 
+    ax.set_yticklabels([])
     
-    # Add Legend above the bar
-    ax.legend(loc='lower center', bbox_to_anchor=(0.5, 1.0), ncol=2, frameon=False)
-    
-    # Hide all spines (box border)
     for spine in ax.spines.values():
         spine.set_visible(False)
-
+    
     plt.tight_layout()
     return fig
 # =========================================================
