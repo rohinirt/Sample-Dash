@@ -595,8 +595,7 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
         "140-150": [140, 150],
         "130-140": [130, 140],
         "120-130": [120, 130],
-        "<120": [0, 120],
-            
+        "<120": [0, 120]      
     }
     # Define plotting order (Slowest to Fastest)
     ordered_bins = list(SPEED_BINS.keys())
