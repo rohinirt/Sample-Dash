@@ -592,11 +592,12 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
     
     # 1. Define Speed Bins (in km/h) with simplified labels
     SPEED_BINS = {
-        "<120": [0, 120],
-        "120-130": [120, 130],
-        "130-140": [130, 140],
+        ">150": [150, 200],
         "140-150": [140, 150],
-        ">150": [150, 200]
+        "130-140": [130, 140],
+        "120-130": [120, 130],
+        "<120": [0, 120],
+            
     }
     # Define plotting order (Slowest to Fastest)
     ordered_bins = list(SPEED_BINS.keys())
@@ -644,16 +645,12 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
     ax.barh(
         plot_data.index,
         plot_data["Percentage"],
-        color='steelblue', # Single, uniform color
+        color='Red', # Single, uniform color
         height=0.6,
         edgecolor='black',
         linewidth=0.5
     )
 
-    # 5. Add Labels and Formatting
-    ax.set_title(f"Release Speed Distribution vs. {handedness_label} (Total Balls: {total_balls})", fontsize=14, fontweight='bold')
-    ax.set_xlabel("Percentage of Total Balls (%)", fontsize=10)
-    ax.set_ylabel("Release Speed (km/h)", fontsize=10)
     
     # Add percentage and count labels
     for i, (bin_label, row) in enumerate(plot_data.iterrows()):
