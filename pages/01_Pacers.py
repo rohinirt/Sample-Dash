@@ -637,7 +637,7 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
     
     # 4. Chart Generation (Simple Horizontal Bar)
     
-    fig, ax = plt.subplots(figsize=(4,4))
+    fig, ax = plt.subplots(figsize=(4,4.4))
     
     # Plot a single horizontal bar series
     ax.barh(
@@ -657,7 +657,7 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
         
         if pct > 0:
             # Display percentage and raw count (e.g., 25.4% (32 balls))
-            label_text = f'{pct:.1f}% ({int(count)} balls)'
+            label_text = f'{pct:.1f}%'
             
             # Placement logic: Inside if bar is > 10%, otherwise outside
             x_pos = pct - 1 if pct > 10 else pct + 0.5
@@ -668,18 +668,15 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
                 x_pos, 
                 i, 
                 label_text, 
-                ha=ha, va='center', fontsize=9, color=text_color, fontweight='bold'
+                ha=ha, va='center', fontsize=12, color=text_color, fontweight='bold'
             )
 
     # Set X-axis limit slightly higher than the max percentage for clean labels
     max_pct = plot_data["Percentage"].max()
     ax.set_xlim(0, max(max_pct * 1.1, 10)) 
     
-    # Invert Y-axis to potentially show fastest at top, or keep as is. Keeping natural order (slowest at bottom)
-    # ax.invert_yaxis() 
     
     # Remove legend as there is only one series
-    ax.grid(axis='x', linestyle='--', alpha=0.5)
     plt.tight_layout()
     return fig
 
