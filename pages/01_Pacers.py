@@ -639,7 +639,7 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
     
     # 4. Chart Generation (Simple Horizontal Bar)
     
-    fig, ax = plt.subplots(figsize=(4,8))
+    fig, ax = plt.subplots(figsize=(4,6))
     
     # Plot a single horizontal bar series
     ax.barh(
