@@ -124,6 +124,7 @@ with col1:
     # Row 1: Zonal Analysis (Beehive Zones)
     st.markdown("###### CREASE BEEHIVE ZONES")
     st.pyplot(create_zonal_analysis(df_seam, batsman, "Seam"), use_container_width=True)
+    st.markdown("---")
     
     # Row 2: Crease Beehive Scatter
     st.markdown("###### CREASE BEEHIVE")
