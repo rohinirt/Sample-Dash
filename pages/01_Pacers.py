@@ -583,7 +583,7 @@ def create_pacer_pitch_length_metrics(df_in):
 
     plt.tight_layout(pad=0.9)
     return fig_stack
--
+    
 # --- CHART 4: RELEASE SPEED DISTRIBUTION ---
 def create_pacer_release_speed_distribution(df_in, handedness_label):
     from matplotlib import pyplot as plt
