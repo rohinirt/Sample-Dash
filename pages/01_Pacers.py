@@ -663,7 +663,7 @@ with col_rhb:
         st.markdown("###### PITCHMAP (BOUNCE LOCATION)")
         st.plotly_chart(create_pacer_pitch_map(df_rhb), use_container_width=True)    
     with run_pct_col:
-        st.markdown(" ")
+        st.markdown("##### ")
         st.pyplot(create_pacer_pitch_length_metrics(df_rhb), use_container_width=True)
 
 
@@ -687,5 +687,5 @@ with col_lhb:
         st.markdown("###### PITCHMAP (BOUNCE LOCATION)")
         st.plotly_chart(create_pacer_pitch_map(df_lhb), use_container_width=True)    
     with run_pct_col:
-        st.markdown(" ")
+        st.markdown("##### ")
         st.pyplot(create_pacer_pitch_length_metrics(df_lhb), use_container_width=True)
