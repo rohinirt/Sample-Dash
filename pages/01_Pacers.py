@@ -181,13 +181,14 @@ def create_pacer_lateral_performance_boxes(df_in, handedness_label):
     return fig_boxes
 
 # Place this function inside pages/Pacers.py, along with create_pacer_crease_beehive
-
+# --- CHART 2b: LATERAL PERFORMANCE BOXES (BOWLING AVERAGE) ---
 def create_pacer_lateral_performance_boxes(df_in, handedness_label):
-    from matplotlib import cm, colors, patches
-    import matplotlib.pyplot as plt
-    import matplotlib.colors as mcolors # Explicitly import mcolors
-
+    # This function now correctly reverses the lateral zones for LHB for visual consistency.
     df_lateral = df_in.copy()
+    
+    # Check if we are dealing with LHB data (important for zone ordering)
+    is_lhb = handedness_label == "LHB"
+
     if df_lateral.empty:
         fig, ax = plt.subplots(figsize=(7, 1)); ax.text(0.5, 0.5, f"No Data ({handedness_label})", ha='center', va='center'); ax.axis('off'); return fig    
 
@@ -195,19 +196,21 @@ def create_pacer_lateral_performance_boxes(df_in, handedness_label):
     def assign_lateral_zone(row):
         y = row["CreaseY"]
         if row["IsBatsmanRightHanded"] == True:
+            # RHB: Left side of pitch is Off (negative Y), Right side is Leg (positive Y)
             if y > 0.18: return "LEG"
             elif y >= -0.18: return "STUMPS"
             elif y > -0.65: return "OUTSIDE OFF"
             else: return "WAY OUTSIDE OFF"
         else: # Left-Handed
-            if y > 0.65: return "WAY OUTSIDE OFF"
+            # LHB: Left side of pitch is Leg (negative Y), Right side is Off (positive Y)
+            if y > 0.65: return "WAY OUTSIDE OFF" # Off side
             elif y > 0.18: return "OUTSIDE OFF"
             elif y >= -0.18: return "STUMPS"
-            else: return "LEG"
+            else: return "LEG" # Leg side
     
     df_lateral["LateralZone"] = df_lateral.apply(assign_lateral_zone, axis=1)
     
-    # 2. Calculate Summary Metrics (This is Bowling Average logic)
+    # 2. Calculate Summary Metrics
     summary = (
         df_lateral.groupby("LateralZone").agg(
             Runs=("Runs", "sum"), 
@@ -216,14 +219,22 @@ def create_pacer_lateral_performance_boxes(df_in, handedness_label):
         )
     )
     
-    # Order the zones from Way Outside Off to Leg (Left to Right)
-    ordered_zones = ["WAY OUTSIDE OFF", "OUTSIDE OFF", "STUMPS", "LEG"]
+    # 3. Determine Zone Order based on handedness
+    # Base order (RHB): Off side to Leg side
+    base_ordered_zones = ["WAY OUTSIDE OFF", "OUTSIDE OFF", "STUMPS", "LEG"]
+    
+    if is_lhb:
+        # Reverse order for LHB: Leg side to Off side
+        ordered_zones = base_ordered_zones[::-1]
+    else:
+        ordered_zones = base_ordered_zones
+        
     summary = summary.reindex(ordered_zones).fillna(0)
 
     # Calculate Bowling Average (Runs / Wickets)
     summary["Avg Runs/Wicket"] = summary.apply(lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else 0, axis=1)
     
-    # 3. Chart Setup
+    # 4. Chart Setup
     fig_boxes, ax_boxes = plt.subplots(figsize=(7, 1)) 
     
     num_regions = len(ordered_zones)
@@ -232,12 +243,11 @@ def create_pacer_lateral_performance_boxes(df_in, handedness_label):
     
     # Color Normalization (based on Average)
     avg_values = summary["Avg Runs/Wicket"]
-    # Normalize color range: Max Avg is capped at 50 for consistent color scaling
     avg_max_cap = 50 
     norm = mcolors.Normalize(vmin=0, vmax=avg_max_cap)
-    cmap = cm.get_cmap('Reds') # Lower average (better bowling) is usually darker/redder
+    cmap = cm.get_cmap('Reds') 
     
-    # 4. Plotting Equal Boxes (Horizontal Heatmap)
+    # 5. Plotting Equal Boxes (Horizontal Heatmap)
     for index, row in summary.iterrows():
         avg = row["Avg Runs/Wicket"]
         wkts = int(row["Wickets"])
@@ -257,7 +267,6 @@ def create_pacer_lateral_performance_boxes(df_in, handedness_label):
         # Calculate text color for contrast
         if row["Balls"] > 0:
             r, g, b, a = color
-            # Calculate luminosity for text contrast
             luminosity = 0.2126 * r + 0.7152 * g + 0.0722 * b
             text_color = 'white' if luminosity < 0.5 else 'black'
         else:
@@ -275,13 +284,15 @@ def create_pacer_lateral_performance_boxes(df_in, handedness_label):
         
         left += box_width
         
-    # 5. Styling
+    # 6. Styling
     ax_boxes.set_title(f"Lateral Bowling Performance vs. {handedness_label}", fontsize=12, fontweight='bold')
     ax_boxes.set_xlim(0, 1); ax_boxes.set_ylim(0, 1)
     ax_boxes.axis('off') 
 
     plt.tight_layout(pad=0.5)
     return fig_boxes
+    
+
 # =========================================================
 # PAGE SETUP AND FILTERING
 # =========================================================
