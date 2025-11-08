@@ -758,16 +758,13 @@ def create_pacer_release_zone_map(df_in, handedness_label):
     
     # 6. Layout and Styling
     fig.update_layout(
-        title=f"RELEASE ZONE MAP vs. {handedness_label} (N={balls})",
-        height = 450,
+        height = 300,
         margin=dict(l=30, r=30, t=50, b=100), # Increased bottom margin for KPIs
         xaxis=dict(
-            title="Release Y (Lateral - meters)",
             range=[-1.5, 1.5], 
             showgrid=False, zeroline=False
         ),
         yaxis=dict(
-            title="Release Z (Vertical - meters)",
             range=[0, 2.5], 
             showgrid=False, zeroline=False
         ), 
