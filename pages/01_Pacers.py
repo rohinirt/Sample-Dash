@@ -585,6 +585,7 @@ def create_pacer_pitch_length_metrics(df_in):
     return fig_stack
 
 # --- CHART 4: RELEASE SPEED DISTRIBUTION ---
+# --- CHART 4: RELEASE SPEED DISTRIBUTION ---
 def create_pacer_release_speed_distribution(df_in, handedness_label):
     from matplotlib import pyplot as plt
     import pandas as pd
@@ -632,15 +633,20 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
     # Calculate percentage
     df_counts["Percentage"] = (df_counts["Count"] / df_counts["Total"]) * 100
 
-    # Pivot data for stacking
-    df_pivot = df_counts.pivot(index="SpeedBin", columns="Outcome", values="Percentage").fillna(0)
+    # PIVOT DATA FIX: Pivot on Percentage, then merge the Total column back in
+    df_pivot_pct = df_counts.pivot(index="SpeedBin", columns="Outcome", values="Percentage").fillna(0)
+    
+    # Merge the Total back in using the index (SpeedBin)
+    df_pivot = pd.merge(df_pivot_pct, total_balls.set_index("SpeedBin"), 
+                        left_index=True, right_index=True, how="left").fillna(0)
     
     # Reindex to ensure correct plotting order
     df_pivot = df_pivot.reindex(ordered_bins, fill_value=0)
 
     # Reorder columns for stacking (Wickets on top, Other on bottom)
     outcome_order = ["Other", "Boundary", "Wicket"]
-    df_pivot = df_pivot.reindex(columns=[col for col in outcome_order if col in df_pivot.columns], fill_value=0)
+    # Filter the list of columns to ensure "Total" isn't included in the bar plotting logic
+    plot_columns = [col for col in outcome_order if col in df_pivot.columns]
     
     # 4. Chart Generation (Horizontal Stacked Bar)
     
@@ -655,7 +661,7 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
 
     # Plot the stacked bars
     left = 0
-    for outcome in df_pivot.columns:
+    for outcome in plot_columns: # Use the filtered list of plot columns
         # Plot each segment for the current outcome
         ax.barh(
             df_pivot.index, 
@@ -677,9 +683,13 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
     
     # Add percentage labels inside the bars
     left_cumulative = pd.Series([0.0] * len(df_pivot))
-    for outcome in df_pivot.columns:
+    for outcome in plot_columns: # Use the filtered list of plot columns
         percentages = df_pivot[outcome].values
-        for i, (pct, total) in enumerate(zip(percentages, df_pivot['Total'])):
+        
+        # Get the corresponding totals
+        total_in_bin = df_pivot['Total'].values 
+        
+        for i, (pct, total) in enumerate(zip(percentages, total_in_bin)):
             if pct > 3: # Only label segments greater than 3%
                 x_pos = left_cumulative.iloc[i] + (pct / 2)
                 y_pos = i
