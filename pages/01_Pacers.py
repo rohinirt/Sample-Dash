@@ -909,4 +909,4 @@ with col_lhb:
         st.plotly_chart(create_pacer_release_zone_map(df_rhb, "RHB"), use_container_width=True)   
     with release_col:
         st.markdown("###### RELEASE")
-        st.plotly_chart(create_pacer_release_zone_map(df_rhb, "RHB"), use_container_width=True)
+        st.plotly_chart(create_pacer_release_zone_map(df_lhb, "LHB"), use_container_width=True)
