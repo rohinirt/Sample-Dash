@@ -872,8 +872,14 @@ with col_rhb:
         st.markdown("##### ")
         st.pyplot(create_pacer_pitch_length_metrics(df_rhb), use_container_width=True)
 
+
+     # Chart 4/5: RELEASE
+    pace_col, release_col = st.columns([2, 2]) 
     st.markdown("###### RELEASE SPEED DISTRIBUTION")
     st.pyplot(create_pacer_release_speed_distribution(df_rhb, "RHB"), use_container_width=True)
+    with release_col:
+        st.markdown("###### RELEASE")
+        st.plotly_chart(create_pacer_release_zone_map(df_rhb, "RHB"), use_container_width=True)
 
 
 # === RIGHT COLUMN: AGAINST LEFT-HANDED BATSMEN (LHB) ===
@@ -899,14 +905,12 @@ with col_lhb:
         st.markdown("##### ")
         st.pyplot(create_pacer_pitch_length_metrics(df_lhb), use_container_width=True)
 
-    st.markdown("###### RELEASE SPEED DISTRIBUTION")
-    st.pyplot(create_pacer_release_speed_distribution(df_lhb, "LHB"), use_container_width=True)
 
     # Chart 4/5: RELEASE
     pace_col, release_col = st.columns([2, 2]) 
     with pace_col:
-        st.markdown("###### RELEASE")
-        st.plotly_chart(create_pacer_release_zone_map(df_rhb, "RHB"), use_container_width=True)   
+        st.markdown("###### RELEASE SPEED DISTRIBUTION")
+        st.pyplot(create_pacer_release_speed_distribution(df_lhb, "LHB"), use_container_width=True)
     with release_col:
         st.markdown("###### RELEASE")
         st.plotly_chart(create_pacer_release_zone_map(df_lhb, "LHB"), use_container_width=True)
