@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-# Import the new function and necessary existing functions from utils
+# Import the necessary functions from utils
 
 # Set page configuration
 st.set_page_config(
@@ -32,19 +32,23 @@ filter_col1, filter_col2 = st.columns(2)
 
 # --- Filter Logic ---
 
-# Get all bowling teams (use the original raw data for comprehensive team lists if needed, 
-# but filtering by Batting Team on the Batters page seems correct based on the data structure.)
-# Since we are filtering by *Bowler*, we need the list of BattingTeams they faced. 
-# We'll stick to filtering the data itself for consistency, assuming BattingTeam is still a useful metric.
-all_teams = ["All"] + sorted(df_seam_base["BattingTeam"].dropna().unique().tolist())
-all_bowlers = ["All"] + sorted(df_seam_base["BowlerName"].dropna().unique().tolist()) # Assuming 'BowlerName' column exists
+# Check if 'BowlingTeam' column exists in the data
+# If it doesn't, we will fall back to using 'BattingTeam' but warn the user.
+if "BowlingTeam" in df_seam_base.columns:
+    team_column = "BowlingTeam"
+else:
+    # Using 'BattingTeam' as a placeholder if 'BowlingTeam' is missing
+    team_column = "BattingTeam" 
+    st.warning("The 'BowlingTeam' column was not found. Displaying all Batting Teams as a fallback.")
 
-# 1. Bowling Team Filter (using BattingTeam for simplicity, or assume 'BowlingTeam' exists)
-# NOTE: The provided column list only contains 'BattingTeam'. If a 'BowlingTeam' column exists 
-# in the actual uploaded data, you should use that instead. Sticking to 'BattingTeam' for now.
+# Get all teams based on the determined column
+all_teams = ["All"] + sorted(df_seam_base[team_column].dropna().unique().tolist())
+# Assuming 'BowlerName' column exists
+all_bowlers = ["All"] + sorted(df_seam_base["BowlerName"].dropna().unique().tolist()) 
+
+# 1. Bowling Team Filter (CORRECTED)
 with filter_col1:
-    # A dedicated 'BowlingTeam' column would be better here if available.
-    bat_team = st.selectbox("Opponent Batting Team", all_teams, index=0)
+    bowl_team = st.selectbox("Bowling Team", all_teams, index=0)
 
 # 2. Bowler Name Filter 
 with filter_col2:
@@ -55,8 +59,9 @@ with filter_col2:
 # =========================================================
 df_filtered = df_seam_base.copy()
 
-if bat_team != "All":
-    df_filtered = df_filtered[df_filtered["BattingTeam"] == bat_team]
+# Apply Bowling Team filter using the determined column name
+if bowl_team != "All":
+    df_filtered = df_filtered[df_filtered[team_column] == bowl_team]
     
 # Apply Bowler filter (assuming 'BowlerName' column exists)
 if bowler != "All":
