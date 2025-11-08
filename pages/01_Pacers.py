@@ -442,7 +442,6 @@ def create_pacer_pitch_map(df_in):
 
     # 4. Layout
     fig_pitch.update_layout(
-        title=f"PITCH MAP (Bounce Location) vs. {df_in['IsBatsmanRightHanded'].map({True: 'RHB', False: 'LHB'}).iloc[0] if not df_in.empty else 'N/A'}",
         height = 400,
         margin=dict(l=0, r=100, t=30, b=10),
         xaxis=dict(range=[-1.5, 1.5], showgrid=False, zeroline=False, visible=False),
