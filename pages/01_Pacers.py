@@ -874,9 +874,10 @@ with col_rhb:
 
 
      # Chart 4/5: RELEASE
-    pace_col, release_col = st.columns([2, 2]) 
-    st.markdown("###### RELEASE SPEED DISTRIBUTION")
-    st.pyplot(create_pacer_release_speed_distribution(df_rhb, "RHB"), use_container_width=True)
+    pace_col, release_col = st.columns([2, 2])
+    with pace_col:
+        st.markdown("###### RELEASE SPEED DISTRIBUTION")
+        st.pyplot(create_pacer_release_speed_distribution(df_rhb, "RHB"), use_container_width=True)
     with release_col:
         st.markdown("###### RELEASE")
         st.plotly_chart(create_pacer_release_zone_map(df_rhb, "RHB"), use_container_width=True)
