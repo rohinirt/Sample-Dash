@@ -342,7 +342,7 @@ def create_pacer_zonal_analysis(df_in, handedness_label):
     # Assuming mcolors is imported
     norm = mcolors.Normalize(vmin=0, vmax=avg_max if avg_max > avg_max_cap else avg_max_cap)
     # Assuming cm is imported
-    cmap = cm.get_cmap('Reds') # Higher Average (worse bowling) is darker red
+    cmap = cm.get_cmap('Red_r') # Higher Average (worse bowling) is darker red
 
     # Assuming plt and patches are imported
     fig_boxes, ax = plt.subplots(figsize=(3,2), subplot_kw={'xticks': [], 'yticks': []}) 
@@ -373,7 +373,7 @@ def create_pacer_zonal_analysis(df_in, handedness_label):
             text_color = 'white' if luminosity < 0.5 else 'black'
 
         ax.text(x1 + w / 2, y1 + h / 2, 
-        f"R: {runs}\nW: {wkts}\nSR: {bowling_sr:.1f}\nA: {bowling_avg:.1f}", 
+        f"W: {wkts}\nSR: {bowling_sr:.1f}\nA: {bowling_avg:.1f}", 
         ha="center", 
         va="center", 
         fontsize=5,
