@@ -79,7 +79,6 @@ def create_pacer_crease_beehive(df_in, handedness_label):
         xaxis=dict(range=[-1.5, 1.5], showgrid=False, zeroline=False, visible=False, scaleanchor="y", scaleratio=1),
         yaxis=dict(range=[0, 2], showgrid=False, zeroline=True, visible=False),
         plot_bgcolor="white", paper_bgcolor="white", showlegend=False,
-        title=f"Crease Beehive vs. {handedness_label}" # Add title
     )
     
     return fig_cbh
@@ -181,7 +180,6 @@ def create_pacer_lateral_performance_boxes(df_in, handedness_label):
         left += box_width
         
     # 5. Styling
-    ax_boxes.set_title(f"Lateral Bowling Performance vs. {handedness_label}", fontsize=12, fontweight='bold')
     ax_boxes.set_xlim(0, 1); ax_boxes.set_ylim(0, 1)
     ax_boxes.axis('off') 
 
@@ -292,7 +290,6 @@ def create_pacer_lateral_performance_boxes(df_in, handedness_label):
         left += box_width
         
     # 6. Styling
-    ax_boxes.set_title(f"Lateral Bowling Performance vs. {handedness_label}", fontsize=12, fontweight='bold')
     ax_boxes.set_xlim(0, 1); ax_boxes.set_ylim(0, 1)
     ax_boxes.axis('off') 
 
