@@ -914,7 +914,7 @@ with filter_col1:
 
 with filter_col2:
     bowler = st.selectbox("Bowler Name", all_bowlers, index=0)
-st.header(f"{selected_pacer}")
+st.header(f"{bowler}")
 # 4. Apply Filters to the Base Seam Data
 df_filtered = df_seam_base.copy()
 
