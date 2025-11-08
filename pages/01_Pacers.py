@@ -733,29 +733,36 @@ def create_pacer_release_zone_map(df_in, handedness_label):
     for y_val in stump_lines:
         fig.add_vline(x=y_val, line=dict(color="#777777", dash="dot", width=1.0))
         
-    # 5. Add KPI Annotations
+    # 5. Add KPI Annotations (FIXED TO XREF="PAPER")
+    
+    # Map data coordinates (-1.0, 0.0, 1.0) to paper coordinates (0.1, 0.5, 0.9)
+    paper_x_map = {
+        -1.0: 0.1, 
+        0.0: 0.5, 
+        1.0: 0.9
+    }
+    
     kpi_data = [
-        ("Wickets", kpi_wickets, -1.0, "Total Wickets"),
-        ("Avg", kpi_average, 0.0, "Bowling Average"),
-        ("SR", kpi_sr, 1.0, "Strike Rate"),
+        ("Wickets", kpi_wickets, -1.0),
+        ("Avg", kpi_average, 0.0),
+        ("SR", kpi_sr, 1.0),
     ]
     
     # Add KPI Headers
-    for label, _, x_pos, _ in kpi_data:
+    for label, _, x_data_pos in kpi_data:
         fig.add_annotation(
-            x=x_pos, y=-0.25, xref="x", yref="paper", 
-            text=f"<b>{label.upper()}</b>", showarrow=False, 
+            x=paper_x_map[x_data_pos], y=-0.25, xref="paper", yref="paper", 
+            text=f"<b>{label.upper()}</b>", showarrow=False, xanchor='center',
             font=dict(size=11, color="grey")
         )
 
     # Add KPI Values
-    for _, value, x_pos, _ in kpi_data:
+    for _, value, x_data_pos in kpi_data:
         fig.add_annotation(
-            x=x_pos, y=-0.35, xref="x", yref="paper", 
-            text=f"<b>{value}</b>", showarrow=False, 
+            x=paper_x_map[x_data_pos], y=-0.35, xref="paper", yref="paper", 
+            text=f"<b>{value}</b>", showarrow=False, xanchor='center',
             font=dict(size=16, color="black")
         )
-    
     # 6. Layout and Styling
     fig.update_layout(
         height = 300,
