@@ -269,7 +269,6 @@ def create_lateral_performance_boxes(df_in, delivery_type, batsman_name):
     return fig_boxes
 
 # --- CHART 3: PITCH MAP ---
-
 # --- Helper function for Pitch Bins (Centralized) ---
 def get_pitch_bins(delivery_type):
     if delivery_type == "Seam":
