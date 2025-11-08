@@ -857,7 +857,7 @@ def create_directional_split(df_in, column_name, handedness_label):
                 0, 
                 f'{category.upper()}\n{pct:.0f}%', 
                 ha='center', va='center', 
-                color=text_color, fontsize=14, fontweight='bold',
+                color=text_color, fontsize=16, fontweight='bold',
                 # Path effects give text a sharp edge against the background
                 path_effects=[pe.withStroke(linewidth=2, foreground='none')] 
             )
