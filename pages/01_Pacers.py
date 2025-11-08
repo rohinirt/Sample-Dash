@@ -782,10 +782,6 @@ def create_pacer_release_zone_map(df_in, handedness_label):
 
 # --- CHARTS 6 & 7: SWING/DEVIATION DIRECTIONAL SPLIT (100% Stacked Bar) ---
 def create_directional_split(df_in, column_name, handedness_label):
-    from matplotlib import pyplot as plt
-    import pandas as pd
-    import matplotlib.patheffects as pe # Used for text outlines
-    
     if df_in.empty or column_name not in df_in.columns:
         fig, ax = plt.subplots(figsize=(8, 1)); ax.text(0.5, 0.5, f"No Data or Missing '{column_name}'", ha='center', va='center'); ax.axis('off'); return fig
 
@@ -1019,7 +1015,6 @@ with col_lhb:
     with run_pct_col:
         st.markdown("##### ")
         st.pyplot(create_pacer_pitch_length_metrics(df_lhb), use_container_width=True)
-
 
     # Chart 4/5: RELEASE
     pace_col, release_col = st.columns([2, 2]) 
