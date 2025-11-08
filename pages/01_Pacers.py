@@ -717,7 +717,7 @@ def create_pacer_release_zone_map(df_in, handedness_label):
     # Non-Wickets (light grey)
     fig.add_trace(go.Scatter(
         x=release_non_wickets["ReleaseY"], y=release_non_wickets["ReleaseZ"], mode='markers', name="No Wicket",
-        marker=dict(color='#D3D3D3', size=7, opacity=0.8), hoverinfo='none'
+        marker=dict(color='#D3D3D3', size=7, opacity=0.8,line=dict(width=1, color="white")), hoverinfo='none'
     ))
 
     # Wickets (red)
@@ -758,15 +758,15 @@ def create_pacer_release_zone_map(df_in, handedness_label):
     
     # 6. Layout and Styling
     fig.update_layout(
-        height = 300,
+        height = 250,
         margin=dict(l=0, r=0, t=0, b=0), # Increased bottom margin for KPIs
         xaxis=dict(
             range=[-1.5, 1.5], 
-            showgrid=False, zeroline=False
+            showgrid=True,showticklabels=False, zeroline=False
         ),
         yaxis=dict(
             range=[0, 2.5], 
-            showgrid=False, zeroline=False
+            showgrid=True,showticklabels=False, zeroline=False
         ), 
         plot_bgcolor="white", paper_bgcolor="white", showlegend=False
     )
