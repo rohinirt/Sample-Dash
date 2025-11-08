@@ -964,7 +964,7 @@ with col_rhb:
     # Chart 3: PITCHMAP
     pitch_map_col, run_pct_col = st.columns([3, 1]) 
     with pitch_map_col:
-        st.markdown("###### PITCHMAP (BOUNCE LOCATION)")
+        st.markdown("###### PITCHMAP")
         st.plotly_chart(create_pacer_pitch_map(df_rhb), use_container_width=True)    
     with run_pct_col:
         st.markdown("##### ")
@@ -1008,7 +1008,7 @@ with col_lhb:
     # Chart 3: PITCHMAP
     pitch_map_col, run_pct_col = st.columns([3, 1]) 
     with pitch_map_col:
-        st.markdown("###### PITCHMAP (BOUNCE LOCATION)")
+        st.markdown("###### PITCHMAP")
         st.plotly_chart(create_pacer_pitch_map(df_lhb), use_container_width=True)    
     with run_pct_col:
         st.markdown("##### ")
