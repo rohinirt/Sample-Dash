@@ -283,11 +283,7 @@ def create_pacer_lateral_performance_boxes(df_in, handedness_label):
 
     plt.tight_layout(pad=0.5)
     return fig_boxes
-    
-import matplotlib.pyplot as plt
-from matplotlib import cm, patches
-import matplotlib.colors as mcolors
-import pandas as pd
+
 
 # --- CHART 2: ZONAL ANALYSIS (CBH Boxes) ---
 def create_pacer_zonal_analysis(df_in, handedness_label):
@@ -383,7 +379,217 @@ def create_pacer_zonal_analysis(df_in, handedness_label):
     ax.set_xlim(-0.75, 0.75); ax.set_ylim(0, 2); ax.axis('off'); 
     plt.tight_layout(pad=0.5) 
     return fig_boxes
+
+# --- CHART 3a: PITCH MAP (BOUNCE LOCATION) ---
+# --- Helper function for Pitch Bins (Centralized) ---
+def get_pitch_bins(delivery_type):
+    """Defines the pitch length ranges based on delivery type."""
+    if delivery_type == "Seam":
+        # Seam Bins: 1.2-6: Full, 6-8 Length, 8-10 Short, 10-15 Bouncer (Distance from batsman's stumps)
+        return {
+            "Full": [1.2, 6.0],
+            "Length": [6.0, 8.0],
+            "Short": [8.0, 10.0],
+            "Bouncer": [10.0, 15.0],
+        }
+    elif delivery_type == "Spin":
+        # Spin Bins: 1.22-2.22: OP, 2.22-4: full, 4-6: Good, 6-15: short
+        return {
+            "Over Pitched": [1.22, 2.22],
+            "Full": [2.22, 4.0],
+            "Good": [4.0, 6.0],
+            "Short": [6.0, 15.0],
+        }
+    return {} # Default
     
+def create_pacer_pitch_map(df_in, delivery_type):
+    import plotly.graph_objects as go
+    if df_in.empty:
+        return go.Figure().update_layout(title=f"No data for Pitch Map ({delivery_type})", height=300)
+
+    PITCH_BINS = get_pitch_bins(delivery_type)
+    
+    # Add a catch-all bin for plotting range/data outside the defined bins if needed
+    if delivery_type == "Seam":
+        PITCH_BINS["Full Toss"] = [-4.0, 1.2]  
+    elif delivery_type == "Spin":
+        PITCH_BINS["Full Toss"] = [-4.0, 1.22]  
+        
+    fig_pitch = go.Figure()
+    
+    # 1. Add Zone Lines & Labels
+    boundary_y_values = sorted([v[0] for v in PITCH_BINS.values() if v[0] > -4.0])
+
+    for y_val in boundary_y_values:
+        fig_pitch.add_hline(y=y_val, line=dict(color="lightgrey", width=1.0, dash="dot"))
+
+    # Add zone labels
+    for length, bounds in PITCH_BINS.items():
+        if length != "Full Toss": 
+            mid_y = (bounds[0] + bounds[1]) / 2
+            fig_pitch.add_annotation(x=-1.45, y=mid_y, text=length.upper(), showarrow=False,
+                font=dict(size=8, color="grey", weight='bold'), xanchor='left')
+
+    # 2. Add Stump lines
+    fig_pitch.add_vline(x=-0.18, line=dict(color="#777777", dash="dot", width=1.2))
+    fig_pitch.add_vline(x=0.18, line=dict(color="#777777", dash="dot", width=1.2))
+    fig_pitch.add_vline(x=0, line=dict(color="#777777", dash="dot", width=0.8))
+
+    # 3. Plot Data
+    pitch_wickets = df_in[df_in["Wicket"] == True]
+    pitch_non_wickets = df_in[df_in["Wicket"] == False]
+
+    # Non-Wickets (light grey)
+    fig_pitch.add_trace(go.Scatter(
+        x=pitch_non_wickets["BounceY"], y=pitch_non_wickets["BounceX"], mode='markers', name="No Wicket",
+        marker=dict(color='#D3D3D3', size=10, line=dict(width=1, color="white"), opacity=0.9)
+    ))
+
+    # Wickets (red)
+    fig_pitch.add_trace(go.Scatter(
+        x=pitch_wickets["BounceY"], y=pitch_wickets["BounceX"], mode='markers', name="Wicket",
+        marker=dict(color='red', size=12, line=dict(width=1, color="white")), opacity=0.95)
+    )
+
+    # 4. Layout
+    fig_pitch.update_layout(
+        title=f"PITCH MAP (Bounce Location) vs. {df_in['IsBatsmanRightHanded'].map({True: 'RHB', False: 'LHB'}).iloc[0] if not df_in.empty else 'N/A'}",
+        height = 400,
+        margin=dict(l=0, r=100, t=30, b=10),
+        xaxis=dict(range=[-1.5, 1.5], showgrid=False, zeroline=False, visible=False),
+        yaxis=dict(range=[16.0, -4.0], showgrid=False, zeroline=False, visible=False), 
+        plot_bgcolor="white", paper_bgcolor="white", showlegend=False
+    )
+    
+    return fig_pitch
+# --- CHART 3b: PITCH LENGTH METRICS (BOWLER FOCUS) ---
+def create_pacer_pitch_length_metrics(df_in, delivery_type):
+    from matplotlib import cm, patches
+    import matplotlib.pyplot as plt
+    import matplotlib.colors as mcolors
+    import pandas as pd
+    
+    FIG_HEIGHT = 5.7
+    
+    if df_in.empty:
+        fig, ax = plt.subplots(figsize=(2, FIG_HEIGHT)); 
+        ax.text(0.5, 0.5, "No Data", ha='center', va='center', rotation=90); 
+        ax.axis('off'); 
+        return fig
+
+    # Get the pitch bins from the helper function
+    PITCH_BINS_DICT = get_pitch_bins(delivery_type)
+        
+    # Define ordered keys for plotting order (far to near)
+    if delivery_type == "Seam":
+        ordered_keys = ["Bouncer", "Short", "Length", "Full"]
+        COLORMAP = 'Reds' # Reds: high run percentage / high average (bad) is darker
+    elif delivery_type == "Spin":
+        ordered_keys = ["Short", "Good", "Full", "Over Pitched"]
+        COLORMAP = 'Reds'
+    else:
+        fig, ax = plt.subplots(figsize=(2, FIG_HEIGHT)); 
+        ax.text(0.5, 0.5, "Invalid Type", ha='center', va='center', rotation=90); 
+        ax.axis('off'); 
+        return fig
+
+    # 1. Data Preparation
+    def assign_pitch_length(x):
+        for length, bounds in PITCH_BINS_DICT.items():
+            if bounds[0] <= x < bounds[1]: return length
+        return None
+
+    df_pitch = df_in.copy()
+    df_pitch["PitchLength"] = df_pitch["BounceX"].apply(assign_pitch_length)
+    
+    if df_pitch["PitchLength"].isnull().all() or df_pitch.empty:
+        fig, ax = plt.subplots(figsize=(2, FIG_HEIGHT)); 
+        ax.text(0.5, 0.5, "No Pitches Assigned", ha='center', va='center', rotation=90); 
+        ax.axis('off'); 
+        return fig
+
+    # Aggregate data - ADD RUNS, BALLS, WICKETS
+    df_summary = df_pitch.groupby("PitchLength").agg(
+        Runs=("Runs", "sum"), 
+        Wickets=("Wicket", lambda x: (x == True).sum()), 
+        Balls=("Wicket", "count")
+    ).reset_index().set_index("PitchLength").reindex(ordered_keys).fillna(0)
+    
+    # --- CALCULATE BOWLER METRICS ---
+    df_summary["Average"] = df_summary.apply(
+        # Bowling Average (Runs / Wickets)
+        lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else (0), axis=1
+    )
+    df_summary["StrikeRate"] = df_summary.apply(
+        # Bowling Strike Rate (Balls / Wickets)
+        lambda row: row["Balls"] / row["Wickets"] if row["Wickets"] > 0 else (0), axis=1
+    )
+    # --- Calculate Run Percentage (still useful for color contrast) ---
+    total_runs = df_summary["Runs"].sum()
+    df_summary["RunPercentage"] = (df_summary["Runs"] / total_runs) * 100 if total_runs > 0 else 0
+
+    # 2. Chart Setup
+    fig_stack, ax_stack = plt.subplots(figsize=(2, FIG_HEIGHT)) 
+
+    # Plotting setup variables
+    num_boxes = len(ordered_keys)
+    box_height = 1.0 / num_boxes
+    bottom = 0.0
+    
+    # Colormap and Normalization based on Run Percentage
+    max_pct = df_summary["RunPercentage"].max() if df_summary["RunPercentage"].max() > 0 else 100
+    norm = mcolors.Normalize(vmin=0, vmax=max_pct)
+    cmap = cm.get_cmap(COLORMAP)
+    
+    # 3. Plotting Equal Boxes (Vertical Heat Map)
+    for index, row in df_summary.iterrows():
+        pct = row["RunPercentage"]
+        wkts = int(row["Wickets"])
+        avg = row["Average"] 
+        sr = row["StrikeRate"] 
+        
+        # Determine box color
+        color = cmap(norm(pct))
+        
+        # Draw the box 
+        ax_stack.bar( 
+            x=0.5,            
+            height=box_height,
+            width=1,          
+            bottom=bottom,    
+            color=color,
+            edgecolor='black', 
+            linewidth=1
+        )
+        
+        # Add labels - UPDATING LABEL TEXT
+        label_text = (
+            f"{index.upper()}\n"
+            f"{pct:.0f}% Runs\n"
+            f"W: {wkts}\n"
+            f"Avg: {avg:.1f}\n"
+            f"SR: {sr:.1f}"
+        )
+        
+        # Calculate text color for contrast
+        r, g, b = color[:3]
+        luminosity = 0.2126 * r + 0.7152 * g + 0.0722 * b
+        text_color = 'white' if luminosity < 0.5 else 'black'
+
+        # Text plotting
+        ax_stack.text(0.5, bottom + box_height / 2, 
+                      label_text,
+                      ha='center', va='center', fontsize=9, color=text_color, weight='bold', linespacing=1.2)
+        
+        bottom += box_height
+        
+    # 4. Styling
+    ax_stack.set_xlim(0, 1); ax_stack.set_ylim(0, 1)
+    ax_stack.axis('off') 
+
+    plt.tight_layout(pad=0.9)
+    return fig_stack
+
 # =========================================================
 # PAGE SETUP AND FILTERING
 # =========================================================
@@ -471,6 +677,15 @@ with col_rhb:
     # Chart 2: ZONAL ANALYSIS (CBH Boxes)
     st.pyplot(create_pacer_zonal_analysis(df_rhb, "RHB"), use_container_width=True)
 
+    # Chart 3: PITCHMAP
+    pitch_map_col, run_pct_col = st.columns([3, 1]) 
+    with pitch_map_col:
+        st.markdown("###### PITCHMAP (BOUNCE LOCATION)")
+        st.plotly_chart(create_pacer_pitch_map(df_rhb, DELIVERY_TYPE), use_container_width=True)    
+    with run_pct_col:
+        st.markdown(" ")
+        st.pyplot(create_pacer_pitch_length_metrics(df_rhb, DELIVERY_TYPE), use_container_width=True)
+
 
 # === RIGHT COLUMN: AGAINST LEFT-HANDED BATSMEN (LHB) ===
 with col_lhb:
@@ -485,3 +700,12 @@ with col_lhb:
 
     # Chart 2: ZONAL ANALYSIS (CBH Boxes)
     st.pyplot(create_pacer_zonal_analysis(df_lhb, "LHB"), use_container_width=True)
+
+    # Chart 3: PITCHMAP
+    pitch_map_col, run_pct_col = st.columns([3, 1]) 
+    with pitch_map_col:
+        st.markdown("###### PITCHMAP (BOUNCE LOCATION)")
+        st.plotly_chart(create_pacer_pitch_map(df_lhb, DELIVERY_TYPE), use_container_width=True)    
+    with run_pct_col:
+        st.markdown(" ")
+        st.pyplot(create_pacer_pitch_length_metrics(df_lhb, DELIVERY_TYPE), use_container_width=True)
