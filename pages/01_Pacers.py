@@ -759,7 +759,7 @@ def create_pacer_release_zone_map(df_in, handedness_label):
     # 6. Layout and Styling
     fig.update_layout(
         height = 300,
-        margin=dict(l=30, r=30, t=50, b=100), # Increased bottom margin for KPIs
+        margin=dict(l=0, r=0, t=0, b=0), # Increased bottom margin for KPIs
         xaxis=dict(
             range=[-1.5, 1.5], 
             showgrid=False, zeroline=False
