@@ -780,6 +780,107 @@ def create_pacer_release_zone_map(df_in, handedness_label):
     
     return fig
 
+# --- CHARTS 6 & 7: SWING/DEVIATION DIRECTIONAL SPLIT (100% Stacked Bar) ---
+def create_directional_split(df_in, column_name, handedness_label):
+    from matplotlib import pyplot as plt
+    import pandas as pd
+    import matplotlib.patheffects as pe # Used for text outlines
+    
+    if df_in.empty or column_name not in df_in.columns:
+        fig, ax = plt.subplots(figsize=(8, 1)); ax.text(0.5, 0.5, f"No Data or Missing '{column_name}'", ha='center', va='center'); ax.axis('off'); return fig
+
+    # 1. Categorization (IF < 0 THEN "LEFT" ELSE "RIGHT")
+    df = df_in.copy()
+    df['Direction'] = df[column_name].apply(lambda x: 'LEFT' if x < 0 else 'RIGHT')
+    
+    # 2. Calculation
+    total_balls = len(df)
+    if total_balls == 0:
+        fig, ax = plt.subplots(figsize=(8, 1)); ax.text(0.5, 0.5, "No Deliveries Found", ha='center', va='center'); ax.axis('off'); return fig
+        
+    df_counts = df['Direction'].value_counts().reset_index()
+    df_counts.columns = ['Direction', 'Count']
+    df_counts['Percentage'] = (df_counts['Count'] / total_balls) * 100
+    
+    # 3. Preparation for Stacked Bar (Ensuring both categories are present)
+    df_plot = pd.DataFrame({
+        'Direction': ['LEFT', 'RIGHT'],
+        'Percentage': [0.0, 0.0]
+    })
+    
+    df_plot.set_index('Direction', inplace=True)
+    df_counts.set_index('Direction', inplace=True)
+    df_plot.update(df_counts['Percentage'])
+    df_plot = df_plot.T
+    
+    # 4. Chart Generation
+    
+    fig, ax = plt.subplots(figsize=(8, 1.5)) # Slightly taller for title/padding
+    
+    # Define colors (Red hue as requested)
+    colors = {
+        'LEFT': 'lightcoral', # Lighter shade for Left movement
+        'RIGHT': 'darkred'    # Darker shade for Right movement
+    }
+    
+    # Plotting order: LEFT first (starts at 0), then RIGHT
+    categories = ['LEFT', 'RIGHT']
+    left = 0
+    
+    for category in categories:
+        pct = df_plot.loc['Percentage', category]
+        
+        # Plot the bar segment
+        ax.barh(
+            y=[0], 
+            width=pct, 
+            left=left, 
+            color=colors[category], 
+            label=category,
+            height=0.8,
+            edgecolor='black',
+            linewidth=0.5
+        )
+        
+        # Add percentage label (using outline for visibility on both colors)
+        if pct > 0.5: # Only label segments greater than 0.5%
+            ax.text(
+                left + pct / 2, 
+                0, 
+                f'{pct:.1f}%', 
+                ha='center', va='center', 
+                color='white', fontsize=12, fontweight='bold',
+                path_effects=[pe.withStroke(linewidth=2, foreground='black')]
+            )
+        
+        left += pct
+
+    # 5. Formatting
+    
+    # Title
+    title_map = {
+        'Swing': 'SWING DIRECTION SPLIT',
+        'Deviation': 'DEVIATION DIRECTION SPLIT'
+    }
+    chart_title = title_map.get(column_name, f'{column_name.upper()} DIRECTION SPLIT')
+    
+    ax.set_title(f"{chart_title} vs. {handedness_label} (N={total_balls})", fontsize=14, fontweight='bold', pad=15)
+    
+    # Clean up axes
+    ax.set_xlim(0, 100)
+    ax.set_xticks([]) # Hide x-axis ticks
+    ax.set_yticks([0])
+    ax.set_yticklabels([f"Total {column_name} Movement"])
+    
+    # Add Legend above the bar
+    ax.legend(loc='lower center', bbox_to_anchor=(0.5, 1.0), ncol=2, frameon=False)
+    
+    # Hide all spines (box border)
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+
+    plt.tight_layout()
+    return fig
 # =========================================================
 # PAGE SETUP AND FILTERING
 # =========================================================
@@ -886,6 +987,15 @@ with col_rhb:
         st.markdown("###### RELEASE")
         st.plotly_chart(create_pacer_release_zone_map(df_rhb, "RHB"), use_container_width=True)
 
+     # Chart 6/7: Lateral Movement
+    swing_col, deviation_col = st.columns([2, 2]) 
+    with swing_col:
+        st.markdown("###### SWING")
+        st.pyplot(create_directional_split(df_rhb, "Swing", "RHB"), use_container_width=True)
+    with deviation_col:
+        st.markdown("###### DEVIATION")
+        st.pyplot(create_directional_split(df_rhb, "Deviation", "RHB"), use_container_width=True)
+
 
 # === RIGHT COLUMN: AGAINST LEFT-HANDED BATSMEN (LHB) ===
 with col_lhb:
@@ -919,3 +1029,12 @@ with col_lhb:
     with release_col:
         st.markdown("###### RELEASE")
         st.plotly_chart(create_pacer_release_zone_map(df_lhb, "LHB"), use_container_width=True)
+
+    # Chart 6/7: Lateral Movement
+    swing_col, deviation_col = st.columns([2, 2]) 
+    with swing_col:
+        st.markdown("###### SWING")
+        st.pyplot(create_directional_split(df_lhb, "Swing", "RHB"), use_container_width=True)
+    with deviation_col:
+        st.markdown("###### DEVIATION")
+        st.pyplot(create_directional_split(df_lhb, "Deviation", "RHB"), use_container_width=True)
