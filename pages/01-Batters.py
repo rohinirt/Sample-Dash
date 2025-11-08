@@ -174,7 +174,7 @@ with col1:
 
 # --- RIGHT COLUMN: SPIN ANALYSIS ---
 with col2:
-    st.markdown("### SPINE")
+    st.markdown("### SPIN")
     
     # Row 1: Zonal Analysis (Beehive Zones)
     st.markdown("###### CREASE BEEHIVE ZONES")
