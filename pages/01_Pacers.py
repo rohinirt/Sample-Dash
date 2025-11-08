@@ -9,6 +9,8 @@ import matplotlib.colors as mcolors
 from io import StringIO
 import base64
 import matplotlib.patheffects as pe
+from matplotlib import cm, colors, patches
+import matplotlib.colors as mcolors
 
 
 # =========================================================
