@@ -1,8 +1,7 @@
 import streamlit as st
 import pandas as pd
 # Import the new function and necessary existing functions from utils
-from utils import (
-    create_seam_length_distribution, 
+from utils import ( 
     create_pitch_map, 
     create_interception_side_on, 
     create_directional_split, 
