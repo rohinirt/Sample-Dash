@@ -652,7 +652,7 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
     # 0. Initial Check
     if df_in.empty:
         fig, ax = plt.subplots(figsize=(4, 4)); 
-        ax.text(0.5, 0.5, f"No data for Hitting/Missing ({handedness_label})", 
+        ax.text(0.5, 0.5, f"No data for Hitting/Missing ({handedness_label})",  
                 ha='center', va='center', fontsize=12); 
         ax.axis('off'); 
         return fig
