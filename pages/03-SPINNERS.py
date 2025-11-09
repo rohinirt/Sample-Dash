@@ -733,7 +733,6 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
             fontsize=12, 
             weight='bold',
             color='#D3D3D3', # Color matches the MISSING scatter points
-            weight='bold',
             bbox=dict(boxstyle="square,pad=0.3", fc="white", alpha=0.0, edgecolor='none'))
             
     plt.tight_layout(pad=0.5)
