@@ -258,9 +258,9 @@ with col_lhb:
     st.markdown("###  Left-Handed Batsmen (LHB)")
     # Chart 1a: Crease Beehive (using the new local function)
     st.markdown("###### CREASE BEEHIVE")
-    st.plotly_chart(create_spinner_crease_beehive(df_lhb, "LHB"), use_container_width=True)
+    st.plotly_chart(create_spinner_crease_beehive(df_lhb), use_container_width=True)
     # Chart 1b: Lateral Performance Boxes (Bowling Avg)
-    st.pyplot(create_spinner_lateral_performance_boxes(df_lhb, "LHB"), use_container_width=True)
+    st.pyplot(create_spinner_lateral_performance_boxes(df_lhb), use_container_width=True)
 
 
    
