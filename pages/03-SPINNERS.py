@@ -675,20 +675,12 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
         missing_pct = 0.0
 
     # 3. Stratify Data for Plotting (ensuring wickets/boundaries appear on top)
-    df_map["IsBoundary"] = df_map["Runs"].isin([4, 6])
-    
     # Missing group (Bottom layer, always grey)
     df_missing = df_map[df_map["HittingCategory"] == "MISSING"]
 
     # Hitting groups (Layered based on outcome)
     df_hitting = df_map[df_map["HittingCategory"] == "HITTING"]
     
-    # Non-Wicket, Non-Boundary Hitting (Middle layer)
-    df_hitting_other = df_hitting[(df_hitting["Wicket"] == False) & (df_hitting["IsBoundary"] == False)]
-    # Boundary Hitting
-    df_hitting_boundary = df_hitting[(df_hitting["Wicket"] == False) & (df_hitting["IsBoundary"] == True)]
-    # Wicket Hitting (Top layer)
-    df_hitting_wicket = df_hitting[df_hitting["Wicket"] == True]
 
     # 4. Create Figure and Add Traces
     fig_hm = go.Figure()
@@ -701,21 +693,10 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
 
     # Trace 2: HITTING - Other (Orange/Reddish-Orange for regular balls hitting target)
     fig_hm.add_trace(go.Scatter(
-        x=df_hitting_other["StumpsY"], y=df_hitting_other["StumpsZ"], mode='markers', name="HITTING",
-        marker=dict(color='orange', size=9, line=dict(width=1, color="white")), opacity=0.9
+        x=df_hitting["StumpsY"], y=df_hitting["StumpsZ"], mode='markers', name="HITTING",
+        marker=dict(color='red', size=9, line=dict(width=1, color="white")), opacity=0.9
     ))
     
-    # Trace 3: HITTING - Boundary (Royal Blue)
-    fig_hm.add_trace(go.Scatter(
-        x=df_hitting_boundary["StumpsY"], y=df_hitting_boundary["StumpsZ"], mode='markers', name="Boundary",
-        marker=dict(color='royalblue', size=10, line=dict(width=1, color="white")), opacity=1.0
-    ))
-    
-    # Trace 4: HITTING - Wicket (Red)
-    fig_hm.add_trace(go.Scatter(
-        x=df_hitting_wicket["StumpsY"], y=df_hitting_wicket["StumpsZ"], mode='markers', name="Wicket",
-        marker=dict(color='red', size=11, line=dict(width=1, color="white")), opacity=1.0
-    ))
     
     # 5. Add Stump Boundaries (The "HITTING" zone)
     # Lateral (Stump edges)
