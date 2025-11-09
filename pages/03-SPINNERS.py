@@ -692,7 +692,10 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
     # 4️⃣ Split Data
     df_missing = df_map[df_map["HittingCategory"] == "MISSING"]
     df_hitting = df_map[df_map["HittingCategory"] == "HITTING"]
-
+    ax.axvline(x=0, color='black', linestyle='-', linewidth=0.8)
+    ax.axvline(x=-0.18, color='black', linestyle='-', linewidth=0.8)
+    ax.axvline(x=0.18, color='black', linestyle='-', linewidth=0.8)
+    
     # 5️⃣ Plot MISSING (Grey)
     ax.scatter(
         df_missing["StumpsY"], df_missing["StumpsZ"],
@@ -708,9 +711,7 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
     )
 
 
-    ax.axvline(x=0, color='black', linestyle='-', linewidth=0.8)
-    ax.axvline(x=-0.18, color='black', linestyle='-', linewidth=0.8)
-    ax.axvline(x=0.18, color='black', linestyle='-', linewidth=0.8)
+    
     ax.set_xticks([])
     ax.set_yticks([])
 
