@@ -726,22 +726,19 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
     ax.axis('off')  # clean look, no ticks
     plt.tight_layout(pad=0.5)
 
-    # 9️⃣ Remove any auto legends (safety)
-    for legend in ax.get_children():
-        if isinstance(legend, plt.Legend):
-            legend.remove()
+
 
     # 🔟 Add Hitting and Missing Text Labels
     ax.text(
         1.05, 1.35, f"Hitting: {hitting_pct}%",
         transform=ax.transData, ha='right', va='top',
-        fontsize=12, color='red', weight='bold'
+        fontsize=14, color='red', weight='bold'
     )
 
     ax.text(
         1.05, 1.25, f"Missing: {missing_pct}%",
         transform=ax.transData, ha='right', va='top',
-        fontsize=12, color='#D3D3D3', weight='bold'
+        fontsize=14, color='#D3D3D3', weight='bold'
     )
 
     return fig
