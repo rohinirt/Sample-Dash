@@ -254,7 +254,12 @@ def create_spinner_pitch_length_metrics(df_in):
         ax.axis('off'); 
         return fig
 
-    PITCH_BINS_DICT = get_pitch_bins() # Simplified call
+    PITCH_BINS_DICT = {
+        "Full": [1.2, 6.0],
+        "Length": [6.0, 8.0],
+        "Short": [8.0, 10.0],
+        "Bouncer": [10.0, 15.0],
+    } # Simplified call
         
     # Define ordered keys for plotting order (far to near) - Only Seam
     ordered_keys = ["Bouncer", "Short", "Length", "Full"]
