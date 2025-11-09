@@ -726,8 +726,8 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
     
     fig_hm.update_layout(
         title=f"Stumps Hitting vs. Missing Map ({handedness_label})",
-        height=400,
-        margin=dict(l=20, r=20, t=50, b=20),
+        height=500,
+        margin=dict(l=0, r=0, t=0, b=0),
         xaxis=dict(
             title="Lateral Stumps Position (Y)", range=[-1.1, 1.1],
             showgrid=False, zeroline=False, visible=False
@@ -880,9 +880,9 @@ with col_rhb:
         swing_col, deviation_col = st.columns([2, 2]) 
         with swing_col:
             st.markdown("###### SWING")
-            st.pyplot(create_directional_split(df_lhb, "Swing", "RHB"), use_container_width=True)
+            st.pyplot(create_directional_split(df_lhb, "Swing", "LHB"), use_container_width=True)
         with deviation_col:
             st.markdown("###### DEVIATION")
-            st.pyplot(create_directional_split(df_lhb, "Deviation", "RHB"), use_container_width=True)
+            st.pyplot(create_directional_split(df_lhb, "Deviation", "LHB"), use_container_width=True)
         # Chart 8: Missing Hitting    
-        st.plotly_chart(create_spinner_hitting_missing_map(df_lhb, "RHB"), use_container_width=True)
+        st.plotly_chart(create_spinner_hitting_missing_map(df_lhb, "LHB"), use_container_width=True)
