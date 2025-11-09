@@ -70,9 +70,6 @@ def create_spinner_crease_beehive(df_in):
 # Chart 1b: CREASE BEEHIVE (Lateral Performace)
 # =========================================================
 def create_spinner_lateral_performance_boxes(df_in):
-    from matplotlib import cm, colors, patches
-    import matplotlib.pyplot as plt
-    import matplotlib.colors as mcolors # Explicitly import mcolors
 
     df_lateral = df_in.copy()
     if df_lateral.empty:
@@ -742,7 +739,7 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
     return fig
 
 # Chart 9 Hitting Missing Performance
-def create_spinner_h_m_performance_bars_plotly(df_in, handedness_label):
+def create_spinner_h_m_performance_bars(df_in):
     """
     Creates a Plotly figure with three horizontal bar charts comparing Wickets,
     Bowling Average, and Bowling Strike Rate between balls HITTING and MISSING the stumps target.
@@ -977,7 +974,7 @@ with col_rhb:
     
     # Chart 8: Missing Hitting    
     st.pyplot(create_spinner_hitting_missing_map(df_rhb, "RHB"), use_container_width=True)
-    st.pyplot(create_spinner_h_m_performance_bars(df_rhb, "RHB"), use_container_width=True)
+    st.plotly_chart(create_spinner_h_m_performance_bars(df_rhb), use_container_width=True)
 # === RIGHT COLUMN: AGAINST LEFT-HANDED BATSMEN (LHB) ===
     with col_lhb:
         st.markdown("###  Left-Handed Batsmen (LHB)")
@@ -1019,4 +1016,4 @@ with col_rhb:
         st.plotly_chart(create_spinner_hitting_missing_map(df_lhb, "LHB"), use_container_width=True)
         # Assuming you use the columns col_rhb and col_lhb:
 
-        st.pyplot(create_spinner_h_m_performance_bars(df_lhb, "LHB"), use_container_width=True)
+        st.plotly_chart(create_spinner_h_m_performance_bars(df_lhb), use_container_width=True)
