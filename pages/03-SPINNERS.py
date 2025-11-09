@@ -175,11 +175,11 @@ def create_spinner_pitch_map(df_in):
         return go.Figure().update_layout(title=f"No data for Pitch Map (Seam)", height=300)
 
     PITCH_BINS = {
-        "Full": [1.2, 6.0],
-        "Length": [6.0, 8.0],
-        "Short": [8.0, 10.0],
-        "Bouncer": [10.0, 15.0],
-    }
+            "Over Pitched": [1.22, 2.22],
+            "Full": [2.22, 4.0],
+            "Good": [4.0, 6.0],
+            "Short": [6.0, 15.0],
+        }
     # Add a catch-all bin for Full Tosses (always Seam logic)
     PITCH_BINS["Full Toss"] = [-4.0, 1.2]  
         
@@ -255,11 +255,11 @@ def create_spinner_pitch_length_metrics(df_in):
         return fig
 
     PITCH_BINS_DICT = {
-        "Full": [1.2, 6.0],
-        "Length": [6.0, 8.0],
-        "Short": [8.0, 10.0],
-        "Bouncer": [10.0, 15.0],
-    } # Simplified call
+            "Over Pitched": [1.22, 2.22],
+            "Full": [2.22, 4.0],
+            "Good": [4.0, 6.0],
+            "Short": [6.0, 15.0],
+        } # Simplified call
         
     # Define ordered keys for plotting order (far to near) - Only Seam
     ordered_keys = ["Bouncer", "Short", "Length", "Full"]
