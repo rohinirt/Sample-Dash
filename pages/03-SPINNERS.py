@@ -11,7 +11,7 @@ import base64
 import matplotlib.patheffects as pe
 from matplotlib import cm, colors, patches
 import matplotlib.colors as mcolors
-from matplotlib.legend import legend
+from matplotlib.legend import Legend
 
 
 
