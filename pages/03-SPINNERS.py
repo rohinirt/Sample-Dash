@@ -651,7 +651,7 @@ def create_directional_split(df_in, column_name, handedness_label):
 def create_spinner_hitting_missing_map(df_in, handedness_label):
     # 0. Initial Check
     if df_in.empty:
-        fig, ax = plt.subplots(figsize=(8, 4)); 
+        fig, ax = plt.subplots(figsize=(8, 8)); 
         ax.text(0.5, 0.5, f"No data for Hitting/Missing ({handedness_label})",  
                 ha='center', va='center', fontsize=12); 
         ax.axis('off'); 
@@ -680,7 +680,7 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
 
     # 3. Create Figure (Use a larger figsize for better alignment with Plotly charts)
     # Adjust the height (e.g., 4) to match the vertical space of your other Plotly charts.
-    fig, ax = plt.subplots(figsize=(8, 4)) 
+    fig, ax = plt.subplots(figsize=(8, 8)) 
 
     # 4. Plot Data
     
@@ -708,7 +708,6 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
     ax.axvline(x=0, color='black', linestyle=':', linewidth=0.8, zorder=4)
 
     # 6. Set Limits, Labels, and Title
-    ax.set_title(f"Stumps Hitting vs. Missing Map ({handedness_label})", fontsize=12, pad=10)
     ax.set_xlim(-1.1, 1.1)
     ax.set_ylim(0, 1.4)
     ax.legend().remove()
@@ -717,7 +716,6 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
 
     # 7. Add Percentage Annotation
     annotation_text = (
-        f"**Target Accuracy**\n"
         f"Hitting: {hitting_pct}%\n"
         f"Missing: {missing_pct}%"
     )
