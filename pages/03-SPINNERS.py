@@ -744,8 +744,7 @@ for legend in ax.get_children():
     if handles:
         ax.legend().remove()        
     plt.tight_layout(pad=0.5)
-    
-    return fig
+return fig
 
 # =========================================================
 # PAGE SETUP AND FILTERING
