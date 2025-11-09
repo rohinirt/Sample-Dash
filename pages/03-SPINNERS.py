@@ -651,7 +651,7 @@ def create_directional_split(df_in, column_name, handedness_label):
 def create_spinner_hitting_missing_map(df_in, handedness_label):
     # 0. Initial Check
     if df_in.empty:
-        fig, ax = plt.subplots(figsize=(8, 8)); 
+        fig, ax = plt.subplots(figsize=(16, 4)); 
         ax.text(0.5, 0.5, f"No data for Hitting/Missing ({handedness_label})",  
                 ha='center', va='center', fontsize=12); 
         ax.axis('off'); 
@@ -680,7 +680,7 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
 
     # 3. Create Figure (Use a larger figsize for better alignment with Plotly charts)
     # Adjust the height (e.g., 4) to match the vertical space of your other Plotly charts.
-    fig, ax = plt.subplots(figsize=(8, 8)) 
+    fig, ax = plt.subplots(figsize=(16, 8)) 
 
     # 4. Plot Data
     
