@@ -232,7 +232,7 @@ df_rhb = df_filtered[df_filtered["IsBatsmanRightHanded"] == True]
 df_lhb = df_filtered[df_filtered["IsBatsmanRightHanded"] == False]
 
 st.divider()
-
+col_rhb, col_lhb = st.columns(2)
 # === LEFT COLUMN: AGAINST RIGHT-HANDED BATSMEN (RHB) ===
 with col_rhb:
     st.markdown("###  Right-Handed Batsmen (RHB)")    
