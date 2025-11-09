@@ -714,7 +714,7 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
     ax.set_yticks([])
     # Hide axis ticks/labels for a cleaner look
     ax.axis('off')
-    ax.get_legend().remove()
+    ax.legend().remove()
     
     hitting_text = f"Hitting: {hitting_pct}%"
     ax.text(1.05, 1.35, hitting_text, 
