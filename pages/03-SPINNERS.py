@@ -942,10 +942,10 @@ with col_rhb:
      # Chart 4: Lateral Movement
     swing_col, deviation_col = st.columns([2, 2]) 
     with swing_col:
-        st.markdown("###### SWING")
+        st.markdown("###### DRIFT")
         st.pyplot(create_directional_split(df_rhb, "Swing", "RHB"), use_container_width=True)
     with deviation_col:
-        st.markdown("###### DEVIATION")
+        st.markdown("###### TURN")
         st.pyplot(create_directional_split(df_rhb, "Deviation", "RHB"), use_container_width=True)
     
     # Chart 8: Missing Hitting    
@@ -982,10 +982,10 @@ with col_rhb:
         # Chart 6/7: Lateral Movement
         swing_col, deviation_col = st.columns([2, 2]) 
         with swing_col:
-            st.markdown("###### SWING")
+            st.markdown("###### DRIFT")
             st.pyplot(create_directional_split(df_lhb, "Swing", "LHB"), use_container_width=True)
         with deviation_col:
-            st.markdown("###### DEVIATION")
+            st.markdown("###### TURN")
             st.pyplot(create_directional_split(df_lhb, "Deviation", "LHB"), use_container_width=True)
         
         
