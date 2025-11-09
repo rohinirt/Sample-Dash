@@ -648,7 +648,7 @@ def create_directional_split(df_in, column_name, handedness_label):
     return fig
 
 # --- CHART 8: HITTING VS MISSING STUMPS MAP ---
-def create_spinner_hitting_missing_map_mpl(df_in, handedness_label):
+def create_spinner_hitting_missing_map(df_in, handedness_label):
     """
     Creates a scatter plot using Matplotlib showing where the ball would hit the stumps
     (StumpsY, StumpsZ) and categorizes it as HITTING (Red) or MISSING (Grey).
