@@ -882,5 +882,6 @@ with col_rhb:
         with deviation_col:
             st.markdown("###### DEVIATION")
             st.pyplot(create_directional_split(df_lhb, "Deviation", "LHB"), use_container_width=True)
+        
         # Chart 8: Missing Hitting    
-        st.plotly_chart(create_spinner_hitting_missing_map(df_lhb, "LHB"), use_container_width=True)
+        
