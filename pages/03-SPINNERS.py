@@ -716,8 +716,7 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
     bottom=False, top=False, left=False, right=False,
     labelbottom=False, labeltop=False, labelleft=False, labelright=False
 )
-    for spine in ax.spines.values():
-        spine.set_visible(False)
+
 
     # 8️⃣ Format Plot
     ax.set_xlim(-1.1, 1.1)
