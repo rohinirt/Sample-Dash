@@ -722,7 +722,7 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
     ax.set_xlim(-1.1, 1.1)
     ax.set_ylim(0, 1.4)
     ax.axis('off')  # clean look, no ticks
-    plt.tight_layout(pad=0.5)
+    plt.tight_layout(pad=10)
 
 
 
