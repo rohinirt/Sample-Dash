@@ -559,12 +559,6 @@ def create_spinner_release_zone_map(df_in, handedness_label):
 
 # --- CHARTS 6 & 7: SWING/DEVIATION DIRECTIONAL SPLIT (100% Stacked Bar) ---
 def create_directional_split(df_in, column_name, handedness_label):
-    from matplotlib import pyplot as plt
-    import pandas as pd
-    import matplotlib.patheffects as pe 
-    import matplotlib.colors as mcolors
-    import matplotlib.cm as cm
-
     if df_in.empty or column_name not in df_in.columns:
         fig, ax = plt.subplots(figsize=(8, 1)); ax.text(0.5, 0.5, f"No Data or Missing '{column_name}'", ha='center', va='center'); ax.axis('off'); return fig
 
@@ -652,6 +646,121 @@ def create_directional_split(df_in, column_name, handedness_label):
     
     plt.tight_layout()
     return fig
+
+# --- CHART 8: HITTING VS MISSING STUMPS MAP ---
+def create_spinner_hitting_missing_map(df_in, handedness_label):
+    if df_in.empty:
+        return go.Figure().update_layout(title=f"No data for Hitting/Missing ({handedness_label})", height=400)
+
+    df_map = df_in.copy()
+
+    # 1. Define Hitting/Missing Category based on Stumps Coordinates
+    # Stumps Target Area: Y [-0.18, 0.18], Z [0, 0.78]
+    is_hitting_target = (
+        (df_map["StumpsY"] >= -0.18) & 
+        (df_map["StumpsY"] <= 0.18) &
+        (df_map["StumpsZ"] >= 0) & 
+        (df_map["StumpsZ"] <= 0.78)
+    )
+    df_map["HittingCategory"] = np.where(is_hitting_target, "HITTING", "MISSING")
+
+    # 2. Calculate Hitting/Missing Percentages
+    # Ensure there is data before calculating value_counts
+    if not df_map.empty:
+        counts = df_map["HittingCategory"].value_counts(normalize=True).mul(100).round(1)
+        hitting_pct = counts.get("HITTING", 0.0)
+        missing_pct = counts.get("MISSING", 0.0)
+    else:
+        hitting_pct = 0.0
+        missing_pct = 0.0
+
+    # 3. Stratify Data for Plotting (ensuring wickets/boundaries appear on top)
+    df_map["IsBoundary"] = df_map["Runs"].isin([4, 6])
+    
+    # Missing group (Bottom layer, always grey)
+    df_missing = df_map[df_map["HittingCategory"] == "MISSING"]
+
+    # Hitting groups (Layered based on outcome)
+    df_hitting = df_map[df_map["HittingCategory"] == "HITTING"]
+    
+    # Non-Wicket, Non-Boundary Hitting (Middle layer)
+    df_hitting_other = df_hitting[(df_hitting["Wicket"] == False) & (df_hitting["IsBoundary"] == False)]
+    # Boundary Hitting
+    df_hitting_boundary = df_hitting[(df_hitting["Wicket"] == False) & (df_hitting["IsBoundary"] == True)]
+    # Wicket Hitting (Top layer)
+    df_hitting_wicket = df_hitting[df_hitting["Wicket"] == True]
+
+    # 4. Create Figure and Add Traces
+    fig_hm = go.Figure()
+
+    # Trace 1: MISSING (Grey) - Bottom layer
+    fig_hm.add_trace(go.Scatter(
+        x=df_missing["StumpsY"], y=df_missing["StumpsZ"], mode='markers', name="MISSING",
+        marker=dict(color='#D3D3D3', size=8, line=dict(width=1, color="white"), opacity=0.8)
+    ))
+
+    # Trace 2: HITTING - Other (Orange/Reddish-Orange for regular balls hitting target)
+    fig_hm.add_trace(go.Scatter(
+        x=df_hitting_other["StumpsY"], y=df_hitting_other["StumpsZ"], mode='markers', name="HITTING",
+        marker=dict(color='orange', size=9, line=dict(width=1, color="white")), opacity=0.9
+    ))
+    
+    # Trace 3: HITTING - Boundary (Royal Blue)
+    fig_hm.add_trace(go.Scatter(
+        x=df_hitting_boundary["StumpsY"], y=df_hitting_boundary["StumpsZ"], mode='markers', name="Boundary",
+        marker=dict(color='royalblue', size=10, line=dict(width=1, color="white")), opacity=1.0
+    ))
+    
+    # Trace 4: HITTING - Wicket (Red)
+    fig_hm.add_trace(go.Scatter(
+        x=df_hitting_wicket["StumpsY"], y=df_hitting_wicket["StumpsZ"], mode='markers', name="Wicket",
+        marker=dict(color='red', size=11, line=dict(width=1, color="white")), opacity=1.0
+    ))
+    
+    # 5. Add Stump Boundaries (The "HITTING" zone)
+    # Lateral (Stump edges)
+    fig_hm.add_vline(x=-0.18, line=dict(color="black", dash="solid", width=1.5))
+    fig_hm.add_vline(x=0.18, line=dict(color="black", dash="solid", width=1.5))
+    
+    # Vertical (Top of stumps)
+    fig_hm.add_hline(y=0.78, line=dict(color="black", dash="solid", width=1.5))
+    
+    # Center stump line
+    fig_hm.add_vline(x=0, line=dict(color="black", dash="dot", width=0.8))
+
+    # 6. Layout and Annotation (Percentages)
+    
+    annotation_text = (
+        f"**Target Accuracy**<br>"
+        f"<span style='color:orange;'>Hitting: {hitting_pct}%</span><br>"
+        f"<span style='color:grey;'>Missing: {missing_pct}%</span>"
+    )
+    
+    # Place annotation near the top right corner of the plot area
+    fig_hm.add_annotation(
+        x=1.1, y=1.35, text=annotation_text, showarrow=False,
+        xref="x", yref="y",
+        font=dict(size=10), xanchor='right', yanchor='top'
+    )
+    
+    fig_hm.update_layout(
+        title=f"Stumps Hitting vs. Missing Map ({handedness_label})",
+        height=400,
+        margin=dict(l=20, r=20, t=50, b=20),
+        xaxis=dict(
+            title="Lateral Stumps Position (Y)", range=[-1.1, 1.1],
+            showgrid=False, zeroline=False, visible=False
+        ),
+        yaxis=dict(
+            title="Vertical Stumps Position (Z)", range=[0, 1.4],
+            showgrid=False, zeroline=True, zerolinewidth=1, zerolinecolor='lightgrey', visible=False
+        ),
+        plot_bgcolor="white", paper_bgcolor="white",
+        showlegend=False,
+    )
+    
+    return fig_hm
+
 # =========================================================
 # PAGE SETUP AND FILTERING
 # =========================================================
@@ -755,7 +864,9 @@ with col_rhb:
     with deviation_col:
         st.markdown("###### DEVIATION")
         st.pyplot(create_directional_split(df_rhb, "Deviation", "RHB"), use_container_width=True)
-
+    
+        # Chart 8: Missing Hitting    
+        st.plotly_chart(create_spinner_hitting_missing_map(df_rhb, "RHB"), use_container_width=True)
 
 # === RIGHT COLUMN: AGAINST LEFT-HANDED BATSMEN (LHB) ===
     with col_lhb:
@@ -792,3 +903,5 @@ with col_rhb:
         with deviation_col:
             st.markdown("###### DEVIATION")
             st.pyplot(create_directional_split(df_lhb, "Deviation", "RHB"), use_container_width=True)
+        # Chart 8: Missing Hitting    
+        st.plotly_chart(create_spinner_hitting_missing_map(df_lhb, "RHB"), use_container_width=True)
