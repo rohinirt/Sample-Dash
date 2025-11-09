@@ -735,7 +735,7 @@ def create_spinner_h_m_performance_bars(df_in):
     df_in["HittingCategory"] = np.where(is_hitting_target, "HITTING", "MISSING")
     
     if df_in.empty:
-        return go.Figure().update_layout(title=f"No Data ({handedness_label})", height=250)
+        return go.Figure().update_layout(title=f"No Data ({handedness_label})", height=200)
 
     # 2. Calculate Metrics
     summary = df_in.groupby("HittingCategory").agg(
@@ -769,13 +769,13 @@ def create_spinner_h_m_performance_bars(df_in):
     fig = make_subplots(
         rows=1, cols=3, 
         shared_yaxes=True, 
-        subplot_titles=("Wickets", "Bowling Average", "Bowling Strike Rate"),
+        subplot_titles=("Wickets", "Average", "Strike Rate"),
         horizontal_spacing=0.08
     )
 
     # Define colors and bar height
     colors = ['red', '#A9A9A9'] # Red for HITTING, Grey for MISSING
-    bar_height = 0.5
+    bar_height = 0.3
     
     # --- Chart 1: Wickets ---
     fig.add_trace(go.Bar(
@@ -812,7 +812,7 @@ def create_spinner_h_m_performance_bars(df_in):
 
     # 4. Layout Customization
     fig.update_layout(
-        height=250, 
+        height=200, 
         width=700,
         margin=dict(l=5, r=5, t=30, b=10),
         plot_bgcolor='white',
