@@ -689,11 +689,11 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
 
     # Plot MISSING (Grey)
     ax.scatter(df_missing["StumpsY"], df_missing["StumpsZ"], 
-               color='#D3D3D3', s=50, edgecolor='white', linewidth=0.5, showlegend = False, label='MISSING', alpha=0.8)
+               color='#D3D3D3', s=50, edgecolor='white', linewidth=0.5, label='MISSING', alpha=0.8)
 
     # Plot HITTING (Red)
     ax.scatter(df_hitting["StumpsY"], df_hitting["StumpsZ"], 
-               color='red', s=60, edgecolor='white', linewidth=0.5,showlegend = Flase, label='HITTING', alpha=0.9)
+               color='red', s=60, edgecolor='white', linewidth=0.5, label='HITTING', alpha=0.9)
 
     # 5. Add Stump Boundaries (The "HITTING" zone)
     # The target box area is Y=[-0.18, 0.18], Z=[0, 0.78]
@@ -714,7 +714,7 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
     ax.set_yticks([])
     # Hide axis ticks/labels for a cleaner look
     ax.axis('off')
-    ax.legend().remove()
+    ax.get_legend().remove()
     
     hitting_text = f"Hitting: {hitting_pct}%"
     ax.text(1.05, 1.35, hitting_text, 
