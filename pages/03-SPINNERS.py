@@ -682,7 +682,7 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
     # Adjust the height (e.g., 4) to match the vertical space of your other Plotly charts.
 
     # 4. Plot Data
-    
+    fig, ax = plt.subplots(figsize=(7, 4))  
     # Stratify Data
     df_missing = df_map[df_map["HittingCategory"] == "MISSING"]
     df_hitting = df_map[df_map["HittingCategory"] == "HITTING"]
