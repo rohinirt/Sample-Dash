@@ -708,7 +708,6 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
     )
 
 
-    ax.add_patch(stump_rect)
     ax.axvline(x=0, color='black', linestyle='-', linewidth=0.8)
     ax.axvline(x=-0.18, color='black', linestyle='-', linewidth=0.8)
     ax.axvline(x=0.18, color='black', linestyle='-', linewidth=0.8)
