@@ -11,7 +11,7 @@ import base64
 import matplotlib.patheffects as pe
 from matplotlib import cm, colors, patches
 import matplotlib.colors as mcolors
-from matplotlib.legend import Legend
+from plotly.subplots import make_subplots
 
 
 
@@ -723,7 +723,18 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
     return fig
 
 # Chart 9 Hitting Missing Performance
-def create_spinner_h_m_performance_bars(df_in):
+def create_spinner_h_m_performance_bars_plotly(df_in, handedness_label):
+    """
+    Creates a Plotly figure with three horizontal bar charts comparing Wickets,
+    Bowling Average, and Bowling Strike Rate between balls HITTING and MISSING the stumps target.
+    
+    Updated to: Hide legend, ensure correct HITTING/MISSING labels, REMOVE GRIDLINES, 
+    HIDE XTICKS, and REDUCE BAR WIDTH.
+    """
+    import plotly.graph_objects as go
+    from plotly.subplots import make_subplots
+    import numpy as np
+
     # 1. Define Hitting/Missing Category (Standard Logic)
     is_hitting_target = (
         (df_in["StumpsY"] >= -0.18) & 
