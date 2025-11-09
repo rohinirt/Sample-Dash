@@ -741,7 +741,117 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
 
     return fig
 
+# Chart 9 Hitting Missing Performance
+def create_spinner_h_m_performance_bars(df_in, handedness_label):
+    """
+    Creates a Matplotlib figure with three horizontal bar charts comparing Wickets,
+    Bowling Average, and Bowling Strike Rate between balls HITTING and MISSING the stumps target.
+    """
+    import matplotlib.pyplot as plt
+    import numpy as np
 
+    # 1. Define Hitting/Missing Category (The core logic)
+    is_hitting_target = (
+        (df_in["StumpsY"] >= -0.18) & 
+        (df_in["StumpsY"] <= 0.18) &
+        (df_in["StumpsZ"] >= 0) & 
+        (df_in["StumpsZ"] <= 0.78)
+    )
+    df_in["HittingCategory"] = np.where(is_hitting_target, "HITTING", "MISSING")
+    
+    if df_in.empty:
+        fig, ax = plt.subplots(figsize=(7, 1.5)); ax.text(0.5, 0.5, f"No Data ({handedness_label})", ha='center', va='center'); ax.axis('off'); return fig
+
+    # 2. Calculate Metrics
+    # Wickets, Runs, Balls by Category
+    summary = df_in.groupby("HittingCategory").agg(
+        Wickets=("Wicket", lambda x: (x == True).sum()),
+        Runs=("Runs", "sum"),
+        Balls=("Wicket", "count")
+    )
+    
+    # Fill missing category if not present
+    if "HITTING" not in summary.index:
+        summary.loc["HITTING"] = [0, 0, 0]
+    if "MISSING" not in summary.index:
+        summary.loc["MISSING"] = [0, 0, 0]
+    
+    # Calculate BA and SR (Avoid Division by Zero)
+    summary["BA"] = summary.apply(
+        lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else (row["Runs"] + 100)
+    , axis=1) # Adding 100 ensures high BA if no wickets fall
+    
+    summary["SR"] = summary.apply(
+        lambda row: row["Balls"] / row["Wickets"] * 6 if row["Wickets"] > 0 else (row["Balls"] + 100)
+    , axis=1) # Adding 100 ensures high SR if no wickets fall
+    
+    # Reorder for consistent plotting (HITTING then MISSING)
+    summary = summary.reindex(["HITTING", "MISSING"])
+
+    # 3. Chart Setup
+    metrics = ["Wickets", "BA", "SR"]
+    titles = ["Wickets", "Bowling Average", "Bowling Strike Rate"]
+    
+    # Use figsize=(10, 2) for a wide, short chart to fit the three sections horizontally
+    fig, axes = plt.subplots(1, 3, figsize=(10, 2))
+    plt.subplots_adjust(wspace=0.3) # Adjust space between the subplots
+
+    colors = ['red', '#A9A9A9'] # Red for HITTING, Grey for MISSING
+    y_labels = ['HITTING', 'MISSING']
+    
+    max_values = {
+        "Wickets": summary["Wickets"].max() * 1.2,
+        "BA": summary["BA"].max() * 1.2,
+        "SR": summary["SR"].max() * 1.2,
+    }
+
+    # 4. Plotting Loop
+    for i, metric in enumerate(metrics):
+        ax = axes[i]
+        
+        # Data for the current metric
+        data = summary[metric].tolist()
+        
+        # Plot horizontal bars
+        bars = ax.barh(y_labels, data, color=colors, height=0.6)
+        
+        # Titles
+        ax.set_title(titles[i], fontsize=10)
+        
+        # X-axis limits
+        ax.set_xlim(0, max_values[metric])
+        ax.xaxis.set_visible(False) # Hide X-axis
+        
+        # Y-axis (Only show labels on the first chart)
+        if i == 0:
+            ax.tick_params(axis='y', length=0) # Remove tick marks
+            ax.set_yticks([0, 1])
+            ax.set_yticklabels(y_labels, fontsize=10, weight='bold', color='black')
+        else:
+            ax.yaxis.set_visible(False) # Hide Y-axis for subsequent charts
+            
+        # Add labels on the bars (formatted based on metric)
+        for bar, value, label in zip(bars, data, y_labels):
+            if metric == "Wickets":
+                text = f"{int(value)}"
+            else:
+                # Format BA and SR to 2 decimal places
+                text = f"{value:.2f}" 
+            
+            # Place the text inside or at the end of the bar
+            ax.text(bar.get_width() - 0.5, bar.get_y() + bar.get_height()/2, 
+                    text, 
+                    ha='right', va='center', fontsize=9, color='white' if bar.get_width() > max_values[metric] * 0.5 else 'black', 
+                    weight='bold', zorder=10)
+
+        # Draw light vertical grid lines
+        ax.grid(axis='x', linestyle='--', alpha=0.5, zorder=0)
+
+    # 5. Final Styling
+    fig.patch.set_facecolor('white')
+    plt.tight_layout(pad=1.0)
+    
+    return fig
 # =========================================================
 # PAGE SETUP AND FILTERING
 # =========================================================
@@ -848,7 +958,7 @@ with col_rhb:
     
     # Chart 8: Missing Hitting    
     st.plotly_chart(create_spinner_hitting_missing_map(df_rhb, "RHB"), use_container_width=True)
-
+    st.plotly_chart(create_spinner_h_m_performance_bars(df_rhb, "RHB"), use_container_width=True)
 # === RIGHT COLUMN: AGAINST LEFT-HANDED BATSMEN (LHB) ===
     with col_lhb:
         st.markdown("###  Left-Handed Batsmen (LHB)")
@@ -888,3 +998,6 @@ with col_rhb:
         
         # Chart 8: Missing Hitting    
         st.plotly_chart(create_spinner_hitting_missing_map(df_lhb, "LHB"), use_container_width=True)
+        # Assuming you use the columns col_rhb and col_lhb:
+
+        st.plotly_chart(create_spinner_h_m_performance_bars(df_lhb, "LHB"), use_container_width=True)
