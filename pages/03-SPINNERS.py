@@ -647,13 +647,7 @@ def create_directional_split(df_in, column_name, handedness_label):
     return fig
 
 # --- CHART 8: HITTING VS MISSING STUMPS MAP ---
-# --- CHART 8: HITTING VS MISSING STUMPS MAP ---
 def create_spinner_hitting_missing_map(df_in, handedness_label):
-    """
-    Creates a Hitting vs Missing stumps map for spinners (or any bowler type).
-    Draws a clean scatter plot with HITTING zone highlighted,
-    and no trace/legend clutter.
-    """
 
     # 0️⃣ Early exit if data is empty
     if df_in.empty:
@@ -706,22 +700,12 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
         color='red', s=55, edgecolor='white',
         linewidth=0.4, alpha=0.9, label='_nolegend_'
     )
-    ax.set_xticks([])
-    ax.set_yticks([])
-    ax.tick_params(
-    axis='both', which='both',
-    bottom=False, top=False, left=False, right=False,
-    labelbottom=False, labeltop=False, labelleft=False, labelright=False
-)
-
 
     # 8️⃣ Format Plot
     ax.set_xlim(-1.1, 1.1)
     ax.set_ylim(0, 1.4)
     ax.axis('off')  # clean look, no ticks
     plt.tight_layout(pad=0.5)
-
-
 
     # 🔟 Add Hitting and Missing Text Labels
     ax.text(
@@ -974,6 +958,7 @@ with col_rhb:
     
     # Chart 8: Missing Hitting    
     st.pyplot(create_spinner_hitting_missing_map(df_rhb, "RHB"), use_container_width=True)
+    
     st.plotly_chart(create_spinner_h_m_performance_bars(df_rhb), use_container_width=True)
 # === RIGHT COLUMN: AGAINST LEFT-HANDED BATSMEN (LHB) ===
     with col_lhb:
@@ -1013,7 +998,7 @@ with col_rhb:
         
         
         # Chart 8: Missing Hitting    
-        st.plotly_chart(create_spinner_hitting_missing_map(df_lhb, "LHB"), use_container_width=True)
+        st.pyplot(create_spinner_hitting_missing_map(df_lhb, "LHB"), use_container_width=True)
         # Assuming you use the columns col_rhb and col_lhb:
 
         st.plotly_chart(create_spinner_h_m_performance_bars(df_lhb), use_container_width=True)
