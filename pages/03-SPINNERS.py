@@ -171,12 +171,15 @@ def create_spinner_lateral_performance_boxes(df_in):
 def create_spinner_pitch_map(df_in):
     # Imports needed if not at the top of the file
     import plotly.graph_objects as go
-    
     if df_in.empty:
         return go.Figure().update_layout(title=f"No data for Pitch Map (Seam)", height=300)
 
-    PITCH_BINS = get_pitch_bins() # Simplified call
-    
+    PITCH_BINS = {
+        "Full": [1.2, 6.0],
+        "Length": [6.0, 8.0],
+        "Short": [8.0, 10.0],
+        "Bouncer": [10.0, 15.0],
+    }
     # Add a catch-all bin for Full Tosses (always Seam logic)
     PITCH_BINS["Full Toss"] = [-4.0, 1.2]  
         
