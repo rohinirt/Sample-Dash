@@ -11,6 +11,8 @@ import base64
 import matplotlib.patheffects as pe
 from matplotlib import cm, colors, patches
 import matplotlib.colors as mcolors
+from matplotlib.legend import Legend
+
 
 
 def create_spinner_crease_beehive(df_in):
