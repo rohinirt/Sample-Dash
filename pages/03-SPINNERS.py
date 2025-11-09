@@ -707,15 +707,11 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
         linewidth=0.4, alpha=0.9, label='_nolegend_'
     )
 
-    # 7️⃣ Add Stump Box and Center Line
-    stump_rect = patches.Rectangle(
-        (-0.18, 0), 0.36, 0.78,
-        linewidth=1.2, edgecolor='black', facecolor='none', linestyle='solid', zorder=5
-    )
+
     ax.add_patch(stump_rect)
-    ax.axvline(x=0, color='black', linestyle='-', linewidth=0.8, zorder=4)
-    ax.axvline(x=-0.18, color='black', linestyle='-', linewidth=0.8, zorder=4)
-    ax.axvline(x=0.18, color='black', linestyle='-', linewidth=0.8, zorder=4)
+    ax.axvline(x=0, color='black', linestyle='-', linewidth=0.8)
+    ax.axvline(x=-0.18, color='black', linestyle='-', linewidth=0.8)
+    ax.axvline(x=0.18, color='black', linestyle='-', linewidth=0.8)
     ax.set_xticks([])
     ax.set_yticks([])
 
