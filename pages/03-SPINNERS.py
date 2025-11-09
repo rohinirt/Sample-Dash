@@ -650,7 +650,7 @@ def create_directional_split(df_in, column_name, handedness_label):
 # --- CHART 8: HITTING VS MISSING STUMPS MAP ---
 def create_spinner_hitting_missing_map(df_in, handedness_label):
     if df_in.empty:
-        return go.Figure().update_layout(title=f"No data for Hitting/Missing ({handedness_label})", height=400)
+        return go.Figure().update_layout(title=f"No data for Hitting/Missing ({handedness_label})", height=350)
 
     df_map = df_in.copy()
 
@@ -726,7 +726,7 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
     
     fig_hm.update_layout(
         title=f"Stumps Hitting vs. Missing Map ({handedness_label})",
-        height=500,
+        height=350,
         margin=dict(l=0, r=0, t=0, b=0),
         xaxis=dict(
             title="Lateral Stumps Position (Y)", range=[-1.1, 1.1],
