@@ -648,28 +648,39 @@ def create_directional_split(df_in, column_name, handedness_label):
     return fig
 
 # --- CHART 8: HITTING VS MISSING STUMPS MAP ---
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import numpy as np
+import pandas as pd
+
+# --- CHART 8: HITTING VS MISSING STUMPS MAP ---
 def create_spinner_hitting_missing_map(df_in, handedness_label):
-    # 0. Initial Check
+    """
+    Creates a Hitting vs Missing stumps map for spinners (or any bowler type).
+    Draws a clean scatter plot with HITTING zone highlighted,
+    and no trace/legend clutter.
+    """
+
+    # 0️⃣ Early exit if data is empty
     if df_in.empty:
-        fig, ax = plt.subplots(figsize=(4, 4)); 
-        ax.text(0.5, 0.5, f"No data for Hitting/Missing ({handedness_label})",  
-                ha='center', va='center', fontsize=12); 
-        ax.axis('off'); 
+        fig, ax = plt.subplots(figsize=(4, 4))
+        ax.text(0.5, 0.5, f"No data for Hitting/Missing ({handedness_label})",
+                ha='center', va='center', fontsize=12)
+        ax.axis('off')
         return fig
 
     df_map = df_in.copy()
 
-    # 1. Define Hitting/Missing Category
-    # Stumps Target Area: Y [-0.18, 0.18], Z [0, 0.78]
+    # 1️⃣ Define Hitting/Missing Category (Target box: Y=[-0.18, 0.18], Z=[0, 0.78])
     is_hitting_target = (
-        (df_map["StumpsY"] >= -0.18) & 
+        (df_map["StumpsY"] >= -0.18) &
         (df_map["StumpsY"] <= 0.18) &
-        (df_map["StumpsZ"] >= 0) & 
+        (df_map["StumpsZ"] >= 0) &
         (df_map["StumpsZ"] <= 0.78)
     )
     df_map["HittingCategory"] = np.where(is_hitting_target, "HITTING", "MISSING")
 
-    # 2. Calculate Hitting/Missing Percentages
+    # 2️⃣ Calculate Percentages
     if not df_map.empty:
         counts = df_map["HittingCategory"].value_counts(normalize=True).mul(100).round(1)
         hitting_pct = counts.get("HITTING", 0.0)
@@ -678,73 +689,61 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
         hitting_pct = 0.0
         missing_pct = 0.0
 
-    # 3. Create Figure (Use a larger figsize for better alignment with Plotly charts)
-    # Adjust the height (e.g., 4) to match the vertical space of your other Plotly charts.
+    # 3️⃣ Setup Figure
+    fig, ax = plt.subplots(figsize=(7, 4))
 
-    # 4. Plot Data
-    fig, ax = plt.subplots(figsize=(7, 4))  
-    # Stratify Data
+    # 4️⃣ Split Data
     df_missing = df_map[df_map["HittingCategory"] == "MISSING"]
     df_hitting = df_map[df_map["HittingCategory"] == "HITTING"]
 
-    # Plot MISSING (Grey)
-    ax.scatter(df_missing["StumpsY"], df_missing["StumpsZ"], 
-           color='#D3D3D3', s=50, edgecolor='white', linewidth=0.5, alpha=0.8, label='_nolegend_')
+    # 5️⃣ Plot MISSING (Grey)
+    ax.scatter(
+        df_missing["StumpsY"], df_missing["StumpsZ"],
+        color='#D3D3D3', s=45, edgecolor='white',
+        linewidth=0.4, alpha=0.8, label='_nolegend_'
+    )
 
-    # Plot HITTING (Red)
-    ax.scatter(df_hitting["StumpsY"], df_hitting["StumpsZ"], 
-           color='red', s=60, edgecolor='white', linewidth=0.5, alpha=0.9, label='_nolegend_')
+    # 6️⃣ Plot HITTING (Red)
+    ax.scatter(
+        df_hitting["StumpsY"], df_hitting["StumpsZ"],
+        color='red', s=55, edgecolor='white',
+        linewidth=0.4, alpha=0.9, label='_nolegend_'
+    )
 
-# Just to be safe — remove any existing legends
-for legend in ax.get_children():
-    if isinstance(legend, plt.Legend):
-        legend.remove()
-
-    ax.legend([], [], frameon=False)
-    # 5. Add Stump Boundaries (The "HITTING" zone)
-    # The target box area is Y=[-0.18, 0.18], Z=[0, 0.78]
+    # 7️⃣ Add Stump Box and Center Line
     stump_rect = patches.Rectangle(
-        (-0.18, 0), 0.36, 0.78, 
-        linewidth=1.5, edgecolor='black', facecolor='none', linestyle='solid', zorder=5
+        (-0.18, 0), 0.36, 0.78,
+        linewidth=1.2, edgecolor='black', facecolor='none', linestyle='solid', zorder=5
     )
     ax.add_patch(stump_rect)
-
-    # Center line (Y=0)
     ax.axvline(x=0, color='black', linestyle=':', linewidth=0.8, zorder=4)
 
-    # 6. Set Limits, Labels, and Title
+    # 8️⃣ Format Plot
     ax.set_xlim(-1.1, 1.1)
     ax.set_ylim(0, 1.4)
-    ax.legend().remove()
-    ax.set_xticks([])
-    ax.set_yticks([])
-    # Hide axis ticks/labels for a cleaner look
-    ax.axis('off')
-    ax.legend().remove()
-    
-    hitting_text = f"Hitting: {hitting_pct}%"
-    ax.text(1.05, 1.35, hitting_text, 
-            transform=ax.transData, 
-            ha='right', va='top', 
-            fontsize=12, 
-            color='red', # Color matches the HITTING scatter points
-            weight='bold', 
-            bbox=dict(boxstyle="square,pad=0.3", fc="white", alpha=0.0, edgecolor='none'))
-
-    # MISSING Annotation (Grey)
-    missing_text = f"Missing: {missing_pct}%"
-    ax.text(1.05, 1.25, missing_text, # Positioned slightly below HITTING text
-            transform=ax.transData, 
-            ha='right', va='top', 
-            fontsize=12, 
-            weight='bold',
-            color='#D3D3D3', # Color matches the MISSING scatter points
-            bbox=dict(boxstyle="square,pad=0.3", fc="white", alpha=0.0, edgecolor='none'))
-    handles, labels = ax.get_legend_handles_labels()
-    if handles:
-        ax.legend().remove()        
+    ax.axis('off')  # clean look, no ticks
     plt.tight_layout(pad=0.5)
-return fig
+
+    # 9️⃣ Remove any auto legends (safety)
+    for legend in ax.get_children():
+        if isinstance(legend, plt.Legend):
+            legend.remove()
+
+    # 🔟 Add Hitting and Missing Text Labels
+    ax.text(
+        1.05, 1.35, f"Hitting: {hitting_pct}%",
+        transform=ax.transData, ha='right', va='top',
+        fontsize=12, color='red', weight='bold'
+    )
+
+    ax.text(
+        1.05, 1.25, f"Missing: {missing_pct}%",
+        transform=ax.transData, ha='right', va='top',
+        fontsize=12, color='#D3D3D3', weight='bold'
+    )
+
+    return fig
+
 
 # =========================================================
 # PAGE SETUP AND FILTERING
