@@ -680,7 +680,6 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
 
     # 3. Create Figure (Use a larger figsize for better alignment with Plotly charts)
     # Adjust the height (e.g., 4) to match the vertical space of your other Plotly charts.
-    fig, ax = plt.subplots(figsize=(4, 8)) 
 
     # 4. Plot Data
     
