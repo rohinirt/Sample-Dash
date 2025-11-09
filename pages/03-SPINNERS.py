@@ -686,7 +686,7 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
     ax.axvline(x=-0.18, color='black', linestyle='-', linewidth=1, zorder=20)
     ax.axvline(x=0, color='black', linestyle=':', linewidth=1, zorder=20)
     ax.axvline(x=0.18, color='black', linestyle='-', linewidth=1, zorder=20)
-    ax.axvline(y=0.78, color='black', linestyle='-', linewidth=1, zorder=20)
+    ax.axhline(y=0.78, color='black', linestyle='-', linewidth=1, zorder=20)
 
     # 5️⃣ Plot MISSING (Grey)
     ax.scatter(
