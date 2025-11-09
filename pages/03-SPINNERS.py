@@ -766,6 +766,15 @@ with col_rhb:
         # Chart 1b: Lateral Performance Boxes (Bowling Avg)
         st.pyplot(create_spinner_lateral_performance_boxes(df_lhb), use_container_width=True)
 
+        # Chart 2: PITCHMAP
+        pitch_map_col, run_pct_col = st.columns([3, 1]) 
+        with pitch_map_col:
+            st.markdown("###### PITCHMAP")
+            st.plotly_chart(create_spinner_pitch_map(df_lhb), use_container_width=True)    
+        with run_pct_col:
+            st.markdown("##### ")
+            st.pyplot(create_spinner_pitch_length_metrics(df_lhb), use_container_width=True) 
+
          # Chart 4/5: RELEASE
         pace_col, release_col = st.columns([2, 2]) 
         with pace_col:
