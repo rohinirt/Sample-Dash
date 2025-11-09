@@ -689,11 +689,11 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
 
     # Plot MISSING (Grey)
     ax.scatter(df_missing["StumpsY"], df_missing["StumpsZ"], 
-               color='#D3D3D3', s=40, edgecolor='white', linewidth=0.5, label='MISSING', alpha=0.8)
+               color='#D3D3D3', s=50, edgecolor='white', linewidth=0.5, showlegend = False, label='MISSING', alpha=0.8)
 
     # Plot HITTING (Red)
     ax.scatter(df_hitting["StumpsY"], df_hitting["StumpsZ"], 
-               color='red', s=50, edgecolor='white', linewidth=0.5, label='HITTING', alpha=0.9)
+               color='red', s=60, edgecolor='white', linewidth=0.5,showlegend = Flase, label='HITTING', alpha=0.9)
 
     # 5. Add Stump Boundaries (The "HITTING" zone)
     # The target box area is Y=[-0.18, 0.18], Z=[0, 0.78]
@@ -710,14 +710,17 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
     ax.set_xlim(-1.1, 1.1)
     ax.set_ylim(0, 1.4)
     ax.legend().remove()
+    ax.set_xticks([])
+    ax.set_yticks([])
     # Hide axis ticks/labels for a cleaner look
     ax.axis('off')
     ax.legend().remove()
+    
     hitting_text = f"Hitting: {hitting_pct}%"
     ax.text(1.05, 1.35, hitting_text, 
             transform=ax.transData, 
             ha='right', va='top', 
-            fontsize=10, 
+            fontsize=12, 
             color='red', # Color matches the HITTING scatter points
             weight='bold', 
             bbox=dict(boxstyle="square,pad=0.3", fc="white", alpha=0.0, edgecolor='none'))
@@ -727,7 +730,8 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
     ax.text(1.05, 1.25, missing_text, # Positioned slightly below HITTING text
             transform=ax.transData, 
             ha='right', va='top', 
-            fontsize=10, 
+            fontsize=12, 
+            weight='bold',
             color='#D3D3D3', # Color matches the MISSING scatter points
             weight='bold',
             bbox=dict(boxstyle="square,pad=0.3", fc="white", alpha=0.0, edgecolor='none'))
