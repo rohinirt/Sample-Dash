@@ -650,11 +650,6 @@ def create_directional_split(df_in, column_name, handedness_label):
     return fig
 
 # --- CHART 8: HITTING VS MISSING STUMPS MAP ---
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-import numpy as np
-import pandas as pd
-
 # --- CHART 8: HITTING VS MISSING STUMPS MAP ---
 def create_spinner_hitting_missing_map(df_in, handedness_label):
     """
@@ -718,7 +713,11 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
         linewidth=1.2, edgecolor='black', facecolor='none', linestyle='solid', zorder=5
     )
     ax.add_patch(stump_rect)
-    ax.axvline(x=0, color='black', linestyle=':', linewidth=0.8, zorder=4)
+    ax.axvline(x=0, color='black', linestyle='-', linewidth=0.8, zorder=4)
+    ax.axvline(x=-0.18, color='black', linestyle='-', linewidth=0.8, zorder=4)
+    ax.axvline(x=0.18, color='black', linestyle='-', linewidth=0.8, zorder=4)
+    ax.set_xticks([])
+    ax.set_yticks([])
 
     # 8️⃣ Format Plot
     ax.set_xlim(-1.1, 1.1)
