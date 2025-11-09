@@ -775,7 +775,7 @@ def create_spinner_h_m_performance_bars(df_in):
 
     # Define colors and bar height
     colors = ['red', '#A9A9A9'] # Red for HITTING, Grey for MISSING
-    bar_height = 0.3
+    bar_height = 0.4
     
     # --- Chart 1: Wickets ---
     fig.add_trace(go.Bar(
