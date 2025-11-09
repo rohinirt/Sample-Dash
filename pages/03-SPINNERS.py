@@ -728,7 +728,7 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
 
     # 9️⃣ Remove any auto legends (safety)
     for legend in ax.get_children():
-        if isinstance(legend, plt.lLegend):
+        if isinstance(legend, plt.Legend):
             legend.remove()
 
     # 🔟 Add Hitting and Missing Text Labels
