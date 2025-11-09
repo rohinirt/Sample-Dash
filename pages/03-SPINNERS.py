@@ -976,8 +976,8 @@ with col_rhb:
         st.pyplot(create_directional_split(df_rhb, "Deviation", "RHB"), use_container_width=True)
     
     # Chart 8: Missing Hitting    
-    st.plotly_chart(create_spinner_hitting_missing_map(df_rhb, "RHB"), use_container_width=True)
-    st.plotly_chart(create_spinner_h_m_performance_bars(df_rhb, "RHB"), use_container_width=True)
+    st.pyplot(create_spinner_hitting_missing_map(df_rhb, "RHB"), use_container_width=True)
+    st.pyplot(create_spinner_h_m_performance_bars(df_rhb, "RHB"), use_container_width=True)
 # === RIGHT COLUMN: AGAINST LEFT-HANDED BATSMEN (LHB) ===
     with col_lhb:
         st.markdown("###  Left-Handed Batsmen (LHB)")
@@ -1019,4 +1019,4 @@ with col_rhb:
         st.plotly_chart(create_spinner_hitting_missing_map(df_lhb, "LHB"), use_container_width=True)
         # Assuming you use the columns col_rhb and col_lhb:
 
-        st.plotly_chart(create_spinner_h_m_performance_bars(df_lhb, "LHB"), use_container_width=True)
+        st.pyplot(create_spinner_h_m_performance_bars(df_lhb, "LHB"), use_container_width=True)
