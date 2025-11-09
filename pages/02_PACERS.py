@@ -278,10 +278,10 @@ def get_pitch_bins():
     """Defines the pitch length ranges for Seam bowling."""
     # Seam Bins: 1.2-6: Full, 6-8 Length, 8-10 Short, 10-15 Bouncer (Distance from batsman's stumps in meters)
     return {
-        "Full": [1.2, 6.0],
-        "Length": [6.0, 8.0],
-        "Short": [8.0, 10.0],
-        "Bouncer": [10.0, 15.0],
+        "Over Pitched": [1.22, 2.22],
+        "Full": [2.22, 4.0],
+        "Good": [4.0, 6.0],
+        "Short": [6.0, 15.0],
     }
     
 # --- CHART 3a: PITCH MAP (BOUNCE LOCATION) ---
