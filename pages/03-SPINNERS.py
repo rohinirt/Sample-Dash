@@ -1,6 +1,9 @@
-import streamlit as st
-import pandas as pd
+# PAGE SETUP AND FILTERING
+# =========================================================
 
+st.set_page_config(
+    layout="wide"
+)
 
 # 1. CRITICAL: GET DATA AND CHECK FOR AVAILABILITY
 if 'data_df' not in st.session_state:
@@ -12,19 +15,12 @@ df_raw = st.session_state['data_df']
 # 2. BASE FILTER: ONLY SPIN DELIVERIES
 df_spin_base = df_raw[df_raw["DeliveryType"] == "Spin"]
 
-# Overall Dashboard Title
-st.title("🧶 Spinners Dashboard (Spin Bowling Analysis)")
-
-# Check if there is any spin data available
-if df_spin_base.empty:
-    st.warning("No deliveries categorized as 'Spin' found in the uploaded data.")
-    st.stop()
+st.title("PACERS")
 
 # 3. FILTERS (Bowling Team and Bowler)
 filter_col1, filter_col2 = st.columns(2) 
 
 # --- Filter Logic ---
-# Determine which column to use for Team filtering
 if "BowlingTeam" in df_spin_base.columns:
     team_column = "BowlingTeam"
 else:
@@ -32,41 +28,41 @@ else:
     st.warning("The 'BowlingTeam' column was not found. Displaying all Batting Teams as a fallback.")
 
 all_teams = ["All"] + sorted(df_spin_base[team_column].dropna().unique().tolist())
+all_bowlers = ["All"] + sorted(df_spin_base["BowlerName"].dropna().unique().tolist()) 
 
 with filter_col1:
     bowl_team = st.selectbox("Bowling Team", all_teams, index=0)
 
-# Filter bowler list based on selected team
-if bowl_team != "All":
-    filtered_bowlers_df = df_spin_base[df_spin_base[team_column] == bowl_team]
-else:
-    filtered_bowlers_df = df_spin_base
-    
-filtered_bowlers = ["All"] + sorted(filtered_bowlers_df["BowlerName"].dropna().unique().tolist())
-
 with filter_col2:
-    bowler = st.selectbox("Bowler Name", filtered_bowlers, index=0)
-
-# 4. Display Selected Bowler
-# If a specific bowler is selected, show their name prominently
-if bowler != "All":
-    st.header(f"Selected Bowler: {bowler}")
-else:
-    st.header(f"Analysis for: {bowl_team} Bowlers")
-
-# 5. Final Filtered DataFrame
-# This is the DataFrame you will use for all your spinner chart functions below
-df_spin_filtered = df_spin_base.copy()
+    bowler = st.selectbox("Bowler Name", all_bowlers, index=0)
+st.header(f"{bowler}")
+# 4. Apply Filters to the Base spin Data
+df_filtered = df_spin_base.copy()
 
 if bowl_team != "All":
-    df_spin_filtered = df_spin_filtered[df_spin_filtered[team_column] == bowl_team]
+    df_filtered = df_filtered[df_filtered[team_column] == bowl_team]
     
 if bowler != "All":
-    df_spin_filtered = df_spin_filtered[df_spin_filtered["BowlerName"] == bowler]
+    if "BowlerName" in df_filtered.columns:
+        df_filtered = df_filtered[df_filtered["BowlerName"] == bowler]
+    else:
+        st.warning("BowlerName column not found for filtering.")
 
+# =========================================================
+# 5. SPLIT AND DISPLAY CHARTS (RHB vs LHB) 🏏
+# =========================================================
 
-# --- START CHART CALLS HERE, using df_spin_filtered ---
+# Check for the required column to split the data
+if "IsBatsmanRightHanded" not in df_filtered.columns:
+    st.error("Cannot split data by handedness: 'IsBatsmanRightHanded' column is missing.")
+    st.stop()
 
-# Example:
-# st.markdown("### Spin Analysis Charts")
-# st.pyplot(create_spinner_pitch_map(df_spin_filtered))
+# --- Data Split ---
+# True is Right-Handed (RHB), False is Left-Handed (LHB)
+df_rhb = df_filtered[df_filtered["IsBatsmanRightHanded"] == True]
+df_lhb = df_filtered[df_filtered["IsBatsmanRightHanded"] == False]
+
+st.divider()
+
+# --- Display Layout ---
+col_rhb, col_lhb = st.columns(2)
