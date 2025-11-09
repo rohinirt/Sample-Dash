@@ -695,13 +695,7 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
     ax.axvline(x=-0.18, color='black', linestyle='-', linewidth=1, zorder=20)
     ax.axvline(x=0, color='black', linestyle=':', linewidth=1, zorder=20)
     ax.axvline(x=0.18, color='black', linestyle='-', linewidth=1, zorder=20)
-    ax.set_xticks([])
-    ax.set_yticks([])
-    ax.tick_params(
-        axis='both', which='both',
-        bottom=False, top=False, left=False, right=False,
-        labelbottom=False, labelleft=False
-    )
+
     # 5️⃣ Plot MISSING (Grey)
     ax.scatter(
         df_missing["StumpsY"], df_missing["StumpsZ"],
@@ -715,6 +709,13 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
         color='red', s=55, edgecolor='white',
         linewidth=0.4, alpha=0.9, label='_nolegend_'
     )
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.tick_params(
+    axis='both', which='both',
+    bottom=False, top=False, left=False, right=False,
+    labelbottom=False, labeltop=False, labelleft=False, labelright=False
+)
     for spine in ax.spines.values():
         spine.set_visible(False)
 
