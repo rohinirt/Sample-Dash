@@ -723,7 +723,7 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
     return fig
 
 # Chart 9 Hitting Missing Performance
-def create_spinner_h_m_performance_bars_plotly(df_in, handedness_label):
+def create_spinner_h_m_performance_bars(df_in, handedness_label):
 
     # 1. Define Hitting/Missing Category
     is_hitting_target = (
