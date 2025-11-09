@@ -649,19 +649,9 @@ def create_directional_split(df_in, column_name, handedness_label):
 
 # --- CHART 8: HITTING VS MISSING STUMPS MAP ---
 def create_spinner_hitting_missing_map(df_in, handedness_label):
-    """
-    Creates a scatter plot using Matplotlib showing where the ball would hit the stumps
-    (StumpsY, StumpsZ) and categorizes it as HITTING (Red) or MISSING (Grey).
-    
-    NOTE: This uses Matplotlib's figsize for sizing consistency.
-    """
-    import matplotlib.pyplot as plt
-    import matplotlib.patches as patches
-    import numpy as np
-
     # 0. Initial Check
     if df_in.empty:
-        fig, ax = plt.subplots(figsize=(7, 4)); 
+        fig, ax = plt.subplots(figsize=(4, 4)); 
         ax.text(0.5, 0.5, f"No data for Hitting/Missing ({handedness_label})", 
                 ha='center', va='center', fontsize=12); 
         ax.axis('off'); 
@@ -690,7 +680,7 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
 
     # 3. Create Figure (Use a larger figsize for better alignment with Plotly charts)
     # Adjust the height (e.g., 4) to match the vertical space of your other Plotly charts.
-    fig, ax = plt.subplots(figsize=(7, 4)) 
+    fig, ax = plt.subplots(figsize=(4, 4)) 
 
     # 4. Plot Data
     
@@ -721,7 +711,7 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
     ax.set_title(f"Stumps Hitting vs. Missing Map ({handedness_label})", fontsize=12, pad=10)
     ax.set_xlim(-1.1, 1.1)
     ax.set_ylim(0, 1.4)
-    
+    ax.legend().remove()
     # Hide axis ticks/labels for a cleaner look
     ax.axis('off')
 
