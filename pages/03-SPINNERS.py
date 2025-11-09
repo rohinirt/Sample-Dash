@@ -712,27 +712,26 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
     ax.legend().remove()
     # Hide axis ticks/labels for a cleaner look
     ax.axis('off')
-
-    # 7. Add Percentage Annotation
-    annotation_text = (
-        f"Hitting: {hitting_pct}%\n"
-        f"Missing: {missing_pct}%"
-    )
-    
-    # Matplotlib annotation is based on axes coordinates (0 to 1) or data coordinates
-    # We'll use data coordinates (x=1.1, y=1.35) near the top right, matching the Plotly position.
-    ax.text(1.05, 1.35, annotation_text, 
+    ax.legend().remove()
+    hitting_text = f"Hitting: {hitting_pct}%"
+    ax.text(1.05, 1.35, hitting_text, 
             transform=ax.transData, 
             ha='right', va='top', 
             fontsize=10, 
-            bbox=dict(boxstyle="square,pad=0.3", fc="white", alpha=0.0, edgecolor='none'),
-            # Manually style the colors for the Hitting/Missing text
-            color='black') 
+            color='red', # Color matches the HITTING scatter points
+            weight='bold', 
+            bbox=dict(boxstyle="square,pad=0.3", fc="white", alpha=0.0, edgecolor='none'))
+
+    # MISSING Annotation (Grey)
+    missing_text = f"Missing: {missing_pct}%"
+    ax.text(1.05, 1.25, missing_text, # Positioned slightly below HITTING text
+            transform=ax.transData, 
+            ha='right', va='top', 
+            fontsize=10, 
+            color='#D3D3D3', # Color matches the MISSING scatter points
+            weight='bold',
+            bbox=dict(boxstyle="square,pad=0.3", fc="white", alpha=0.0, edgecolor='none'))
             
-    # NOTE: Matplotlib text styling for color requires manual setup if you want span-like coloring.
-    # We keep the text simple here, but you can use `colored_text` helper functions if needed.
-    
-    # Clean layout
     plt.tight_layout(pad=0.5)
     
     return fig
