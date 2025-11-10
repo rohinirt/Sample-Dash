@@ -1012,7 +1012,7 @@ with col_rhb:
         st.plotly_chart(create_pacer_release_zone_map(df_rhb, "RHB"), use_container_width=True)
         
     #Chart 8/9: Swing Deviation Distribution
-    swing_dist, deviation dist = st.columns([2,2])
+    swing_dist, deviation_dist = st.columns([2,2])
     with swing_dist:
         st.pyplot(create_swing_distribution_histogram(df_rhb, "RHB"))
     with deviation_dist:
@@ -1062,7 +1062,7 @@ with col_lhb:
         st.plotly_chart(create_pacer_release_zone_map(df_lhb, "LHB"), use_container_width=True)
         
     #Chart 8/9: Swing Deviation Distribution
-    swing_dist, deviation dist = st.columns([2,2])
+    swing_dist, deviation_dist = st.columns([2,2])
     with swing_dist:
         st.pyplot(create_swing_distribution_histogram(df_lhb, "LHB"))
     with deviation_dist:
