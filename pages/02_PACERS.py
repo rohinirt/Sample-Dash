@@ -764,7 +764,7 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
     bins = np.arange(min_Deviation, max_Deviation + 1.1, 1)
 
     # 2. Calculate Counts (N) and Bin Edges
-    counts, bin_edges = np.histogram(swing_data, bins=bins)
+    counts, bin_edges = np.histogram(Deviation_data, bins=bins)
     total_balls = len(Deviation_data)
     percentages = (counts / total_balls) * 100
 
