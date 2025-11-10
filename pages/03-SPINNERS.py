@@ -710,13 +710,13 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
 
     # 🔟 Add Hitting and Missing Text Labels
     ax.text(
-        1.05, 1.35, f"Hitting: {hitting_pct}%",
+        1.05, 1.35, f"Hitting: {hitting_pct:.0f}%",
         transform=ax.transData, ha='right', va='top',
         fontsize=14, color='red', weight='bold'
     )
 
     ax.text(
-        1.05, 1.25, f"Missing: {missing_pct}%",
+        1.05, 1.25, f"Missing: {missing_pct:.0f}%",
         transform=ax.transData, ha='right', va='top',
         fontsize=14, color='#D3D3D3', weight='bold'
     )
@@ -759,8 +759,6 @@ def create_spinner_h_m_performance_bars(df_in, handedness_label):
         lambda row: row["Balls"] / row["Wickets"] * 6 if row["Wickets"] > 0 else 999.0
     , axis=1)
     
-    # Reorder the index to match Plotly's structure (HITTING on top, MISSING on bottom)
-    summary = summary.reindex(["HITTING", "MISSING"])
 
     # 3. Chart Setup
     metrics = ["Wickets", "BA", "SR"]
