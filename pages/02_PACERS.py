@@ -677,7 +677,7 @@ def create_pacer_release_zone_map(df_in, handedness_label):
 def create_swing_distribution_histogram(df_in, handedness_label):
     # 0. Initial Check
     if df_in.empty or "Swing" not in df_in.columns:
-        fig, ax = plt.subplots(figsize=(12, 6))
+        fig, ax = plt.subplots(figsize=(20, 6))
         ax.text(0.5, 0.5, f"No Swing data for ({handedness_label})", ha='center', va='center', fontsize=12)
         ax.axis('off')
         return fig
@@ -685,7 +685,7 @@ def create_swing_distribution_histogram(df_in, handedness_label):
     # Ensure 'Swing' is not NaN and is numeric
     swing_data = df_in["Swing"].dropna().astype(float)
     if swing_data.empty:
-        fig, ax = plt.subplots(figsize=(12, 6))
+        fig, ax = plt.subplots(figsize=(20, 6))
         ax.text(0.5, 0.5, f"No valid Swing data for ({handedness_label})", ha='center', va='center', fontsize=12)
         ax.axis('off')
         return fig
@@ -711,7 +711,7 @@ def create_swing_distribution_histogram(df_in, handedness_label):
     tick_labels = [f"{b:.1f}" for b in lower_bin_edges] 
 
     # 4. Plotting
-    fig, ax = plt.subplots(figsize=(12, 6))
+    fig, ax = plt.subplots(figsize=(7, 4))
 
     # Plot the bars, centered correctly
     rects = ax.bar(bar_centers, percentages, width=bar_width, 
