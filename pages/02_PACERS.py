@@ -704,11 +704,11 @@ def create_swing_distribution_histogram(df_in, handedness_label):
     # Use the lower edge of the bin for positioning and labeling
     lower_bin_edges = bin_edges[:-1] # Exclude the final upper boundary
     bar_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
-    bar_width = 1.5
+    bar_width = 0.9
 
     # Create tick labels: use only the lower limit of the bin
     # Use floor to ensure clean integer/single decimal labels
-    tick_labels = [f"{b:.1f}" for b in lower_bin_edges] 
+    tick_labels = [f"{b:.0f}" for b in lower_bin_edges] 
 
     # 4. Plotting
     fig, ax = plt.subplots(figsize=(7, 4))
@@ -745,7 +745,7 @@ def create_swing_distribution_histogram(df_in, handedness_label):
 def create_deviation_distribution_histogram(df_in, handedness_label):
     # 0. Initial Check
     if df_in.empty or "Deviation" not in df_in.columns:
-        fig, ax = plt.subplots(figsize=(16, 5))
+        fig, ax = plt.subplots(figsize=(20, 6))
         ax.text(0.5, 0.5, f"No Deviation data for ({handedness_label})", ha='center', va='center', fontsize=12)
         ax.axis('off')
         return fig
@@ -753,7 +753,7 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
     # Ensure 'Deviation' is not NaN and is numeric
     Deviation_data = df_in["Deviation"].dropna().astype(float)
     if Deviation_data.empty:
-        fig, ax = plt.subplots(figsize=(16, 5))
+        fig, ax = plt.subplots(figsize=(20, 6))
         ax.text(0.5, 0.5, f"No valid Deviation data for ({handedness_label})", ha='center', va='center', fontsize=12)
         ax.axis('off')
         return fig
@@ -776,10 +776,10 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
 
     # Create tick labels: use only the lower limit of the bin
     # Use floor to ensure clean integer/single decimal labels
-    tick_labels = [f"{b:.1f}" for b in lower_bin_edges] 
+    tick_labels = [f"{b:.0f}" for b in lower_bin_edges] 
 
     # 4. Plotting
-    fig, ax = plt.subplots(figsize=(16, 5))
+    fig, ax = plt.subplots(figsize=(7, 4))
 
     # Plot the bars, centered correctly
     rects = ax.bar(bar_centers, percentages, width=bar_width, 
@@ -795,7 +795,7 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
             # Ensure text is readable: only show % if > 0.5%
             ax.text(rect.get_x() + rect.get_width() / 2., height + 0.5,
                     f'{pct:.0f}%',
-                    ha='center', va='bottom', fontsize=18, weight='bold')
+                    ha='center', va='bottom', fontsize=16, weight='bold')
     
     ax.set_ylim(0, percentages.max() * 1.25 if percentages.max() > 0 else 10)
     # Hide X and Y ticks and tick labels
