@@ -627,8 +627,8 @@ def create_spinner_releasey_performance(df_in, handedness_label):
     markdown_output = f"""
 ---
 **W:** {left_wickets} {spacer} **W:** {right_wickets}
-**Avg:** {left_ba} {spacer} **Avg:** {right_ba}
-**SR:** {left_sr} {spacer} **SR:** {right_sr}
+**Avg:** {left_ba} {spacer}*2 **Avg:** {right_ba}
+**SR:** {left_sr} {spacer}*3 **SR:** {right_sr}
 """
     return markdown_output
     return markdown_output
