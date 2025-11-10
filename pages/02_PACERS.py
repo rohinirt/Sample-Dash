@@ -673,7 +673,77 @@ def create_pacer_release_zone_map(df_in, handedness_label):
     
     return fig
 
-# --- CHARTS 6 & 7: SWING/DEVIATION DIRECTIONAL SPLIT (100% Stacked Bar) ---
+# Chart 8: Swing Distribution
+def create_swing_distribution_histogram(df_in, handedness_label):
+    # 0. Initial Check
+    if df_in.empty or "Swing" not in df_in.columns:
+        fig, ax = plt.subplots(figsize=(7, 4))
+        ax.text(0.5, 0.5, f"No Swing data for ({handedness_label})", ha='center', va='center', fontsize=12)
+        ax.axis('off')
+        return fig
+
+    # Ensure 'Swing' is not NaN and is numeric
+    swing_data = df_in["Swing"].dropna().astype(float)
+    if swing_data.empty:
+        fig, ax = plt.subplots(figsize=(7, 4))
+        ax.text(0.5, 0.5, f"No valid Swing data for ({handedness_label})", ha='center', va='center', fontsize=12)
+        ax.axis('off')
+        return fig
+
+    # 1. Define Bins of Size 1
+    min_swing = np.floor(swing_data.min())
+    max_swing = np.ceil(swing_data.max())
+    # Create bins from min to max, in steps of 1
+    bins = np.arange(min_swing, max_swing + 1.1, 1)
+
+    # 2. Calculate Counts (N) and Bin Edges
+    counts, bin_edges = np.histogram(swing_data, bins=bins)
+    total_balls = len(swing_data)
+    
+    # Calculate Percentages
+    percentages = (counts / total_balls) * 100
+
+    # 3. Prepare for plotting: Bar centers and labels
+    bar_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+    bar_width = 0.9 # Slightly less than 1 to show separation
+
+    # Create descriptive bin labels (e.g., "1.0 to 2.0")
+    bin_labels = [f"[{bin_edges[i]:.1f}-{bin_edges[i+1]:.1f}]" for i in range(len(bin_edges) - 1)]
+
+    # 4. Plotting
+    fig, ax = plt.subplots(figsize=(7, 4))
+
+    # Plot the bars
+    rects = ax.bar(bar_centers, percentages, width=bar_width, 
+                   color='royalblue', edgecolor='white', linewidth=1.0)
+    
+    # Set X-ticks to the bin labels
+    ax.set_xticks(bar_centers)
+    ax.set_xticklabels(bin_labels, rotation=45, ha='right', fontsize=9)
+
+    # 5. Annotation (Percentages on top of bars)
+    for rect, pct in zip(rects, percentages):
+        if pct > 0:
+            height = rect.get_height()
+            ax.text(rect.get_x() + rect.get_width() / 2., height + 0.5,
+                    f'{pct:.1f}%',
+                    ha='center', va='bottom', fontsize=10, weight='bold')
+
+    # 6. Final Styling
+    ax.set_title(f"Swing Distribution ({handedness_label})", fontsize=14, pad=15)
+    ax.set_xlabel("Swing (meters)", fontsize=10)
+    ax.set_ylabel("Percentage of Balls (%)", fontsize=10)
+    
+    # Adjust Y-limit to ensure percentage labels fit
+    ax.set_ylim(0, percentages.max() * 1.25 if percentages.max() > 0 else 10)
+    
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    plt.tight_layout()
+    
+    return fig
+
+
 # --- CHARTS 6 & 7: SWING/DEVIATION DIRECTIONAL SPLIT (100% Stacked Bar) ---
 def create_directional_split(df_in, column_name, handedness_label):
     from matplotlib import pyplot as plt
@@ -769,6 +839,7 @@ def create_directional_split(df_in, column_name, handedness_label):
     
     plt.tight_layout()
     return fig
+
 
 # =========================================================
 # PAGE SETUP AND FILTERING
@@ -872,7 +943,10 @@ with col_rhb:
     with release_col:
         st.markdown("###### RELEASE")
         st.plotly_chart(create_pacer_release_zone_map(df_rhb, "RHB"), use_container_width=True)
-
+        
+    #Chart 8: Swing Distribution
+    st.pyplot(create_swing_distribution_histogram(df_rhb, "RHB"))
+    
      # Chart 6/7: Lateral Movement
     swing_col, deviation_col = st.columns([2, 2]) 
     with swing_col:
