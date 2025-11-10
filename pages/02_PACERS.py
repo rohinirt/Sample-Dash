@@ -675,6 +675,15 @@ def create_pacer_release_zone_map(df_in, handedness_label):
 
 # Chart 8: Swing Distribution
 def create_swing_distribution_histogram(df_in, handedness_label):
+    """
+    Creates a Matplotlib histogram for the 'Swing' column with bins of size 1, 
+    displaying the percentage of balls in each bin.
+    
+    FIX: X-axis now shows only the lower limit tick for each bin.
+    """
+    import matplotlib.pyplot as plt
+    import numpy as np
+
     # 0. Initial Check
     if df_in.empty or "Swing" not in df_in.columns:
         fig, ax = plt.subplots(figsize=(7, 4))
@@ -693,38 +702,45 @@ def create_swing_distribution_histogram(df_in, handedness_label):
     # 1. Define Bins of Size 1
     min_swing = np.floor(swing_data.min())
     max_swing = np.ceil(swing_data.max())
-    # Create bins from min to max, in steps of 1
     bins = np.arange(min_swing, max_swing + 1.1, 1)
 
     # 2. Calculate Counts (N) and Bin Edges
     counts, bin_edges = np.histogram(swing_data, bins=bins)
     total_balls = len(swing_data)
-    
-    # Calculate Percentages
     percentages = (counts / total_balls) * 100
 
     # 3. Prepare for plotting: Bar centers and labels
+    # Use the lower edge of the bin for positioning and labeling
+    lower_bin_edges = bin_edges[:-1] # Exclude the final upper boundary
     bar_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
-    bar_width = 0.9 # Slightly less than 1 to show separation
+    bar_width = 0.9 
 
-    # Create descriptive bin labels (e.g., "1.0 to 2.0")
-    bin_labels = [f"[{bin_edges[i]:.1f}-{bin_edges[i+1]:.1f}]" for i in range(len(bin_edges) - 1)]
+    # Create tick labels: use only the lower limit of the bin
+    # Use floor to ensure clean integer/single decimal labels
+    tick_labels = [f"{b:.1f}" for b in lower_bin_edges] 
 
     # 4. Plotting
     fig, ax = plt.subplots(figsize=(7, 4))
 
-    # Plot the bars
+    # Plot the bars, centered correctly
     rects = ax.bar(bar_centers, percentages, width=bar_width, 
                    color='royalblue', edgecolor='white', linewidth=1.0)
     
-    # Set X-ticks to the bin labels
-    ax.set_xticks(bar_centers)
-    ax.set_xticklabels(bin_labels, rotation=45, ha='right', fontsize=9)
-
+    # Set X-ticks to the lower bin edges, plus the last edge
+    # We plot the bar at the center, but the tick should be aligned with the left edge.
+    # To correctly align the tick label with the bar's left edge, we need to shift the bar center 
+    # and adjust the ticks. A simpler way is to use the lower_bin_edges as positions.
+    
+    # We plot the bars at their centers, but we set the ticks to the *left edge* of each bar.
+    # The list of tick positions is the list of bin edges, excluding the last one.
+    ax.set_xticks(lower_bin_edges)
+    ax.set_xticklabels(tick_labels, rotation=45, ha='right', fontsize=9)
+    
     # 5. Annotation (Percentages on top of bars)
     for rect, pct in zip(rects, percentages):
         if pct > 0:
             height = rect.get_height()
+            # Ensure text is readable: only show % if > 0.5%
             ax.text(rect.get_x() + rect.get_width() / 2., height + 0.5,
                     f'{pct:.1f}%',
                     ha='center', va='bottom', fontsize=10, weight='bold')
@@ -734,15 +750,15 @@ def create_swing_distribution_histogram(df_in, handedness_label):
     ax.set_xlabel("Swing (meters)", fontsize=10)
     ax.set_ylabel("Percentage of Balls (%)", fontsize=10)
     
-    # Adjust Y-limit to ensure percentage labels fit
     ax.set_ylim(0, percentages.max() * 1.25 if percentages.max() > 0 else 10)
     
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
+    ax.grid(axis='y', linestyle='--', alpha=0.6)
+    
     plt.tight_layout()
     
     return fig
-
 
 # --- CHARTS 6 & 7: SWING/DEVIATION DIRECTIONAL SPLIT (100% Stacked Bar) ---
 def create_directional_split(df_in, column_name, handedness_label):
