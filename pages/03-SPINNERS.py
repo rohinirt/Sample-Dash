@@ -625,10 +625,11 @@ def create_spinner_releasey_performance(df_in, handedness_label):
 
     # 4. Generate Markdown Output
     markdown_output = f"""
- | :--- | :--- |   
+ | **-- ** | ** -- ** |
+| :--- | :--- |
 | **W:** {left_wickets} | **W:** {right_wickets} |
 | **Avg:** {left_ba} | **Avg:** {right_ba} |
-| **SR:** {left_sr} | **:** {right_sr} |
+| **SR:** {left_sr} | **SR:** {right_sr} |
 """
     return markdown_output
 
