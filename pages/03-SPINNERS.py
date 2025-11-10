@@ -844,6 +844,143 @@ def create_spinner_h_m_performance_bars(df_in):
             fig.update_yaxes(showticklabels=False, row=1, col=3) # Hide Y labels
 
     return fig
+
+# Chart 9: Swing Distribution
+def create_swing_distribution_histogram(df_in, handedness_label):
+    # 0. Initial Check
+    if df_in.empty or "Swing" not in df_in.columns:
+        fig, ax = plt.subplots(figsize=(20, 6))
+        ax.text(0.5, 0.5, f"No Swing data for ({handedness_label})", ha='center', va='center', fontsize=12)
+        ax.axis('off')
+        return fig
+
+    # Ensure 'Swing' is not NaN and is numeric
+    swing_data = df_in["Swing"].dropna().astype(float)
+    if swing_data.empty:
+        fig, ax = plt.subplots(figsize=(20, 6))
+        ax.text(0.5, 0.5, f"No valid Swing data for ({handedness_label})", ha='center', va='center', fontsize=12)
+        ax.axis('off')
+        return fig
+
+    # 1. Define Bins of Size 1
+    min_swing = np.floor(swing_data.min())
+    max_swing = np.ceil(swing_data.max())
+    bins = np.arange(min_swing, max_swing + 1.1, 1)
+
+    # 2. Calculate Counts (N) and Bin Edges
+    counts, bin_edges = np.histogram(swing_data, bins=bins)
+    total_balls = len(swing_data)
+    percentages = (counts / total_balls) * 100
+
+    # 3. Prepare for plotting: Bar centers and labels
+    # Use the lower edge of the bin for positioning and labeling
+    lower_bin_edges = bin_edges[:-1] # Exclude the final upper boundary
+    bar_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+    bar_width = 0.9
+
+    # Create tick labels: use only the lower limit of the bin
+    # Use floor to ensure clean integer/single decimal labels
+    tick_labels = [f"{b:.0f}" for b in lower_bin_edges] 
+
+    # 4. Plotting
+    fig, ax = plt.subplots(figsize=(7, 4))
+
+    # Plot the bars, centered correctly
+    rects = ax.bar(bar_centers, percentages, width=bar_width, 
+                   color='red', linewidth=1.0)
+
+    ax.set_xticks(lower_bin_edges)
+    ax.set_xticklabels(tick_labels, ha='right', fontsize=16)
+    
+    # 5. Annotation (Percentages on top of bars)
+    for rect, pct in zip(rects, percentages):
+        if pct > 0:
+            height = rect.get_height()
+            # Ensure text is readable: only show % if > 0.5%
+            ax.text(rect.get_x() + rect.get_width() / 2., height + 0.5,
+                    f'{pct:.0f}%',
+                    ha='center', va='bottom', fontsize=16, weight='bold')
+    
+    ax.set_ylim(0, percentages.max() * 1.25 if percentages.max() > 0 else 10)
+    # Hide X and Y ticks and tick labels
+    ax.tick_params(axis='y', which='both', left=False, right=False, labelleft=False)
+    # Hide axis spines (the border lines)
+    ax.spines['left'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    plt.tight_layout()
+    
+    return fig
+    
+#Chart 10 Deviation Dstribution
+def create_deviation_distribution_histogram(df_in, handedness_label):
+    # 0. Initial Check
+    if df_in.empty or "Deviation" not in df_in.columns:
+        fig, ax = plt.subplots(figsize=(20, 6))
+        ax.text(0.5, 0.5, f"No Deviation data for ({handedness_label})", ha='center', va='center', fontsize=12)
+        ax.axis('off')
+        return fig
+
+    # Ensure 'Deviation' is not NaN and is numeric
+    Deviation_data = df_in["Deviation"].dropna().astype(float)
+    if Deviation_data.empty:
+        fig, ax = plt.subplots(figsize=(20, 6))
+        ax.text(0.5, 0.5, f"No valid Deviation data for ({handedness_label})", ha='center', va='center', fontsize=12)
+        ax.axis('off')
+        return fig
+
+    # 1. Define Bins of Size 1
+    min_Deviation = np.floor(Deviation_data.min())
+    max_Deviation = np.ceil(Deviation_data.max())
+    bins = np.arange(min_Deviation, max_Deviation + 1.1, 1)
+
+    # 2. Calculate Counts (N) and Bin Edges
+    counts, bin_edges = np.histogram(Deviation_data, bins=bins)
+    total_balls = len(Deviation_data)
+    percentages = (counts / total_balls) * 100
+
+    # 3. Prepare for plotting: Bar centers and labels
+    # Use the lower edge of the bin for positioning and labeling
+    lower_bin_edges = bin_edges[:-1] # Exclude the final upper boundary
+    bar_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+    bar_width = 0.9 
+
+    # Create tick labels: use only the lower limit of the bin
+    # Use floor to ensure clean integer/single decimal labels
+    tick_labels = [f"{b:.0f}" for b in lower_bin_edges] 
+
+    # 4. Plotting
+    fig, ax = plt.subplots(figsize=(7, 4))
+
+    # Plot the bars, centered correctly
+    rects = ax.bar(bar_centers, percentages, width=bar_width, 
+                   color='red', linewidth=1.0)
+    
+    ax.set_xticks(lower_bin_edges)
+    ax.set_xticklabels(tick_labels, ha='right', fontsize=16)
+    
+    # 5. Annotation (Percentages on top of bars)
+    for rect, pct in zip(rects, percentages):
+        if pct > 0:
+            height = rect.get_height()
+            # Ensure text is readable: only show % if > 0.5%
+            ax.text(rect.get_x() + rect.get_width() / 2., height + 0.5,
+                    f'{pct:.0f}%',
+                    ha='center', va='bottom', fontsize=16, weight='bold')
+    
+    ax.set_ylim(0, percentages.max() * 1.25 if percentages.max() > 0 else 10)
+    # Hide X and Y ticks and tick labels
+    ax.tick_params(axis='y', which='both', left=False, right=False, labelleft=False)
+    
+    # Hide axis spines (the border lines)
+    ax.spines['left'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    
+    plt.tight_layout()
+    
 # =========================================================
 # PAGE SETUP AND FILTERING
 # =========================================================
@@ -939,6 +1076,13 @@ with col_rhb:
         st.markdown("###### RELEASE")
         st.plotly_chart(create_spinner_release_zone_map(df_rhb, "RHB"), use_container_width=True)
 
+    #Chart 9/10: Swing Deviation Distribution
+    swing_dist, deviation_dist = st.columns([2,2])
+    with swing_dist:
+        st.pyplot(create_swing_distribution_histogram(df_rhb, "RHB"))
+    with deviation_dist:
+        st.pyplot(create_deviation_distribution_histogram(df_rhb, "RHB")) 
+    
      # Chart 4: Lateral Movement
     swing_col, deviation_col = st.columns([2, 2]) 
     with swing_col:
@@ -979,6 +1123,13 @@ with col_rhb:
             st.markdown("###### RELEASE")
             st.plotly_chart(create_spinner_release_zone_map(df_lhb, "LHB"), use_container_width=True)
 
+        #Chart 9/10: Swing Deviation Distribution
+        swing_dist, deviation_dist = st.columns([2,2])
+        with swing_dist:
+            st.pyplot(create_swing_distribution_histogram(df_lhb, "RHB"))
+        with deviation_dist:
+            st.pyplot(create_deviation_distribution_histogram(df_lhb, "RHB"))
+        
         # Chart 6/7: Lateral Movement
         swing_col, deviation_col = st.columns([2, 2]) 
         with swing_col:
