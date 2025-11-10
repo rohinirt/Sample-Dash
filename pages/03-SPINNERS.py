@@ -1139,7 +1139,7 @@ with col_rhb:
     # Chart 3: RELEASE
     pace_col, release_col = st.columns([2, 2])
     with pace_col:
-        st.markdown("###### RELEASE SPEED")
+        st.markdown("###### SPEEDS")
         st.pyplot(create_spinner_release_speed_distribution(df_rhb, "RHB"), use_container_width=True)
     with release_col:
         st.markdown("###### RELEASE")
@@ -1163,6 +1163,7 @@ with col_rhb:
         st.pyplot(create_directional_split(df_rhb, "Deviation", "RHB"), use_container_width=True)
     
     # Chart 8: Missing Hitting    
+    st.markdown("###### STUMPS BEEHIVE")
     st.pyplot(create_spinner_hitting_missing_map(df_rhb, "RHB"), use_container_width=True)
     st.pyplot(create_spinner_h_m_performance_bars(df_rhb,"RHB"), use_container_width=True)
     
@@ -1187,7 +1188,7 @@ with col_rhb:
          # Chart 4/5: RELEASE
         pace_col, release_col = st.columns([2, 2]) 
         with pace_col:
-            st.markdown("###### RELEASE SPEED")
+            st.markdown("###### SPEEDS")
             st.pyplot(create_spinner_release_speed_distribution(df_lhb, "LHB"), use_container_width=True)
         with release_col:
             st.markdown("###### RELEASE")
@@ -1211,7 +1212,7 @@ with col_rhb:
             st.pyplot(create_directional_split(df_lhb, "Deviation", "LHB"), use_container_width=True)
         
         
-        # Chart 8: Missing Hitting    
+        # Chart 8: Missing Hitting  
+        st.markdown("###### STUMPS BEEHIVE")
         st.pyplot(create_spinner_hitting_missing_map(df_lhb, "LHB"), use_container_width=True)
-        # Assuming you use the columns col_rhb and col_lhb:
         st.pyplot(create_spinner_h_m_performance_bars(df_lhb,"LHB"), use_container_width=True)
