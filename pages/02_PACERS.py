@@ -724,17 +724,10 @@ def create_swing_distribution_histogram(df_in, handedness_label):
 
     # Plot the bars, centered correctly
     rects = ax.bar(bar_centers, percentages, width=bar_width, 
-                   color='royalblue', edgecolor='white', linewidth=1.0)
+                   color='red', linewidth=1.0)
     
-    # Set X-ticks to the lower bin edges, plus the last edge
-    # We plot the bar at the center, but the tick should be aligned with the left edge.
-    # To correctly align the tick label with the bar's left edge, we need to shift the bar center 
-    # and adjust the ticks. A simpler way is to use the lower_bin_edges as positions.
-    
-    # We plot the bars at their centers, but we set the ticks to the *left edge* of each bar.
-    # The list of tick positions is the list of bin edges, excluding the last one.
     ax.set_xticks(lower_bin_edges)
-    ax.set_xticklabels(tick_labels, rotation=45, ha='right', fontsize=9)
+    ax.set_xticklabels(tick_labels, ha='right', fontsize=9)
     
     # 5. Annotation (Percentages on top of bars)
     for rect, pct in zip(rects, percentages):
@@ -742,19 +735,13 @@ def create_swing_distribution_histogram(df_in, handedness_label):
             height = rect.get_height()
             # Ensure text is readable: only show % if > 0.5%
             ax.text(rect.get_x() + rect.get_width() / 2., height + 0.5,
-                    f'{pct:.1f}%',
+                    f'{pct:.0f}%',
                     ha='center', va='bottom', fontsize=10, weight='bold')
-
-    # 6. Final Styling
-    ax.set_title(f"Swing Distribution ({handedness_label})", fontsize=14, pad=15)
-    ax.set_xlabel("Swing (meters)", fontsize=10)
-    ax.set_ylabel("Percentage of Balls (%)", fontsize=10)
     
     ax.set_ylim(0, percentages.max() * 1.25 if percentages.max() > 0 else 10)
     
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
-    ax.grid(axis='y', linestyle='--', alpha=0.6)
     
     plt.tight_layout()
     
