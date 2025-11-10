@@ -724,8 +724,7 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
     return fig
 
 # Chart 9 Hitting Missing Performance
-def create_spinner_h_m_performance_bars(df_in):
-
+def create_spinner_h_m_performance_bars_mpl(df_in, handedness_label):
     # 1. Define Hitting/Missing Category
     is_hitting_target = (
         (df_in["StumpsY"] >= -0.18) & 
@@ -736,7 +735,10 @@ def create_spinner_h_m_performance_bars(df_in):
     df_in["HittingCategory"] = np.where(is_hitting_target, "HITTING", "MISSING")
     
     if df_in.empty:
-        return go.Figure().update_layout(title=f"No Data ({handedness_label})", height=200)
+        fig, ax = plt.subplots(figsize=(7, 2)); 
+        ax.text(0.5, 0.5, f"No Data ({handedness_label})", ha='center', va='center'); 
+        ax.axis('off'); 
+        return fig
 
     # 2. Calculate Metrics
     summary = df_in.groupby("HittingCategory").agg(
@@ -745,11 +747,11 @@ def create_spinner_h_m_performance_bars(df_in):
         Balls=("Wicket", "count")
     )
     
-    # Ensure both categories are present for consistent plotting
+    # Ensure both categories are present
     if "HITTING" not in summary.index: summary.loc["HITTING"] = [0, 0, 0]
     if "MISSING" not in summary.index: summary.loc["MISSING"] = [0, 0, 0]
     
-    # Calculate BA and SR (using a large number if Wickets is zero)
+    # Calculate BA and SR (using 999.0 for "N/A" equivalent)
     summary["BA"] = summary.apply(
         lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else 999.0
     , axis=1)
@@ -757,92 +759,81 @@ def create_spinner_h_m_performance_bars(df_in):
         lambda row: row["Balls"] / row["Wickets"] * 6 if row["Wickets"] > 0 else 999.0
     , axis=1)
     
-    # Reorder the index so HITTING is first (top bar) and MISSING is second (bottom bar)
+    # Reorder the index to match Plotly's structure (HITTING on top, MISSING on bottom)
     summary = summary.reindex(["HITTING", "MISSING"])
 
-    # Extract data, reversing for Plotly's default bottom-up bar order
-    y_labels = summary.index.tolist() 
-    wickets = summary["Wickets"].tolist() 
-    ba = summary["BA"].tolist() 
-    sr = summary["SR"].tolist() 
-
-    # 3. Create Subplots
-    fig = make_subplots(
-        rows=1, cols=3, 
-        shared_yaxes=True, 
-        subplot_titles=("Wickets", "Average", "Strike Rate"),
-        horizontal_spacing=0.08
-    )
-
-    # Define colors and bar height
-    colors = ['red', '#A9A9A9'] # Red for HITTING, Grey for MISSING
-    bar_height = 0.4
+    # 3. Chart Setup
+    metrics = ["Wickets", "BA", "SR"]
+    titles = ["Wickets", "Average", "Strike Rate"]
     
-    # --- Chart 1: Wickets ---
-    fig.add_trace(go.Bar(
-        x=wickets, y=y_labels, orientation='h',
-        marker=dict(color=[colors[0], colors[1]]),
-        text=[f"{w:.0f}" for w in wickets], textposition='inside',
-        insidetextfont=dict(color='white', size=14, weight='bold'),
-        hovertemplate='%{y}: %{x} Wickets<extra></extra>',
-        width=bar_height,
-        showlegend=False
-    ), row=1, col=1)
+    # Use figsize=(7, 2) for a compact, horizontal layout
+    fig, axes = plt.subplots(1, 3, figsize=(7, 2))
+    plt.subplots_adjust(wspace=0.3) # Adjust space between the subplots
 
-    # --- Chart 2: Bowling Average ---
-    fig.add_trace(go.Bar(
-        x=ba, y=y_labels, orientation='h',
-        marker=dict(color=[colors[0], colors[1]]),
-        text=[f"{b:.2f}" if b < 999.0 else "N/A" for b in ba], textposition='inside',
-        insidetextfont=dict(color='white', size=11, weight='bold'),
-        hovertemplate='%{y}: Avg %{x}<extra></extra>',
-        width=bar_height,
-        showlegend=False
-    ), row=1, col=2)
+    colors = ['red', '#A9A9A9'] # Red for HITTING, Grey for MISSING
+    y_labels = summary.index.tolist()
+    
+    # Determine maximum value for setting consistent x-limits
+    max_wickets = summary["Wickets"].max() * 1.2
+    max_ba = summary[summary["BA"] < 999.0]["BA"].max() * 1.2
+    max_sr = summary[summary["SR"] < 999.0]["SR"].max() * 1.2
 
-    # --- Chart 3: Bowling Strike Rate ---
-    fig.add_trace(go.Bar(
-        x=sr, y=y_labels, orientation='h',
-        marker=dict(color=[colors[0], colors[1]]),
-        text=[f"{s:.2f}" if s < 999.0 else "N/A" for s in sr], textposition='inside',
-        insidetextfont=dict(color='white', size=11, weight='bold'),
-        hovertemplate='%{y}: SR %{x}<extra></extra>',
-        width=bar_height,
-        showlegend=False
-    ), row=1, col=3)
+    max_values = {
+        "Wickets": max_wickets if max_wickets > 0 else 5,
+        "BA": max_ba if max_ba > 0 else 100,
+        "SR": max_sr if max_sr > 0 else 100,
+    }
 
-    # 4. Layout Customization
-    fig.update_layout(
-        height=200, 
-        width=700,
-        margin=dict(l=5, r=5, t=30, b=10),
-        plot_bgcolor='white',
-        paper_bgcolor='white',
-        showlegend=False, # *** Explicitly hide the overall legend ***
-    )
-
-    # 5. Axis Customization (Ensuring only first column has Y-axis labels)
-    for i in range(1, 4):
-        # Hide gridlines and background
-        fig.update_xaxes(showgrid=False,showticklabels=False, zeroline=True, gridcolor='lightgrey', row=1, col=i)
+    # 4. Plotting Loop
+    for i, metric in enumerate(metrics):
+        ax = axes[i]
         
-        # Maximize the visible range
-        x_max = max(summary[summary["BA"] < 999.0]["BA"].max() * 1.2, summary[summary["SR"] < 999.0]["SR"].max() * 1.2)
+        # Data for the current metric (HITTING, then MISSING)
+        data = summary[metric].tolist()
         
-        # Set specific ranges for better visualization
-        if i == 1:
-            # Wickets X-Axis
-            fig.update_xaxes(range=[0, summary["Wickets"].max() * 1.2], row=1, col=1)
-            fig.update_yaxes(tickvals=y_labels, ticktext=y_labels, row=1, col=1) # Set Y labels here
-        elif i == 2:
-            # BA X-Axis
-            fig.update_xaxes(range=[0, max(ba) * 1.2], row=1, col=2)
-            fig.update_yaxes(showticklabels=False, row=1, col=2) # Hide Y labels
-        elif i == 3:
-            # SR X-Axis
-            fig.update_xaxes(range=[0, max(sr) * 1.2], row=1, col=3)
-            fig.update_yaxes(showticklabels=False, row=1, col=3) # Hide Y labels
+        # Bar plotting - using barh for horizontal bars
+        bars = ax.barh(y_labels, data, color=colors, height=0.5) # height=0.5 matches the bar width of the Plotly version
+        
+        # Titles
+        ax.set_title(titles[i], fontsize=10, pad=5)
+        
+        # X-axis limits (Hiding ticks and labels)
+        ax.set_xlim(0, max_values[metric])
+        ax.xaxis.set_visible(False) 
+        
+        # Y-axis Labels (Only show on the first chart)
+        if i == 0:
+            ax.tick_params(axis='y', length=0) # Remove tick marks
+            ax.set_yticks([0, 1])
+            ax.set_yticklabels(y_labels, fontsize=10, weight='bold', color='black')
+        else:
+            ax.yaxis.set_visible(False) 
+            
+        # Add labels on the bars
+        for bar, value in zip(bars, data):
+            if metric == "Wickets":
+                text = f"{int(value)}"
+            else:
+                if value >= 999.0:
+                    text = "N/A"
+                else:
+                    text = f"{value:.2f}" 
+            
+            # Place the text inside the bar
+            ax.text(bar.get_width() - 0.5, bar.get_y() + bar.get_height()/2, 
+                    text, 
+                    ha='right', va='center', fontsize=9, color='white', 
+                    weight='bold', zorder=10)
 
+        # Hide axis spines (borders) and gridlines
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+        ax.spines['bottom'].set_visible(False)
+        ax.spines['left'].set_visible(False)
+        ax.grid(False) # Explicitly turn off grid
+    
+    plt.tight_layout(pad=0.5)
+    
     return fig
 
 # Chart 9: Swing Distribution
