@@ -677,7 +677,7 @@ def create_pacer_release_zone_map(df_in, handedness_label):
 def create_swing_distribution_histogram(df_in, handedness_label):
     # 0. Initial Check
     if df_in.empty or "Swing" not in df_in.columns:
-        fig, ax = plt.subplots(figsize=(7, 4))
+        fig, ax = plt.subplots(figsize=(8, 5))
         ax.text(0.5, 0.5, f"No Swing data for ({handedness_label})", ha='center', va='center', fontsize=12)
         ax.axis('off')
         return fig
@@ -685,7 +685,7 @@ def create_swing_distribution_histogram(df_in, handedness_label):
     # Ensure 'Swing' is not NaN and is numeric
     swing_data = df_in["Swing"].dropna().astype(float)
     if swing_data.empty:
-        fig, ax = plt.subplots(figsize=(7, 4))
+        fig, ax = plt.subplots(figsize=(8, 5))
         ax.text(0.5, 0.5, f"No valid Swing data for ({handedness_label})", ha='center', va='center', fontsize=12)
         ax.axis('off')
         return fig
@@ -718,7 +718,7 @@ def create_swing_distribution_histogram(df_in, handedness_label):
                    color='red', linewidth=1.0)
 
     ax.set_xticks(lower_bin_edges)
-    ax.set_xticklabels(tick_labels, ha='right', fontsize=9)
+    ax.set_xticklabels(tick_labels, ha='right', fontsize=12)
     
     # 5. Annotation (Percentages on top of bars)
     for rect, pct in zip(rects, percentages):
@@ -745,7 +745,7 @@ def create_swing_distribution_histogram(df_in, handedness_label):
 def create_deviation_distribution_histogram(df_in, handedness_label):
     # 0. Initial Check
     if df_in.empty or "Deviation" not in df_in.columns:
-        fig, ax = plt.subplots(figsize=(7, 4))
+        fig, ax = plt.subplots(figsize=(8, 5))
         ax.text(0.5, 0.5, f"No Deviation data for ({handedness_label})", ha='center', va='center', fontsize=12)
         ax.axis('off')
         return fig
@@ -753,7 +753,7 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
     # Ensure 'Deviation' is not NaN and is numeric
     Deviation_data = df_in["Deviation"].dropna().astype(float)
     if Deviation_data.empty:
-        fig, ax = plt.subplots(figsize=(7, 4))
+        fig, ax = plt.subplots(figsize=(8, 5))
         ax.text(0.5, 0.5, f"No valid Deviation data for ({handedness_label})", ha='center', va='center', fontsize=12)
         ax.axis('off')
         return fig
@@ -786,7 +786,7 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
                    color='red', linewidth=1.0)
     
     ax.set_xticks(lower_bin_edges)
-    ax.set_xticklabels(tick_labels, ha='right', fontsize=9)
+    ax.set_xticklabels(tick_labels, ha='right', fontsize=12)
     
     # 5. Annotation (Percentages on top of bars)
     for rect, pct in zip(rects, percentages):
