@@ -553,9 +553,124 @@ def create_spinner_release_zone_map(df_in, handedness_label):
         ), 
         plot_bgcolor="white", paper_bgcolor="white", showlegend=False
     )
-    
     return fig
 
+#Chart 5b: Release performance 
+def create_spinner_releasey_performance(df_in, handedness_label):
+    # 1. Define ReleaseY Category
+    if df_in.empty or "ReleaseY" not in df_in.columns:
+        fig, ax = plt.subplots(figsize=(7, 2)); 
+        ax.text(0.5, 0.5, f"No ReleaseY data for ({handedness_label})", ha='center', va='center'); 
+        ax.axis('off'); 
+        return fig
+        
+    df_temp = df_in.copy()
+    
+    # Categorize based on ReleaseY sign
+    df_temp["ReleaseCategory"] = np.where(
+        df_temp["ReleaseY"] < 0, "LEFT (<0)", 
+        np.where(df_temp["ReleaseY"] > 0, "RIGHT (>0)", "CENTER (=0)")
+    )
+    
+    # Filter out "CENTER" if you only want the two main lateral zones
+    df_temp = df_temp[df_temp["ReleaseCategory"] != "CENTER (=0)"]
+    
+    if df_temp.empty:
+        fig, ax = plt.subplots(figsize=(7, 2)); 
+        ax.text(0.5, 0.5, f"No lateral release data for ({handedness_label})", ha='center', va='center'); 
+        ax.axis('off'); 
+        return fig
+
+    # 2. Calculate Metrics
+    summary = df_temp.groupby("ReleaseCategory").agg(
+        Wickets=("Wicket", lambda x: (x == True).sum()),
+        Runs=("Runs", "sum"),
+        Balls=("Wicket", "count")
+    )
+    
+    # Ensure both categories are present
+    if "LEFT (<0)" not in summary.index: summary.loc["LEFT (<0)"] = [0, 0, 0]
+    if "RIGHT (>0)" not in summary.index: summary.loc["RIGHT (>0)"] = [0, 0, 0]
+    
+    # Calculate BA and SR (using 999.0 for "N/A" equivalent)
+    summary["BA"] = summary.apply(
+        lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else 999.0, axis=1)
+    summary["SR"] = summary.apply(
+        lambda row: row["Balls"] / row["Wickets"] * 6 if row["Wickets"] > 0 else 999.0, axis=1)
+    
+    # Reorder the index for consistent plotting order (e.g., LEFT then RIGHT)
+    summary = summary.reindex(["LEFT (<0)", "RIGHT (>0)"])
+
+    # 3. Chart Setup
+    metrics = ["Wickets", "BA", "SR"]
+    titles = ["Wickets", "Bowling Average", "Bowling Strike Rate"]
+    
+    fig, axes = plt.subplots(1, 3, figsize=(10, 2)) # Adjust figsize as needed for your Streamlit layout
+    plt.subplots_adjust(wspace=0.3) 
+
+    colors = ['#1f77b4', '#d62728'] # Using blue/red for contrast
+    y_labels = summary.index.tolist()
+    
+    # Determine maximum value for setting consistent x-limits
+    max_wickets = summary["Wickets"].max() * 1.2
+    max_ba = summary[summary["BA"] < 999.0]["BA"].max() * 1.2
+    max_sr = summary[summary["SR"] < 999.0]["SR"].max() * 1.2
+
+    max_values = {
+        "Wickets": max_wickets if max_wickets > 0 else 5,
+        "BA": max_ba if max_ba > 0 else 100,
+        "SR": max_sr if max_sr > 0 else 100,
+    }
+
+    # 4. Plotting Loop
+    for i, metric in enumerate(metrics):
+        ax = axes[i]
+        data = summary[metric].tolist()
+        
+        # Bar plotting
+        # Note: Matplotlib automatically plots bars in the order of the y_labels list
+        bars = ax.barh(y_labels, data, 
+                       color=[colors[0], colors[1]], 
+                       height=0.5, zorder=3) 
+        
+        # Titles
+        ax.set_title(titles[i], fontsize=10, pad=5)
+        
+        # X-axis limits (Hiding ticks and labels)
+        ax.set_xlim(0, max_values[metric])
+        ax.xaxis.set_visible(False) 
+        
+        # Y-axis Labels (Only show on the first chart)
+        if i == 0:
+            ax.tick_params(axis='y', length=0) 
+            ax.set_yticks([0, 1])
+            ax.set_yticklabels(y_labels, fontsize=10, weight='bold', color='black')
+        else:
+            ax.yaxis.set_visible(False) 
+            
+        # Add labels on the bars
+        for bar, value in zip(bars, data):
+            if metric == "Wickets":
+                text = f"{int(value)}"
+            else:
+                text = f"{value:.2f}" if value < 999.0 else "N/A"
+            
+            # Place the text inside the bar
+            ax.text(bar.get_width() - 0.5, bar.get_y() + bar.get_height()/2, 
+                    text, 
+                    ha='right', va='center', fontsize=9, color='white', 
+                    weight='bold', zorder=10)
+
+        # Hide axis spines (borders) and gridlines
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+        ax.spines['bottom'].set_visible(False)
+        ax.spines['left'].set_visible(False)
+        ax.grid(False) 
+    
+    plt.tight_layout(pad=0.5)
+    
+    return fig
 # --- CHARTS 6 & 7: SWING/DEVIATION DIRECTIONAL SPLIT (100% Stacked Bar) ---
 def create_directional_split(df_in, column_name, handedness_label):
     if df_in.empty or column_name not in df_in.columns:
@@ -710,7 +825,7 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
 
     # 🔟 Add Hitting and Missing Text Labels
     ax.text(
-        1.05, 1.35, f"Hitting: {hitting_pct:.2f}%",
+        1.05, 1.35, f"Hitting: {hitting_pct:.0f}%",
         transform=ax.transData, ha='right', va='top',
         fontsize=14, color='red', weight='bold'
     )
@@ -1064,6 +1179,7 @@ with col_rhb:
     with release_col:
         st.markdown("###### RELEASE")
         st.plotly_chart(create_spinner_release_zone_map(df_rhb, "RHB"), use_container_width=True)
+        st.pyplot(create_spinner_releasey_performance(df_rhb, "RHB"))
 
     #Chart 9/10: Swing Deviation Distribution
     swing_dist, deviation_dist = st.columns([2,2])
@@ -1111,6 +1227,7 @@ with col_rhb:
         with release_col:
             st.markdown("###### RELEASE")
             st.plotly_chart(create_spinner_release_zone_map(df_lhb, "LHB"), use_container_width=True)
+            st.pyplot(create_spinner_releasey_performance(df_lhb, "RHB"))
 
         #Chart 9/10: Swing Deviation Distribution
         swing_dist, deviation_dist = st.columns([2,2])
