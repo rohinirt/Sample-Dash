@@ -1118,7 +1118,7 @@ st.divider()
 col_rhb, col_lhb = st.columns(2)
 # === LEFT COLUMN: AGAINST RIGHT-HANDED BATSMEN (RHB) ===
 with col_rhb:
-    st.markdown("###  Right-Handed Batsmen (RHB)")    
+    st.markdown("###  V RIGHT-HAND BATSMAN")    
     # Chart 1a: Crease Beehive (using the new local function)
     st.markdown("###### CREASE BEEHIVE ")
     st.plotly_chart(create_spinner_crease_beehive(df_rhb), use_container_width=True)
@@ -1169,7 +1169,7 @@ with col_rhb:
     
 # === RIGHT COLUMN: AGAINST LEFT-HANDED BATSMEN (LHB) ===
     with col_lhb:
-        st.markdown("###  Left-Handed Batsmen (LHB)")
+        st.markdown("### V LEFT-HAND BATSMAN")
          # Chart 1a: Crease Beehive (using the new local function)
         st.markdown("###### CREASE BEEHIVE")
         st.plotly_chart(create_spinner_crease_beehive(df_lhb), use_container_width=True)
