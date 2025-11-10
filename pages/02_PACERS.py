@@ -752,7 +752,7 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
 
     # Ensure 'Deviation' is not NaN and is numeric
     Deviation_data = df_in["Deviation"].dropna().astype(float)
-    if Deviationg_data.empty:
+    if Deviation_data.empty:
         fig, ax = plt.subplots(figsize=(7, 4))
         ax.text(0.5, 0.5, f"No valid Deviation data for ({handedness_label})", ha='center', va='center', fontsize=12)
         ax.axis('off')
