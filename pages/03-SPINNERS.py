@@ -622,7 +622,7 @@ def create_spinner_releasey_performance(df_in, handedness_label):
     
     left_sr = format_metric(left["SR"])
     right_sr = format_metric(right["SR"])
-
+    spacer = "&nbsp;" * 10
     # 4. Generate Markdown Output
     markdown_output = f"""
 ---
