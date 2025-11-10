@@ -1097,7 +1097,7 @@ def create_directional_split(df_in, direction_col, chart_title, delivery_type):
                     color=text_color, weight='bold') 
 
     # --- Final Styling and Spines ---
-    ax_dir.set_title(chart_title, fontsize=14, weight='bold', color='black', pad=10)
+
     
     # Hide all spines
     ax_dir.spines['top'].set_visible(False)
