@@ -675,15 +675,6 @@ def create_pacer_release_zone_map(df_in, handedness_label):
 
 # Chart 8: Swing Distribution
 def create_swing_distribution_histogram(df_in, handedness_label):
-    """
-    Creates a Matplotlib histogram for the 'Swing' column with bins of size 1, 
-    displaying the percentage of balls in each bin.
-    
-    FIX: X-axis now shows only the lower limit tick for each bin.
-    """
-    import matplotlib.pyplot as plt
-    import numpy as np
-
     # 0. Initial Check
     if df_in.empty or "Swing" not in df_in.columns:
         fig, ax = plt.subplots(figsize=(7, 4))
@@ -739,7 +730,13 @@ def create_swing_distribution_histogram(df_in, handedness_label):
                     ha='center', va='bottom', fontsize=10, weight='bold')
     
     ax.set_ylim(0, percentages.max() * 1.25 if percentages.max() > 0 else 10)
+    # Hide X and Y ticks and tick labels
+    ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
+    ax.tick_params(axis='y', which='both', left=False, right=False, labelleft=False)
     
+    # Hide axis spines (the border lines)
+    ax.spines['left'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
     
