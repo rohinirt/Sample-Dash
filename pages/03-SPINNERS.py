@@ -625,11 +625,15 @@ def create_spinner_releasey_performance(df_in, handedness_label):
     spacer = "&nbsp;" * 10
     # 4. Generate Markdown Output
     markdown_output = f"""
-**W:** {left_wickets} {spacer} **W:** {right_wickets}
-**Avg:** {left_ba} {spacer} {spacer}**Avg:** {right_ba}
-**SR:** {left_sr} {spacer}{spacer} **SR:** {right_sr}
+<div style="font-size: 16px;">
+    **LEFT (ReleaseY < 0)**{spacer}**RIGHT (ReleaseY > 0)**<br>
+    <hr style="margin-top: 5px; margin-bottom: 5px;">
+    
+    **Wickets:** {left_wickets}{spacer}**Wickets:** {right_wickets}<br>
+    **Bowling Average:** {left_ba}{spacer}**Bowling Average:** {right_ba}<br>
+    **Bowling SR:** {left_sr}{spacer}**Bowling SR:** {right_sr}
+</div>
 """
-    return markdown_output
     return markdown_output
 
 
@@ -1141,7 +1145,7 @@ with col_rhb:
     with release_col:
         st.markdown("###### RELEASE")
         st.plotly_chart(create_spinner_release_zone_map(df_rhb, "RHB"), use_container_width=True)
-        st.markdown(create_spinner_releasey_performance(df_rhb, "RHB"))
+        st.markdown(create_spinner_releasey_performance(df_rhb, "RHB"),unsafe_allow_html=True)
 
     #Chart 9/10: Swing Deviation Distribution
     swing_dist, deviation_dist = st.columns([2,2])
@@ -1189,7 +1193,7 @@ with col_rhb:
         with release_col:
             st.markdown("###### RELEASE")
             st.plotly_chart(create_spinner_release_zone_map(df_lhb, "LHB"), use_container_width=True)
-            st.markdown(create_spinner_releasey_performance(df_lhb, "RHB"))
+            st.markdown(create_spinner_releasey_performance(df_lhb, "RHB"),unsafe_allow_html=True)
 
         #Chart 9/10: Swing Deviation Distribution
         swing_dist, deviation_dist = st.columns([2,2])
