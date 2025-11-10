@@ -710,7 +710,7 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
 
     # 🔟 Add Hitting and Missing Text Labels
     ax.text(
-        1.05, 1.35, f"Hitting: {hitting_pct:.0f}%",
+        1.05, 1.35, f"Hitting: {hitting_pct:.2f}%",
         transform=ax.transData, ha='right', va='top',
         fontsize=14, color='red', weight='bold'
     )
