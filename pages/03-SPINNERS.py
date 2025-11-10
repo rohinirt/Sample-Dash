@@ -1142,7 +1142,7 @@ with col_rhb:
     with release_col:
         st.markdown("###### RELEASE")
         st.plotly_chart(create_spinner_release_zone_map(df_rhb, "RHB"), use_container_width=True)
-        st.pyplot(create_spinner_releasey_performance(df_rhb, "RHB"))
+        st.markdown(create_spinner_releasey_performance(df_rhb, "RHB"))
 
     #Chart 9/10: Swing Deviation Distribution
     swing_dist, deviation_dist = st.columns([2,2])
@@ -1190,7 +1190,7 @@ with col_rhb:
         with release_col:
             st.markdown("###### RELEASE")
             st.plotly_chart(create_spinner_release_zone_map(df_lhb, "LHB"), use_container_width=True)
-            st.pyplot(create_spinner_releasey_performance(df_lhb, "RHB"))
+            st.markdown(create_spinner_releasey_performance(df_lhb, "RHB"))
 
         #Chart 9/10: Swing Deviation Distribution
         swing_dist, deviation_dist = st.columns([2,2])
