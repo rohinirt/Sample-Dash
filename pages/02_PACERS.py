@@ -1016,7 +1016,7 @@ with col_rhb:
     with swing_dist:
         st.pyplot(create_swing_distribution_histogram(df_rhb, "RHB"))
     with deviation_dist:
-        st.pyplot(create_devition_distribution_histogram(df_rhb, "RHB"))  
+        st.pyplot(create_deviation_distribution_histogram(df_rhb, "RHB"))  
     
      # Chart 6/7: Lateral Movement
     swing_col, deviation_col = st.columns([2, 2]) 
@@ -1066,7 +1066,7 @@ with col_lhb:
     with swing_dist:
         st.pyplot(create_swing_distribution_histogram(df_lhb, "LHB"))
     with deviation_dist:
-        st.pyplot(create_devition_distribution_histogram(df_lhb, "LHB"))
+        st.pyplot(create_deviation_distribution_histogram(df_lhb, "LHB"))
         
     # Chart 6/7: Lateral Movement
     swing_col, deviation_col = st.columns([2, 2]) 
