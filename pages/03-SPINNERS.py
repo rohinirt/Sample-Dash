@@ -724,7 +724,7 @@ def create_spinner_hitting_missing_map(df_in, handedness_label):
     return fig
 
 # Chart 9 Hitting Missing Performance
-def create_spinner_h_m_performance_bars_mpl(df_in, handedness_label):
+def create_spinner_h_m_performance_bars(df_in, handedness_label):
     # 1. Define Hitting/Missing Category
     is_hitting_target = (
         (df_in["StumpsY"] >= -0.18) & 
@@ -1085,7 +1085,7 @@ with col_rhb:
     
     # Chart 8: Missing Hitting    
     st.pyplot(create_spinner_hitting_missing_map(df_rhb, "RHB"), use_container_width=True)
-    st.pyplot(create_spinner_h_m_performance_bars(df_rhb), use_container_width=True)
+    st.pyplot(create_spinner_h_m_performance_bars(df_rhb,"RHB"), use_container_width=True)
     
 # === RIGHT COLUMN: AGAINST LEFT-HANDED BATSMEN (LHB) ===
     with col_lhb:
@@ -1134,4 +1134,4 @@ with col_rhb:
         # Chart 8: Missing Hitting    
         st.pyplot(create_spinner_hitting_missing_map(df_lhb, "LHB"), use_container_width=True)
         # Assuming you use the columns col_rhb and col_lhb:
-        st.pyplot(create_spinner_h_m_performance_bars(df_lhb), use_container_width=True)
+        st.pyplot(create_spinner_h_m_performance_bars(df_lhb,"LHB"), use_container_width=True)
