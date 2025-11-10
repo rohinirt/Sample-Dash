@@ -731,7 +731,6 @@ def create_swing_distribution_histogram(df_in, handedness_label):
     
     ax.set_ylim(0, percentages.max() * 1.25 if percentages.max() > 0 else 10)
     # Hide X and Y ticks and tick labels
-    ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
     ax.tick_params(axis='y', which='both', left=False, right=False, labelleft=False)
     
     # Hide axis spines (the border lines)
