@@ -704,7 +704,7 @@ def create_swing_distribution_histogram(df_in, handedness_label):
     # Use the lower edge of the bin for positioning and labeling
     lower_bin_edges = bin_edges[:-1] # Exclude the final upper boundary
     bar_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
-    bar_width = 0.9 
+    bar_width = 1.5
 
     # Create tick labels: use only the lower limit of the bin
     # Use floor to ensure clean integer/single decimal labels
