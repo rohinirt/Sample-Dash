@@ -3,6 +3,13 @@
 import streamlit as st
 import pandas as pd
 from io import StringIO
+
+# Required columns check
+REQUIRED_COLS = [
+    "BatsmanName", "DeliveryType", "Wicket", "StumpsY", "StumpsZ", 
+    "BattingTeam", "CreaseY", "CreaseZ", "Runs", "IsBatsmanRightHanded", 
+    "LandingX", "LandingY", "BounceX", "BounceY", "InterceptionX", 
+    "InterceptionZ", "InterceptionY", "Over"
 # Import your utility functions to perform the initial checks
 
 st.set_page_config(
