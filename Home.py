@@ -9,7 +9,7 @@ REQUIRED_COLS = [
     "BatsmanName", "DeliveryType", "Wicket", "StumpsY", "StumpsZ", 
     "BattingTeam", "CreaseY", "CreaseZ", "Runs", "IsBatsmanRightHanded", 
     "LandingX", "LandingY", "BounceX", "BounceY", "InterceptionX", 
-    "InterceptionZ", "InterceptionY", "Over"
+    "InterceptionZ", "InterceptionY", "Over"]
 # Import your utility functions to perform the initial checks
 
 st.set_page_config(
