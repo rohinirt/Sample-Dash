@@ -4,7 +4,6 @@ import streamlit as st
 import pandas as pd
 from io import StringIO
 # Import your utility functions to perform the initial checks
-from utils import REQUIRED_COLS 
 
 st.set_page_config(
     page_title="Cricket Dashboard",
