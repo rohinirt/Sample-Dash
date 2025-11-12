@@ -421,145 +421,147 @@ def create_pitch_map(df_in, delivery_type):
     return fig
 
 # --- CHART 3b: PITCH LENGTH RUN % (EQUAL SIZED BOXES) ---
-def create_pitch_length_run_pct(df_in, delivery_type):
-    # Adjust figsize height to accommodate the four boxes and title comfortably
-    FIG_HEIGHT = 3
+def create_pitch_length_bars(df_in, delivery_type):
+    # Use a wider figure to accommodate three charts side-by-side
+    FIG_SIZE = (4, 6) 
     
     if df_in.empty:
-        fig, ax = plt.subplots(figsize=(2, FIG_HEIGHT)); 
-        ax.text(0.5, 0.5, "No Data", ha='center', va='center', rotation=90); 
-        ax.axis('off'); 
+        fig, ax = plt.subplots(figsize=FIG_SIZE)
+        ax.text(0.5, 0.5, "No Data for Pitch Length Comparison", ha='center', va='center', fontsize=12)
+        ax.axis('off')
         return fig
 
-    # Get the pitch bins from the helper function (must be available)
-    try:
-        PITCH_BINS_DICT = get_pitch_bins(delivery_type)
-    except NameError:
-        # Fallback if get_pitch_bins is not defined
-        fig, ax = plt.subplots(figsize=(2, FIG_HEIGHT)); 
-        ax.text(0.5, 0.5, "Setup Error", ha='center', va='center', rotation=90); 
-        ax.axis('off'); 
-        return fig
+    # Get the pitch bins and define order
+    PITCH_BINS_DICT = get_pitch_bins(delivery_type)
     
-    
-    # Define ordered keys for reindexing/plotting order (far to near)
     if delivery_type == "Seam":
+        # Order: Far to Near (Bouncer -> Full)
         ordered_keys = ["Bouncer", "Short", "Length", "Full"]
-        # Use a contrasting colormap (e.g., Reds for high run percentage)
-        COLORMAP = 'Reds' 
     elif delivery_type == "Spin":
+        # Order: Far to Near (Short -> Over Pitched)
         ordered_keys = ["Short", "Good", "Full", "Over Pitched"]
-        COLORMAP = 'Reds'
     else:
-        # Fallback if delivery type is not recognized
-        fig, ax = plt.subplots(figsize=(2, FIG_HEIGHT)); 
-        ax.text(0.5, 0.5, "Invalid Type", ha='center', va='center', rotation=90); 
-        ax.axis('off'); 
+        fig, ax = plt.subplots(figsize=FIG_SIZE)
+        ax.text(0.5, 0.5, "Invalid Delivery Type", ha='center', va='center', fontsize=12)
+        ax.axis('off')
         return fig
 
     # 1. Data Preparation
     def assign_pitch_length(x):
         for length, bounds in PITCH_BINS_DICT.items():
+            # Note: We include Yorker/Over Pitched here for assignment, 
+            # but they will be excluded from the final 'ordered_keys' if not needed.
             if bounds[0] <= x < bounds[1]: return length
         return None
 
     df_pitch = df_in.copy()
     df_pitch["PitchLength"] = df_pitch["BounceX"].apply(assign_pitch_length)
     
-    # === CRITICAL DATA CHECK ===
-    if df_pitch["PitchLength"].isnull().all() or df_pitch.empty:
-        fig, ax = plt.subplots(figsize=(2, FIG_HEIGHT)); 
-        ax.text(0.5, 0.5, "No Pitches Assigned", ha='center', va='center', rotation=90); 
-        ax.axis('off'); 
-        return fig
-
-    # Aggregate data - ADD RUNS, BALLS, WICKETS
+    # Aggregate data
     df_summary = df_pitch.groupby("PitchLength").agg(
-        Runs=("Runs", "sum"), 
+        Runs=("Runs", "sum"),  
         Wickets=("Wicket", lambda x: (x == True).sum()), 
         Balls=("Wicket", "count")
     ).reset_index().set_index("PitchLength").reindex(ordered_keys).fillna(0)
     
-    # --- CALCULATE AVG and SR ---
+    # Calculate Metrics
     df_summary["Average"] = df_summary.apply(
         lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else (row["Runs"] if row["Balls"] > 0 else 0), axis=1
     )
     df_summary["StrikeRate"] = df_summary.apply(
         lambda row: (row["Runs"] / row["Balls"]) * 100 if row["Balls"] > 0 else 0, axis=1
     )
-    # -----------------------------
+    # The categories for plotting (reversed for barh)
+    categories = df_summary.index.tolist()[::-1]
     
-    total_runs = df_summary["Runs"].sum()
-    df_summary["RunPercentage"] = (df_summary["Runs"] / total_runs) * 100 if total_runs > 0 else 0
+    # 2. Chart Setup (3 Subplots)
+    fig, axes = plt.subplots(1, 3, figsize=FIG_SIZE, sharey=True)
+    plt.subplots_adjust(wspace=0.1) # Reduce space between charts
 
-    # 2. Chart Setup
-    fig_stack, ax_stack = plt.subplots(figsize=(2, FIG_HEIGHT)) 
+    # List of metrics to plot, titles, and colors
+    metrics = ["Average", "StrikeRate", "Wickets"]
+    titles = ["Batting Average", "Batting Strike Rate", "Dismissals"]
+    colors = ['#88C1B4', '#88C1B4', '#88C1B4'] # Teal color as shown in image
 
-    # Plotting setup variables
-    num_boxes = len(ordered_keys)
-    box_height = 1.0 / num_boxes
-    bottom = 0.0
-    
-    # Colormap and Normalization
-    max_pct = df_summary["RunPercentage"].max() if df_summary["RunPercentage"].max() > 0 else 100
-    norm = mcolors.Normalize(vmin=0, vmax=max_pct)
-    cmap = cm.get_cmap(COLORMAP)
-    
-    # 3. Plotting Equal Boxes (Stacked Heat Map)
-    for index, row in df_summary.iterrows():
-        pct = row["RunPercentage"]
-        avg = row["Average"] 
-        sr = row["StrikeRate"] 
-        
-        # Determine box color
-        color = cmap(norm(pct))
-        
-        # Draw the box (barh with width=1)
-        ax_stack.bar( # <-- CORRECTED FUNCTION CALL
-            x=0.5,           # X-position (center of the chart)
-            height=box_height,
-            width=1,         # Full width (from 0 to 1 on the X-axis)
-            bottom=bottom,   # Y-start position
-            color=color,
-            edgecolor='black', 
-            linewidth=1
-        )
-        
-        # Add labels - UPDATING LABEL TEXT
-        label_text = (
-            f"{index}\n"
-            f"{pct:.0f}%\n"
-            f"Avg: {avg:.1f}\n"
-            f"SR: {sr:.1f}"
-        )
-        
-        # Calculate text color for contrast
-        # Fixed: Only unpack R, G, B
-        r, g, b = color[:3]
-        luminosity = 0.2126 * r + 0.7152 * g + 0.0722 * b
-        text_color = 'white' if luminosity < 0.5 else 'black'
+    # Maximum limits for consistent scaling (Dismissals are small, SR is large)
+    max_avg = df_summary["Average"].max() * 1.1 if df_summary["Average"].max() > 0 else 60
+    max_sr = df_summary["StrikeRate"].max() * 1.1 if df_summary["StrikeRate"].max() > 0 else 100
+    max_wkts = df_summary["Wickets"].max() * 1.5 if df_summary["Wickets"].max() > 0 else 5
 
-        # Text color and plotting logic remain the same
-        ax_stack.text(0.5, bottom + box_height / 2, 
-                      label_text,
-                      ha='center', va='center', fontsize=12, color=text_color, weight='bold', linespacing=1.2)
-        bottom += box_height
-        
-    # 4. Styling
-    ax_stack.set_xlim(0, 1); ax_stack.set_ylim(0, 1)
-    ax_stack.axis('off') # Hide all axes/ticks/labels
+    # Define limits for each chart
+    xlim_limits = {
+        "Average": (0, max_avg),
+        "StrikeRate": (0, max_sr),
+        "Wickets": (0, max_wkts)
+    }
 
-    # Remove the border (spines)
-    ax_stack.spines['right'].set_visible(False)
-    ax_stack.spines['top'].set_visible(False)
-    ax_stack.spines['left'].set_visible(False)
-    ax_stack.spines['bottom'].set_visible(False)
-    
-    # Title remains hidden for space
-    
-    plt.tight_layout(pad=0.9)
-    return fig_stack
-    
+    # --- Plotting Loop ---
+    for i, ax in enumerate(axes):
+        metric = metrics[i]
+        title = titles[i]
+        
+        # Data values (reversed to align with category order)
+        values = df_summary[metric].values[::-1] 
+        
+        # Define x limits
+        ax.set_xlim(xlim_limits[metric])
+        
+        # Horizontal Bar Chart
+        ax.barh(categories, values, height=0.7, color=colors[i], zorder=3, alpha=0.9)
+        
+        # --- Annotations ---
+        for j, (cat, val) in enumerate(zip(categories, values)):
+            # Format value
+            if metric == "Wickets":
+                label = f"{int(val)}"
+            else:
+                label = f"{val:.2f}"
+            
+            # Place label slightly to the right of the bar tip
+            ax.text(val, j, label, 
+                    ha='left', va='center', 
+                    fontsize=9, color='black', fontweight='bold', 
+                    bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=2),
+                    zorder=4)
+
+        # --- Formatting ---
+        ax.set_title(title, fontsize=11, fontweight='bold', pad=10)
+        ax.set_facecolor('white')
+
+        # Set Ticks and Spines
+        ax.tick_params(axis='x', labelsize=8)
+        ax.tick_params(axis='y', length=0) # Hide y ticks
+
+        # Only set Y-axis labels on the leftmost chart (ax[0])
+        if i == 0:
+            ax.set_yticks(np.arange(len(categories)), labels=[c.upper() for c in categories], fontsize=9)
+        else:
+            ax.set_yticks(np.arange(len(categories)), labels=[''] * len(categories))
+            
+        # Hide the X-axis grid, keep the horizontal lines for bar separation
+        ax.xaxis.grid(False) 
+        ax.yaxis.grid(True, linestyle='-', alpha=0.3)
+
+        # Hide the axes (except for the visible spines)
+        ax.set_xticks([]) # Hide x labels/ticks
+        ax.set_xlim(0, xlim_limits[metric][1]) # Reset xlim after ticks are hidden
+        
+        # --- Custom Spines: Right, Top, Bottom ---
+        spine_color = 'lightgray'
+        spine_width = 1.0 
+        
+        # Ensure all spines are visible initially
+        for spine_name in ['left', 'right', 'top', 'bottom']:
+            ax.spines[spine_name].set_visible(True)
+            ax.spines[spine_name].set_color(spine_color)
+            ax.spines[spine_name].set_linewidth(spine_width)
+
+        # Hide the Left spine (since categories are already labeled there)
+        ax.spines['left'].set_visible(False)
+        
+    plt.tight_layout(pad=0.5)
+    return fig
+  
 # --- CHART 4a: INTERCEPTION SIDE-ON --- (Wide View)
 def create_interception_side_on(df_in, delivery_type):
     df_interception = df_in[df_in["InterceptionX"] > -999].copy()
