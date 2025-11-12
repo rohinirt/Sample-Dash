@@ -85,7 +85,13 @@ def create_zonal_analysis(df_in, batsman_name, delivery_type):
         fontsize=5,
         color="black" if norm(avg) < 0.6 else "white", 
         linespacing=1.2)
-
+         # 1. Set line style for all spines you want visible
+        spine_color = 'black'
+        spine_width = 0.5
+        for spine_name in ['left', 'top', 'bottom','right']:
+        ax.spines[spine_name].set_visible(True)
+        ax.spines[spine_name].set_color(spine_color)
+        ax.spines[spine_name].set_linewidth(spine_width)
     ax.set_xlim(-0.75, 0.75); ax.set_ylim(0, 2); ax.axis('off'); 
     plt.tight_layout(pad=0) 
     return fig_boxes
@@ -407,7 +413,6 @@ def create_pitch_map(df_in, delivery_type):
     # 1. Set line style for all spines you want visible
     spine_color = 'black'
     spine_width = 0.5
-    
     for spine_name in ['left', 'top', 'bottom','right']:
         ax.spines[spine_name].set_visible(True)
         ax.spines[spine_name].set_color(spine_color)
