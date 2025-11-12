@@ -194,7 +194,7 @@ def create_crease_beehive(df_in, delivery_type):
     for spine in ['left', 'right', 'top', 'bottom']:
         ax.spines[spine].set_visible(True)
         ax.spines[spine].set_color('black')
-        ax.spines[spine].set_linewidth(1.0) # Line width set to 2.0 as requested
+        ax.spines[spine].set_linewidth(0.8) # Line width set to 2.0 as requested
         
     # 3. Set Background
     fig.patch.set_facecolor('white')
