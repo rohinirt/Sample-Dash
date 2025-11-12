@@ -285,6 +285,12 @@ def create_crease_beehive(df_in, delivery_type):
 
 # --- CHART 3: PITCHMAP ---
 # --- Helper function for Pitch Bins (Centralized) ---
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import pandas as pd
+import numpy as np
+
+# --- Helper function for Pitch Bins (Centralized) ---
 def get_pitch_bins(delivery_type):
     if delivery_type == "Seam":
         # Seam Bins: 1.2-6: Full, 6-8 Length, 8-10 Short, 10-15 Bouncer
@@ -304,258 +310,210 @@ def get_pitch_bins(delivery_type):
         }
     return {} # Default
 
-# --- CHART 3: PITCH MAP (BOUNCE LOCATION) ---
 def create_pitch_map(df_in, delivery_type):
+    """
+    Creates a single Matplotlib figure combining the Pitch Map (left) and 
+    the Pitch Length Bar Charts (right) with a single border.
+    """
+    # Use a wider figure to accommodate two charts side-by-side
     if df_in.empty:
-        # Create an empty figure with a text note if data is missing
         fig, ax = plt.subplots(figsize=(4,6))
-        ax.text(0.5, 0.5, f"No data for Pitch Map ({delivery_type})", ha='center', va='center', fontsize=12)
+        ax.text(0.5, 0.5, "No Data for Combined Analysis", ha='center', va='center', fontsize=12)
         ax.axis('off')
         return fig
 
-    # --- Data Filtering ---
+    # --- SETUP GRID FOR TWO COLUMNS ---
+    # Col 0: Pitch Map (Wider) | Col 1: Bar Charts (Narrower)
+    fig = plt.figure(figsize=FIG_SIZE)
+    # 1 row, 2 columns. Ratio 60% for pitch map, 40% for bars.
+    gs = fig.add_gridspec(1, 2, width_ratios=[1, 1], wspace=0.2) 
+    
+    # Left Column: Pitch Map (ax_map)
+    ax_map = fig.add_subplot(gs[0, 0])
+    
+    # Right Column: Bar Charts (Split into 3 vertical subplots)
+    # Create a sub-gridspec for the bar charts
+    gs_bars = gs[0, 1].subgridspec(3, 1, hspace=0.3)
+    axes_bars = [fig.add_subplot(gs_bars[i, 0]) for i in range(3)]
+
+    fig.patch.set_facecolor('white')
+
+    # ----------------------------------------------------------------------
+    ## --- PART 1: CHART 3 - PITCH MAP (ax_map) ---
+    # ----------------------------------------------------------------------
     pitch_wickets = df_in[df_in["Wicket"] == True]
     pitch_non_wickets = df_in[df_in["Wicket"] == False]
     
-    # --- Chart Setup ---
-    fig, ax = plt.subplots(figsize=(4,6))
-    ax.set_facecolor('white')
-    fig.patch.set_facecolor('white')
-
-    # --- Pitch Bins & Full Toss Adjustment ---
+    ax_map.set_facecolor('white')
     PITCH_BINS = get_pitch_bins(delivery_type)
     
-    # Add Full Toss bin based on delivery type
     if delivery_type == "Seam":
         PITCH_BINS["Full Toss"] = [-4.0, 1.2] 
     elif delivery_type == "Spin":
         PITCH_BINS["Full Toss"] = [-4.0, 1.22] 
     
-    # --- 1. Add Zone Lines & Labels (Horizontal Lines) ---
-    
-    # Determine boundary Y values to draw lines (excluding the start of the lowest bin)
-    # The 'Full Toss' bin is assumed to start at -4.0, which is the bottom plot limit.
+    # 1. Zone Lines & Labels
     boundary_y_values = sorted([v[0] for v in PITCH_BINS.values() if v[0] > -4.0], reverse=True)
-
     for y_val in boundary_y_values:
-        # ax.axhline is the Matplotlib equivalent of fig_pitch.add_hline
-        ax.axhline(y=y_val, color="lightgrey", linewidth=1.0, linestyle="--")
+        ax_map.axhline(y=y_val, color="lightgrey", linewidth=1.0, linestyle="--")
 
-    # Add zone labels (equivalent to fig_pitch.add_annotation)
     for length, bounds in PITCH_BINS.items():
         if length != "Full Toss": 
             mid_y = (bounds[0] + bounds[1]) / 2
-            # Use ax.text for annotation, positioned on the far left (x=-1.45)
-            ax.text(
-                x=-1.45, 
-                y=mid_y, 
-                s=length.upper(), 
-                ha='left', 
-                va='center', 
-                fontsize=8, 
-                color="grey", 
-                fontweight='bold'
-            )
+            ax_map.text(x=-1.45, y=mid_y, s=length.upper(), ha='left', va='center', 
+                        fontsize=8, color="grey", fontweight='bold')
 
-    # --- 2. Add Stump lines (Vertical Lines) ---
-    # ax.axvline is the Matplotlib equivalent of fig_pitch.add_vline
-    ax.axvline(x=-0.18, color="#777777", linestyle="--", linewidth=1.2)
-    ax.axvline(x=0.18, color="#777777", linestyle="--", linewidth=1.2)
-    ax.axvline(x=0, color="#777777", linestyle="--", linewidth=0.8)
+    # 2. Stump lines
+    ax_map.axvline(x=-0.18, color="#777777", linestyle="--", linewidth=1.2)
+    ax_map.axvline(x=0.18, color="#777777", linestyle="--", linewidth=1.2)
+    ax_map.axvline(x=0, color="#777777", linestyle="--", linewidth=0.8)
 
-    # --- 3. Plot Data (Scatter Traces) ---
+    # 3. Plot Data
+    ax_map.scatter(pitch_non_wickets["BounceY"], pitch_non_wickets["BounceX"], s=60, c='#D3D3D3', 
+                   edgecolor='white', linewidths=1.0, alpha=0.9, label="No Wicket")
+    ax_map.scatter(pitch_wickets["BounceY"], pitch_wickets["BounceX"], s=90, c='red', 
+                   edgecolor='white', linewidths=1.0, alpha=0.95, label="Wicket")
+
+    # 4. Layout & Spines
+    ax_map.set_xlim([-1.5, 1.5]); ax_map.set_ylim([16.0, -4.0])
+    ax_map.set_xticks([]); ax_map.set_yticks([]); ax_map.grid(False)
     
-    # Non-Wickets (light grey)
-    ax.scatter(
-        pitch_non_wickets["BounceY"], pitch_non_wickets["BounceX"], 
-        s=60, # Matplotlib size equivalent to Plotly size=10
-        c='#D3D3D3', 
-        edgecolor='white', 
-        linewidths=1.0, 
-        alpha=0.9,
-        label="No Wicket"
-    )
-
-    # Wickets (red)
-    ax.scatter(
-        pitch_wickets["BounceY"], pitch_wickets["BounceX"], 
-        s=90, # Matplotlib size equivalent to Plotly size=12
-        c='red', 
-        edgecolor='white', 
-        linewidths=1.0, 
-        alpha=0.95,
-        label="Wicket"
-    )
-
-    # --- 4. Layout (Axis and Spines) ---
-    
-    # Set axis limits
-    ax.set_xlim([-1.5, 1.5])
-    # Note: Matplotlib typically plots y-axis increasing upwards, but here we set 
-    # the range from [16.0, -4.0] to reverse the axis and match the Plotly visual 
-    # where lower values (closer to batter) are at the bottom.
-    ax.set_ylim([16.0, -4.0])
-
-    # Hide all axis elements (equivalent to visible=False)
-    ax.set_xticks([])
-    ax.set_yticks([])
-    ax.set_xlabel("")
-    ax.set_ylabel("")
-    ax.grid(False)
-    
-    # Hide axis spines (plot border)
-    # 1. Set line style for all spines you want visible
-    spine_color = 'black'
-    spine_width = 0.5
-    
+    # Pitch Map Spines: Left, Top, Bottom
+    spine_color = 'black'; spine_width = 0.5
     for spine_name in ['left', 'top', 'bottom']:
-        ax.spines[spine_name].set_visible(True)
-        ax.spines[spine_name].set_color(spine_color)
-        ax.spines[spine_name].set_linewidth(spine_width)
+        ax_map.spines[spine_name].set_visible(True)
+        ax_map.spines[spine_name].set_color(spine_color)
+        ax_map.spines[spine_name].set_linewidth(spine_width)
+    ax_map.spines['right'].set_visible(False)
 
-    # 2. Hide the unwanted spine
-    ax.spines['right'].set_visible(False)
-        
-    plt.tight_layout()
-    
-    return fig
 
-# --- CHART 3b: PITCH LENGTH RUN % (EQUAL SIZED BOXES) ---
-def create_pitch_length_bars(df_in, delivery_type):
-    """
-    Generates a figure with three vertically stacked horizontal bar charts 
-    for Batting Average, Strike Rate, and Dismissals by Pitch Length.
-    """
-    # Increased height to accommodate three stacked charts comfortably
-    FIG_SIZE = (4, 6) 
+    # ----------------------------------------------------------------------
+    ## --- PART 2: CHART 3b - PITCH LENGTH BARS (axes_bars) ---
+    # ----------------------------------------------------------------------
     
-    if df_in.empty:
-        fig, ax = plt.subplots(figsize=FIG_SIZE)
-        ax.text(0.5, 0.5, "No Data for Pitch Length Comparison", ha='center', va='center', fontsize=12)
-        ax.axis('off')
-        return fig
-
-    # Get the pitch bins and define order
-    PITCH_BINS_DICT = get_pitch_bins(delivery_type)
-    
+    # 1. Data Preparation
     if delivery_type == "Seam":
-        ordered_keys = ["Full","Length", "Short", "Bouncer" ]
+        ordered_keys = ["Full","Length", "Short", "Bouncer" ] # Match image order (Near to Far)
     elif delivery_type == "Spin":
         ordered_keys = ["Over Pitched", "Full" , "Good", "Short"]
-    else:
-        fig, ax = plt.subplots(figsize=FIG_SIZE)
-        ax.text(0.5, 0.5, "Invalid Delivery Type", ha='center', va='center', fontsize=12)
-        ax.axis('off')
-        return fig
-
-    # 1. Data Preparation
+    
     def assign_pitch_length(x):
-        for length, bounds in PITCH_BINS_DICT.items():
+        for length, bounds in PITCH_BINS.items():
             if bounds[0] <= x < bounds[1]: return length
         return None
 
     df_pitch = df_in.copy()
     df_pitch["PitchLength"] = df_pitch["BounceX"].apply(assign_pitch_length)
     
-    # Aggregate data
     df_summary = df_pitch.groupby("PitchLength").agg(
-        Runs=("Runs", "sum"),  
-        Wickets=("Wicket", lambda x: (x == True).sum()), 
-        Balls=("Wicket", "count")
+        Runs=("Runs", "sum"), Wickets=("Wicket", lambda x: (x == True).sum()), Balls=("Wicket", "count")
     ).reset_index().set_index("PitchLength").reindex(ordered_keys).fillna(0)
     
-    # Calculate Metrics
-    df_summary["Average"] = df_summary.apply(
-        lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else (row["Runs"] if row["Balls"] > 0 else 0), axis=1
-    )
-    df_summary["StrikeRate"] = df_summary.apply(
-        lambda row: (row["Runs"] / row["Balls"]) * 100 if row["Balls"] > 0 else 0, axis=1
-    )
-    # Categories for plotting (reversed for barh)
-    categories = df_summary.index.tolist()[::-1]
+    df_summary["Average"] = df_summary.apply(lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else (row["Runs"] if row["Balls"] > 0 else 0), axis=1)
+    df_summary["StrikeRate"] = df_summary.apply(lambda row: (row["Runs"] / row["Balls"]) * 100 if row["Balls"] > 0 else 0, axis=1)
     
-    # 2. Chart Setup (3 Rows, 1 Column)
-    # sharex=False is default, sharey=True forces Y-axis to be the same, 
-    # which is what we want for aligning the bar labels.
-    fig, axes = plt.subplots(3, 1, figsize=FIG_SIZE, sharey=True) 
-    # Adjust space between charts to minimize it vertically
-    plt.subplots_adjust(hspace=0.4) 
-
+    # Categories for plotting (reversed for barh: Bouncer/Short at top, Full at bottom)
+    categories = df_summary.index.tolist()[::-1] # ['Bouncer', 'Short', 'Length', 'Full'] or similar
+    
     metrics = ["Average", "StrikeRate", "Wickets"]
     titles = ["Batting Average", "Batting Strike Rate", "Dismissals"]
     colors = ['#88C1B4', '#88C1B4', '#88C1B4']
 
     # Define limits for each chart to ensure proper scaling
-    max_avg = df_summary["Average"].max() * 1.1 if df_summary["Average"].max() > 0 else 60
-    max_sr = df_summary["StrikeRate"].max() * 1.1 if df_summary["StrikeRate"].max() > 0 else 100
-    max_wkts = df_summary["Wickets"].max() * 1.5 if df_summary["Wickets"].max() > 0 else 5
+    max_avg = df_summary["Average"].max() * 1.1 if df_summary["Average"].max() > 0 else 80
+    max_sr = df_summary["StrikeRate"].max() * 1.1 if df_summary["StrikeRate"].max() > 0 else 150
+    max_wkts = df_summary["Wickets"].max() * 1.5 if df_summary["Wickets"].max() > 0 else 10
 
-    xlim_limits = {
-        "Average": (0, max_avg),
-        "StrikeRate": (0, max_sr),
-        "Wickets": (0, max_wkts)
-    }
+    xlim_limits = {"Average": (0, max_avg), "StrikeRate": (0, max_sr), "Wickets": (0, max_wkts)}
 
-    # --- Plotting Loop ---
-    for i, ax in enumerate(axes):
+    # --- Plotting Loop for Bars ---
+    for i, ax in enumerate(axes_bars):
         metric = metrics[i]
         title = titles[i]
         
-        # Data values (reversed to align with category order)
         values = df_summary[metric].values[::-1] 
-        
-        # Define x limits
         ax.set_xlim(xlim_limits[metric])
         
         # Horizontal Bar Chart
         ax.barh(categories, values, height=0.5, color=colors[i], zorder=3, alpha=0.9)
         
-        # --- Annotations ---
+        # Annotations (Labels)
         for j, (cat, val) in enumerate(zip(categories, values)):
-            # Format value
-            if metric == "Wickets":
-                label = f"{int(val)}"
-            else:
-                label = f"{val:.2f}"
-            
-            # Place label slightly to the right of the bar tip
-            ax.text(val, j, label, 
-                    ha='left', va='center', 
-                    fontsize=10,fontweight = 'bold', color='black',
-                    bbox=dict(facecolor='White', alpha=0.8, edgecolor='none', pad=2),
-                    zorder=4)
+            label = f"{int(val)}" if metric == "Wickets" else f"{val:.2f}"
+            ax.text(val, j, label, ha='left', va='center', fontsize=10, fontweight = 'bold', color='black',
+                    bbox=dict(facecolor='White', alpha=0.8, edgecolor='none', pad=2), zorder=4)
 
-        # --- Formatting ---
-        ax.set_title(title, fontsize=11, fontweight='bold', pad=5)
+        # Formatting
+        ax.set_title(title, fontsize=11, fontweight='bold', pad=5, loc='left') # Title left-aligned
         ax.set_facecolor('white')
+        ax.tick_params(axis='x', labelsize=8); ax.tick_params(axis='y', length=0)
+        
+        # Set Y-axis labels only on the left (on the top-most chart for clean visual)
+        if i == 0:
+            # Hide the Y-axis labels from the far left of the bar chart (not needed with custom labels)
+            ax.set_yticks(np.arange(len(categories)), labels=[''] * len(categories))
+        
+        # Instead, we manually add the categories on the far left of the first plot
+        if i == 0:
+            for j, cat in enumerate(categories):
+                # Using transformed coordinates to place labels to the left of the axis
+                ax.text(-0.05, j, cat.upper(), transform=ax.get_yaxis_transform(),
+                        ha='right', va='center', fontsize=9, color='gray', fontweight='bold')
+            ax.set_yticks(np.arange(len(categories)), labels=[''] * len(categories)) # Hide default yticks
 
-        # Set Ticks and Spines
-        ax.tick_params(axis='x', labelsize=8)
-        ax.tick_params(axis='y', length=0) # Hide y ticks
-
-        # Set Y-axis labels only on the bottom-most chart (ax[2])
-        # This keeps the labels at the bottom, mimicking the style in your image
-        if i == 2:
-            ax.set_yticks(np.arange(len(categories)), labels=[c.upper() for c in categories], fontsize=9)
         else:
-             # Remove y-tick labels for the top two charts
             ax.set_yticks(np.arange(len(categories)), labels=[''] * len(categories))
             
-        ax.xaxis.grid(False) 
-        ax.yaxis.grid(False)
-
-        # Hide x labels/ticks
-        ax.set_xticks([]) 
-        ax.set_xlim(0, xlim_limits[metric][1]) 
+        ax.xaxis.grid(False); ax.yaxis.grid(False)
+        ax.set_xticks([]); ax.set_xlim(0, xlim_limits[metric][1]) 
         
-        # --- Custom Spines: Right, Top, Bottom ---
-        spine_color = 'lightgray'
-        spine_width = 1.0 
+        # Hide ALL spines on subplots
         for spine_name in ['left', 'right', 'top', 'bottom']:
             ax.spines[spine_name].set_visible(False)
-            ax.spines[spine_name].set_color(spine_color)
-            ax.spines[spine_name].set_linewidth(spine_width)
-    plt.tight_layout(pad=0.5)
+        
+    # ----------------------------------------------------------------------
+    ## --- PART 3: DRAW SINGLE COMPACT BORDER ---
+    # ----------------------------------------------------------------------
+    
+    # 3a. Ensure plots are drawn tight
+    plt.tight_layout(pad=0.2) 
+    
+    # Define Padding Value 
+    PADDING = 0.005 
+
+    # 3b. Get the bounding box of the two columns (Left: ax_map, Right: axes_bars[2])
+    map_bbox = ax_map.get_position()
+    # The bar charts occupy the space defined by the top bar chart (y1) and the bottom one (y0)
+    top_bar_bbox = axes_bars[0].get_position()
+    bottom_bar_bbox = axes_bars[2].get_position()
+    
+    # Determine the total bounds (figure coordinates)
+    x0_orig = map_bbox.x0         # Left edge of the Pitch Map
+    y0_orig = bottom_bar_bbox.y0  # Bottom edge of the last bar chart
+    x1_orig = top_bar_bbox.x1     # Right edge of the bar charts
+    y1_orig = map_bbox.y1         # Top edge of the Pitch Map (or first bar chart, they should align)
+    
+    # 3c. Apply Padding
+    x0_pad = x0_orig - PADDING
+    y0_pad = y0_orig - PADDING
+    
+    width_pad = (x1_orig - x0_orig) + (2 * PADDING)
+    height_pad = (y1_orig - y0_orig) + (2 * PADDING)
+
+    # 3d. Draw the custom Rectangle 
+    border_rect = patches.Rectangle(
+        (x0_pad, y0_pad), 
+        width_pad, 
+        height_pad,  
+        facecolor='none', 
+        edgecolor='black', 
+        linewidth=2.0, 
+        transform=fig.transFigure, 
+        clip_on=False
+    )
+
+    fig.patches.append(border_rect)
+
     return fig
   
 # --- CHART 4a: INTERCEPTION SIDE-ON --- (Wide View)
@@ -1359,16 +1317,8 @@ with col2:
  
 
     # Row 4: Pitch Map and Vertical Run % Bar (Side-by-Side)
-    pitch_map_col, run_pct_col = st.columns([1, 1]) 
-    with pitch_map_col:
-        st.markdown("###### PITCHMAP")
-        st.pyplot(create_pitch_map(df_spin, "Spin"), use_container_width=True)    
-        
-    with run_pct_col:
-        st.markdown("###### ")
-        st.pyplot(create_pitch_length_bars(df_spin, "Spin"), use_container_width=True)
-        
-    st.divider()
+    st.markdown("###### PITCHMAP")
+    st.pyplot(create_pitch_map(df_spin, "Spin"), use_container_width=True)    
     
     # Row 5: Interception Side-On (Wide View)
     st.markdown("###### INTERCEPTION SIDE-ON")
