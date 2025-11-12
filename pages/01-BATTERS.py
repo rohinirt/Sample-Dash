@@ -368,7 +368,7 @@ def create_pitch_map(df_in, delivery_type):
     # Non-Wickets (light grey)
     ax.scatter(
         pitch_non_wickets["BounceY"], pitch_non_wickets["BounceX"], 
-        s=40, # Matplotlib size equivalent to Plotly size=10
+        s=60, # Matplotlib size equivalent to Plotly size=10
         c='#D3D3D3', 
         edgecolor='white', 
         linewidths=1.0, 
@@ -379,7 +379,7 @@ def create_pitch_map(df_in, delivery_type):
     # Wickets (red)
     ax.scatter(
         pitch_wickets["BounceY"], pitch_wickets["BounceX"], 
-        s=80, # Matplotlib size equivalent to Plotly size=12
+        s=90, # Matplotlib size equivalent to Plotly size=12
         c='red', 
         edgecolor='white', 
         linewidths=1.0, 
@@ -404,8 +404,17 @@ def create_pitch_map(df_in, delivery_type):
     ax.grid(False)
     
     # Hide axis spines (plot border)
-    for spine in ax.spines.values():
-        spine.set_visible(False)
+    # 1. Set line style for all spines you want visible
+    spine_color = 'black'
+    spine_width = 0.5
+    
+    for spine_name in ['left', 'top', 'bottom']:
+        ax.spines[spine_name].set_visible(True)
+        ax.spines[spine_name].set_color(spine_color)
+        ax.spines[spine_name].set_linewidth(spine_width)
+
+    # 2. Hide the unwanted spine
+    ax.spines['right'].set_visible(False)
         
     plt.tight_layout()
     
