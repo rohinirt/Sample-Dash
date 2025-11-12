@@ -211,9 +211,6 @@ def create_lateral_performance_boxes(df_in, delivery_type, batsman_name):
     Creates a Matplotlib Lateral Performance chart using colored boxes (horizontal heatmap).
     The Zone Labels are now placed above the boxes, and the boxes' height is reduced.
     """
-    import matplotlib.pyplot as plt
-    from matplotlib import cm, colors, patches
-    import matplotlib.colors as mcolors
     
     df_lateral = df_in.copy()
     if df_lateral.empty:
@@ -253,7 +250,7 @@ def create_lateral_performance_boxes(df_in, delivery_type, batsman_name):
     
     # 3. Chart Setup
     # Adjusted figsize to accommodate labels above the boxes (taller figure)
-    fig_boxes, ax_boxes = plt.subplots(figsize=(7, 1.5)) 
+    fig_boxes, ax_boxes = plt.subplots(figsize=(7, 1)) 
     
     num_regions = len(ordered_zones)
     box_width = 1 / num_regions # Fixed width for each box (total width = 1)
@@ -283,8 +280,7 @@ def create_lateral_performance_boxes(df_in, delivery_type, batsman_name):
         # --- NEW LABEL POSITION: Zone Name (Above the box) ---
         ax_boxes.text(left + box_width / 2, box_height + 0.1, # Positioned at y=0.6 (just above the box)
                       index.replace(" ", "\n"),              # Use newline for better fitting
-                      ha='center', va='bottom', fontsize=9, color='black',
-                      fontweight='bold')
+                      ha='center', va='bottom', fontsize=8, color='black')
         
         # Calculate text color for contrast (only need to calculate if there's data)
         text_color = 'black'
