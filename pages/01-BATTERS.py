@@ -217,7 +217,7 @@ def create_crease_beehive(df_in, delivery_type):
         left += box_width
 
     # Formatting
-    ax_boxes.set_xlim(0, 3)
+    ax_boxes.set_xlim(0, 1)
     ax_boxes.set_ylim(0, box_height + 0.3) 
     ax_boxes.axis('off')
     for spine in ax_boxes.spines.values():
