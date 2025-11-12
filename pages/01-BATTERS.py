@@ -757,7 +757,7 @@ def create_interception_side_on(df_in, delivery_type):
     bar_bbox = ax_bar.get_position() 
     # Determine the total bounds (figure coordinates)
     x0_orig = scatter_bbox.x0         
-    y0_orig = 0  
+    y0_orig = bar_bbox.y0  
     x1_orig = scatter_bbox.x1     
     y1_orig = scatter_bbox.y1         
     
@@ -784,14 +784,7 @@ def create_interception_side_on(df_in, delivery_type):
 
     return fig
 
-# --- CHART 5: INTERCEPTION FRONT-ON --- (Distance vs Width)
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-import pandas as pd
-import numpy as np
-import matplotlib.cm as cm
-import matplotlib.colors as mcolors
-
+# --- CHART 5: INTERCEPTION SIDE-ON --- (Distance vs Width)
 # --- Helper function for Interception Bins ---
 def get_interception_bins():
     """Defines the bins for the Crease Width Split chart."""
