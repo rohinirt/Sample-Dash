@@ -305,7 +305,7 @@ def get_pitch_bins(delivery_type):
     return {} # Default
 
 def create_pitch_map(df_in, delivery_type):
-    FIG_WIDTH = 8
+    FIG_WIDTH = 10
     FIG_HEIGHT = 6 
     FIG_SIZE = (FIG_WIDTH, FIG_HEIGHT)
     # Use a wider figure to accommodate two charts side-by-side
@@ -370,7 +370,8 @@ def create_pitch_map(df_in, delivery_type):
     # 4. Layout & Spines
     ax_map.set_xlim([-1.5, 1.5]); ax_map.set_ylim([16.0, -4.0])
     ax_map.set_xticks([]); ax_map.set_yticks([]); ax_map.grid(False)
-
+    for spine_name in ['left', 'right', 'top', 'bottom']:
+            ax_map.spines[spine_name].set_visible(False)
     # ----------------------------------------------------------------------
     ## --- PART 2: CHART 3b - PITCH LENGTH BARS (axes_bars) ---
     # ----------------------------------------------------------------------
@@ -420,12 +421,6 @@ def create_pitch_map(df_in, delivery_type):
         
         # Horizontal Bar Chart
         ax.barh(categories, values, height=0.5, color=colors[i], zorder=3, alpha=0.9)
-        
-        # Annotations (Labels)
-        for j, (cat, val) in enumerate(zip(categories, values)):
-            label = f"{int(val)}" if metric == "Wickets" else f"{val:.2f}"
-            ax.text(val, j, label, ha='left', va='center', fontsize=10, fontweight = 'bold', color='black',
-                    bbox=dict(facecolor='White', alpha=0.8, edgecolor='none', pad=2), zorder=4)
 
         # Formatting
         ax.set_title(title, fontsize=8, fontweight='bold', pad=5, loc='left') # Title left-aligned
