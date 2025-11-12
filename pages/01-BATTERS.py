@@ -1,4 +1,4 @@
-import streamlit as st
+fimport streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
@@ -1351,13 +1351,13 @@ with col1:
 
     # Row 5: Interception Side-On (Wide View)
     # Row 5: Interception Side-On (Wide View)
-    st.markdown("###### INTERCEPTION SIDE-ON")
+    st.markdown("###### INTERCEPTION SIDE-VIEW")
     st.pyplot(create_interception_side_on(df_seam, "Seam"), use_container_width=True)
 
     # Row 7: Interception and Scoring Areas (Side-by-Side)
     bottom_col_left, bottom_col_right = st.columns(2)
     with bottom_col_left:
-        st.markdown("###### INTERCEPTION TOP-ON")
+        st.markdown("###### INTERCEPTION TOP-VIEW")
         st.pyplot(create_interception_front_on(df_seam, "Seam"), use_container_width=True)
         
     with bottom_col_right:
@@ -1401,14 +1401,14 @@ with col2:
         st.pyplot(create_pitch_length_bars(df_spin, "Spin"), use_container_width=True)    
     
     # Row 5: Interception Side-On (Wide View)
-    st.markdown("###### INTERCEPTION SIDE-ON")
+    st.markdown("###### INTERCEPTION SIDE-VIEW")
     st.pyplot(create_interception_side_on(df_spin, "Spin"), use_container_width=True)
 
     # Row 7: Interception Front-On and Scoring Areas (Side-by-Side)
     bottom_col_left, bottom_col_right = st.columns(2)
 
     with bottom_col_left:
-        st.markdown("###### INTERCEPTION TOP-ON")
+        st.markdown("###### INTERCEPTION TOP-VIEW")
         st.pyplot(create_interception_front_on(df_spin, "Spin"), use_container_width=True)
         
     with bottom_col_right:
