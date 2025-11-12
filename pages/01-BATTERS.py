@@ -825,7 +825,7 @@ def create_interception_front_on(df_in, delivery_type):
     }
     for y_val, label in line_specs.items():
         ax_8.axhline(y=y_val, color='lightgrey', linestyle='--', linewidth=0.8, alpha=0.7)
-        ax_8.text(-0.95, y_val, label.split(':')[-1].strip(), ha='left', va='center', fontsize=6, color='grey', bbox=dict(facecolor='white', alpha=0.7, edgecolor='none', pad=1))
+        ax_8.text(-0.95, y_val, label.split(':')[-1].strip(), ha='left', va='center', fontsize=12, color='grey', bbox=dict(facecolor='white', alpha=0.7, edgecolor='none', pad=1))
 
     # Boundary lines (FIXED LINES: -0.18, 0.18)
     ax_8.axvline(x=-0.18, color='grey', linestyle='--', linewidth=1, alpha=0.7)
@@ -887,7 +887,7 @@ def calculate_scoring_angle(area):
 # --- Main Combined Function ---
 def create_wagon_wheel(df_in, delivery_type):
     FIG_WIDTH = 10.0
-    FIG_HEIGHT = 16.2 # Adjusted height for the vertical stack
+    FIG_HEIGHT = 16.1 # Adjusted height for the vertical stack
     FIG_SIZE = (FIG_WIDTH, FIG_HEIGHT)
 
     if df_in.empty:
@@ -979,7 +979,7 @@ def create_wagon_wheel(df_in, delivery_type):
             startangle=90, 
             counterclock=False, 
             autopct='%.0f', 
-            pctdistance=0.7 # Keeps percentage label centered in radius
+            pctdistance=0.6 # Keeps percentage label centered in radius
         )
         
         if len(pie_output) == 3:
@@ -1353,7 +1353,7 @@ with col1:
     st.markdown("###### INTERCEPTION SIDE-ON")
     st.pyplot(create_interception_side_on(df_seam, "Seam"), use_container_width=True)
 
-    # Row 7: Interception Front-On and Scoring Areas (Side-by-Side)
+    # Row 7: Interception and Scoring Areas (Side-by-Side)
     bottom_col_left, bottom_col_right = st.columns(2)
     with bottom_col_left:
         st.markdown("###### INTERCEPTION TOP-ON")
