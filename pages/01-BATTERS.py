@@ -982,7 +982,63 @@ def create_combined_interception_analysis_v2(df_in, delivery_type):
     fig.patches.append(border_rect)
 
     return fig
+    
+# --- CHART 5: INTERCEPTION FRONT-ON --- (Distance vs Width)
+def create_interception_front_on(df_in, delivery_type):
+    df_interception = df_in[df_in["InterceptionX"] > -999].copy()
+    if df_interception.empty:
+        fig, ax = plt.subplots(figsize=(3, 5)); ax.text(0.5, 0.5, "No Data", ha='center', va='center'); ax.axis('off'); return fig
+        
+    df_interception["ColorType"] = "Other"
+    df_interception.loc[df_interception["Wicket"] == True, "ColorType"] = "Wicket"
+    df_interception.loc[df_interception["Runs"].isin([4, 6]), "ColorType"] = "Boundary"
+    # Define color_map inline as it's needed for the loop
+    color_map = {"Wicket": "red", "Boundary": "royalblue", "Other": "white"}
+    
+    fig_8, ax_8 = plt.subplots(figsize=(3, 5), subplot_kw={'xticks': [], 'yticks': []}) 
 
+    # 1. Plot Data
+    # Plot "Other" (White with Grey Border)
+    df_other = df_interception[df_interception["ColorType"] == "Other"]
+    # === USING PROVIDED LOGIC: PLOT (InterceptionX + 10) on Y-axis (Distance) ===
+    ax_8.scatter(
+        df_other["InterceptionY"], df_other["InterceptionX"] + 10, 
+        color='#D3D3D3', edgecolors='white', linewidths=0.5, s=60, label="Other"
+    ) 
+    
+    # Plot "Wicket" and "Boundary" (Solid colors)
+    for ctype in ["Boundary", "Wicket"]:
+        df_slice = df_interception[df_interception["ColorType"] == ctype]
+        # === USING PROVIDED LOGIC: PLOT (InterceptionX + 10) on Y-axis (Distance) ===
+        ax_8.scatter(
+            df_slice["InterceptionY"], df_slice["InterceptionX"] + 10, 
+            color=color_map[ctype],edgecolors='white', s=80, label=ctype
+        ) 
+
+    # 2. Draw Horizontal Dashed Lines with Labels (FIXED LINES: 0.0, 1.25)
+    line_specs = {
+        0.00: "Stumps",
+        1.25: "Crease"        
+    }
+    for y_val, label in line_specs.items():
+        ax_8.axhline(y=y_val, color='lightgrey', linestyle='--', linewidth=0.8, alpha=0.7)
+        ax_8.text(-0.95, y_val, label.split(':')[-1].strip(), ha='left', va='center', fontsize=6, color='grey', bbox=dict(facecolor='white', alpha=0.7, edgecolor='none', pad=1))
+
+    # Boundary lines (FIXED LINES: -0.18, 0.18)
+    ax_8.axvline(x=-0.18, color='lightgrey', linestyle='--', linewidth=0.8, alpha=0.7)
+    ax_8.axvline(x= 0.18, color='lightgrey', linestyle='--', linewidth=0.8, alpha=0.7)
+    ax_8.axvline(x= 0, color='lightgrey', linestyle='--', linewidth=0.8, alpha=0.7)
+    
+    # 3. Set Axes Limits and Labels (FIXED LIMITS: Y-axis -0.2 to 3.5)
+    ax_8.set_xlim(-1, 1); ax_8.set_ylim(-0.2, 3.5); ax_8.invert_yaxis()      
+    ax_8.tick_params(axis='y', which='both', labelleft=False, left=False); ax_8.tick_params(axis='x', which='both', labelbottom=False, bottom=False)
+    ax_8.spines['right'].set_visible(False)
+    ax_8.spines['top'].set_visible(False)
+    ax_8.spines['left'].set_visible(False)
+    ax_8.spines['bottom'].set_visible(False)
+    plt.tight_layout(pad=0.5)
+    return fig_8
+    
 # --- CHART 6: SCORING WAGON WHEEL ---
 def calculate_scoring_wagon(row):
     """Calculates the scoring area based on LandingX/Y coordinates and handedness."""
