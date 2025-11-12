@@ -93,17 +93,6 @@ def create_zonal_analysis(df_in, batsman_name, delivery_type):
 
 # Chart 2: CREASE BEEHIVE
 def create_crease_beehive(df_in, delivery_type):
-    """
-    Creates a single Matplotlib figure containing two subplots:
-    1. Crease Beehive (Pitch scatter plot)
-    2. Lateral Performance Boxes (Horizontal KPI heatmap)
-    A single, compact border is drawn around the entire figure by calculating
-    the precise bounds of the subplots.
-    """
-    import matplotlib.pyplot as plt
-    from matplotlib import cm, colors, patches
-    import matplotlib.colors as mcolors
-    
     if df_in.empty:
         fig, ax = plt.subplots(figsize=(7, 5)); 
         ax.text(0.5, 0.5, "No data for Analysis", ha='center', va='center', fontsize=12); 
@@ -194,12 +183,7 @@ def create_crease_beehive(df_in, delivery_type):
     avg_values = summary["Avg Runs/Wicket"]
     avg_max = avg_values.max() if avg_values.max() > 0 else 50
     norm = mcolors.Normalize(vmin=0, vmax=avg_max if avg_max > 50 else 50)
-    cmap = cm.get_cmap('YlGnBu') # Using a different cmap for contrast on the boxes
-    
-    # Vertical Reference Lines for Lateral Zones (connecting the plots)
-    ax_boxes.axvline(x=box_width, color="grey", linestyle="-", linewidth=0.5)
-    ax_boxes.axvline(x=box_width*2, color="grey", linestyle="-", linewidth=0.5)
-    ax_boxes.axvline(x=box_width*3, color="grey", linestyle="-", linewidth=0.5)
+    cmap = cm.get_cmap('Reds') # Using a different cmap for contrast on the boxe
 
 
     for index, row in summary.iterrows():
@@ -211,7 +195,7 @@ def create_crease_beehive(df_in, delivery_type):
         # Draw the Rectangle
         ax_boxes.add_patch(
             patches.Rectangle((left, 0), box_width, box_height, 
-                              edgecolor="black", facecolor=color, linewidth=1)
+                              edgecolor="white", facecolor=color, linewidth=1)
         )
         
         # Label 1: Zone Name (Above the box)
@@ -246,7 +230,7 @@ def create_crease_beehive(df_in, delivery_type):
     ## --- 4. DRAW SINGLE COMPACT BORDER AROUND THE ENTIRE FIGURE ---
     
     # 1. Ensure plots are drawn tight (removes outer whitespace)
-    plt.tight_layout(pad=0.2)
+    plt.tight_layout(pad=0.5)
     
     # 2. Get the bounding box of the two subplots in Figure coordinates
     bh_bbox = ax_bh.get_position()
@@ -273,18 +257,18 @@ def create_crease_beehive(df_in, delivery_type):
         height,  
         facecolor='none', 
         edgecolor='black', 
-        linewidth=2.0, 
+        linewidth=0.5, 
         transform=fig.transFigure, # Use the figure's coordinate system
         clip_on=False
     )
     # Add a small padding (e.g., 0.005) to the height and y0 to keep the bottom border distinct
     border_rect = patches.Rectangle(
-        (x0, y0 - 0.005), 
+        (x0+0.009, y0 - 0.009), 
         width, 
         height + 0.01,  
          facecolor='none', 
          edgecolor='black', 
-        linewidth=2.0, 
+        linewidth=0.5, 
         transform=fig.transFigure,
         clip_on=False
      )
