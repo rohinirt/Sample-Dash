@@ -384,8 +384,8 @@ def create_pitch_map(df_in, delivery_type):
     )
     # --- 2. Add Stump lines (Vertical Lines) ---
     # ax.axvline is the Matplotlib equivalent of fig_pitch.add_vline
-    ax.axvline(x=-0.18, color="#777777", linestyle="--", linewidth=1.2)
-    ax.axvline(x=0.18, color="#777777", linestyle="--", linewidth=1.2)
+    ax.axvline(x=-0.18, color="#777777", linestyle="--", linewidth=1)
+    ax.axvline(x=0.18, color="#777777", linestyle="--", linewidth=1)
     ax.axvline(x=0, color="#777777", linestyle="--", linewidth=0.8)
     # --- 4. Layout (Axis and Spines) ---
     
@@ -480,7 +480,7 @@ def create_pitch_length_bars(df_in, delivery_type):
 
     metrics = ["Average", "StrikeRate", "Wickets"]
     titles = ["Batting Average", "Batting Strike Rate", "Dismissals"]
-    colors = ['#88C1B4', '#88C1B4', '#88C1B4']
+    colors = ['Reds', 'Reds', 'Reds']
 
     # Define limits for each chart to ensure proper scaling
     max_avg = df_summary["Average"].max() * 1.1 if df_summary["Average"].max() > 0 else 60
@@ -628,10 +628,17 @@ def create_interception_side_on(df_in, delivery_type):
     return fig_7
 
 # Chart 4b: Interception Side on Bins ---
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+import matplotlib.cm as cm
+import matplotlib.colors as mcolors
+import matplotlib.patches as patches
+
 def create_crease_width_split(df_in, delivery_type):
     # Adjust figsize width for horizontal display, height for four boxes
     FIG_WIDTH = 5
-    FIG_HEIGHT = 1
+    FIG_HEIGHT = 0.8
     
     if df_in.empty:
         fig, ax = plt.subplots(figsize=(FIG_WIDTH, FIG_HEIGHT)); 
@@ -640,24 +647,20 @@ def create_crease_width_split(df_in, delivery_type):
         return fig
     
     # 1. Define Interception Bins and Order
-    # NOTE: Assuming InterceptionX is centered around 0. We use X+10 for binning.
-    
-    # Lateral Bins (0m-1m, 1m-2m, 2m-3m, 3m+) based on InterceptionX + 10
     INTERCEPTION_BINS = {
         "0m-1m": [0, 1],
         "1m-2m": [1, 2],
         "2m-3m": [2, 3],
-        "3m+": [3, 100] # Assuming max possible value is < 100
+        "3m+": [3, 100] 
     }
     
-    # Order: Wide to Close (e.g., 3m+ to 0m-1m)
     ordered_keys = ["0m-1m", "1m-2m", "2m-3m", "3m+"] 
-    COLORMAP = 'Reds' # Color hue based on SR
+    COLORMAP = 'Reds' # Color hue based on Avg
 
     # 2. Data Preparation
     def assign_crease_width(x):
-        # x is assumed to be InterceptionX + 10
         for width, bounds in INTERCEPTION_BINS.items():
+            # NOTE: We assume 'x' here is already InterceptionX + 10
             if bounds[0] <= x < bounds[1]: return width
         return None
 
@@ -678,7 +681,7 @@ def create_crease_width_split(df_in, delivery_type):
         Balls=("Wicket", "count")
     ).reset_index().set_index("CreaseWidth").reindex(ordered_keys).fillna(0)
     
-    # --- CALCULATE AVG and SR (Metric for color hue) ---
+    # --- CALCULATE AVG and SR ---
     df_summary["Average"] = df_summary.apply(
         lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else (row["Runs"] if row["Balls"] > 0 else 0), axis=1
     )
@@ -690,67 +693,65 @@ def create_crease_width_split(df_in, delivery_type):
     # 3. Chart Setup
     fig_stack, ax_stack = plt.subplots(figsize=(FIG_WIDTH, FIG_HEIGHT)) 
 
-    # Plotting setup variables (Now horizontal)
+    # Plotting setup variables (Horizontal)
     num_boxes = len(ordered_keys)
     box_width = 1.0 / num_boxes # X-dimension split
     left = 0.0 # X-start position
     
-    # Colormap and Normalization based on Strike Rate (SR)
-    max_sr = df_summary["StrikeRate"].max() if df_summary["StrikeRate"].max() > 0 else 100
-    norm = mcolors.Normalize(vmin=0, vmax=max_sr)
+    # Colormap and Normalization based on Average (Avg) - used for color hue
+    max_avg = df_summary["Average"].max() if df_summary["Average"].max() > 0 else 100
+    norm = mcolors.Normalize(vmin=0, vmax=max_avg)
     cmap = cm.get_cmap(COLORMAP)
     
     # 4. Plotting Equal Boxes (Stacked Heat Map - Horizontal)
     for index, row in df_summary.iterrows():
-        sr = row["StrikeRate"]
+        wickets = row["Wickets"]
         avg = row["Average"] 
         
-        # Determine box color based on SR
-        color = cmap(norm(sr)) # This returns an RGBA tuple
+        # Determine box color based on Average
+        color = cmap(norm(avg)) 
         
         # Draw the box (barh with height=1)
         ax_stack.barh(
-            y=0.5,           # Y-position (center of the chart)
+            y=0.5,            # Y-position (center of the chart)
             width=box_width,
-            height=1,        # Full height (from 0 to 1 on the Y-axis)
-            left=left,       # X-start position
+            height=1,         # Full height (from 0 to 1 on the Y-axis)
+            left=left,        # X-start position
             color=color,
-            edgecolor='black', 
+            edgecolor='white', 
             linewidth=0.7
         )
         
         # --- Apply Dynamic Text Color Logic ---
-        label_text = f"SR: {sr:.0f}\nAvg: {avg:.1f}"
+        # MODIFICATION 1: Update the label format
+        label_text = f"{int(wickets)}W - Ave {avg:.1f}"
         
         # Calculate text color for contrast
-        r, g, b, a = color # 'color' is guaranteed to be an RGBA tuple from cmap
-        # Calculate luminosity
+        r, g, b, a = color
         luminosity = 0.2126 * r + 0.7152 * g + 0.0722 * b
-        
-        # Set text color
         text_color = 'white' if luminosity < 0.5 else 'black'
         # -------------------------------------
         
-        # Text position: Center of the box
         center_x = left + box_width / 2
         center_y = 0.5
         
-        # Label 1: SR and Avg (Middle of the box)
+        # Label 1: Wickets and Average (Middle of the box)
         ax_stack.text(
             center_x, center_y, 
             label_text,
             ha='center', va='center', 
             fontsize=10, 
-            color=text_color, weight='bold' # Using dynamic text_color
+            color=text_color, weight='bold' 
         )
         
-        # Label 2: Crease Width Label (Below the box)
+        # MODIFICATION 2: Crease Width Label moved to the TOP of the box
         ax_stack.text(
-            center_x, -0.05, # Position slightly below the box
-            index,           # The CreaseWidth label (e.g., '3m+')
-            ha='center', va='top', 
+            center_x, 1.05, # Position slightly above the box (y=1.0 is the top edge)
+            index,          # The CreaseWidth label (e.g., '3m+')
+            ha='center', va='bottom', # va='bottom' ensures it starts just above y=1.05
             fontsize=10, 
-            color='black' # Using dynamic text_color
+            color='black',
+            fontweight='bold'
         )
 
         left += box_width # Advance the starting position for the next box
