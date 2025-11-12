@@ -1419,7 +1419,7 @@ with col2:
         
     with bottom_col_right:
         st.markdown("###### SCORING AREAS")
-        st.pyplot(create_wagon_wheel(df_spin,"djf'), use_container_width=True)
+        st.pyplot(create_wagon_wheel(df_spin,'djf'), use_container_width=True)
             
 
     # Row 8: Swing/Deviation Direction Analysis (Side-by-Side)
