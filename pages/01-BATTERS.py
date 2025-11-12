@@ -421,9 +421,13 @@ def create_pitch_map(df_in, delivery_type):
     return fig
 
 # --- CHART 3b: PITCH LENGTH RUN % (EQUAL SIZED BOXES) ---
-def create_pitch_length_bars(df_in, delivery_type):
-    # Use a wider figure to accommodate three charts side-by-side
-    FIG_SIZE = (4, 6) 
+def create_pitch_length_comparison_mpl(df_in, delivery_type):
+    """
+    Generates a figure with three vertically stacked horizontal bar charts 
+    for Batting Average, Strike Rate, and Dismissals by Pitch Length.
+    """
+    # Increased height to accommodate three stacked charts comfortably
+    FIG_SIZE = (4.5, 7.5) 
     
     if df_in.empty:
         fig, ax = plt.subplots(figsize=FIG_SIZE)
@@ -435,10 +439,8 @@ def create_pitch_length_bars(df_in, delivery_type):
     PITCH_BINS_DICT = get_pitch_bins(delivery_type)
     
     if delivery_type == "Seam":
-        # Order: Far to Near (Bouncer -> Full)
         ordered_keys = ["Bouncer", "Short", "Length", "Full"]
     elif delivery_type == "Spin":
-        # Order: Far to Near (Short -> Over Pitched)
         ordered_keys = ["Short", "Good", "Full", "Over Pitched"]
     else:
         fig, ax = plt.subplots(figsize=FIG_SIZE)
@@ -449,8 +451,6 @@ def create_pitch_length_bars(df_in, delivery_type):
     # 1. Data Preparation
     def assign_pitch_length(x):
         for length, bounds in PITCH_BINS_DICT.items():
-            # Note: We include Yorker/Over Pitched here for assignment, 
-            # but they will be excluded from the final 'ordered_keys' if not needed.
             if bounds[0] <= x < bounds[1]: return length
         return None
 
@@ -471,24 +471,25 @@ def create_pitch_length_bars(df_in, delivery_type):
     df_summary["StrikeRate"] = df_summary.apply(
         lambda row: (row["Runs"] / row["Balls"]) * 100 if row["Balls"] > 0 else 0, axis=1
     )
-    # The categories for plotting (reversed for barh)
+    # Categories for plotting (reversed for barh)
     categories = df_summary.index.tolist()[::-1]
     
-    # 2. Chart Setup (3 Subplots)
-    fig, axes = plt.subplots(1, 3, figsize=FIG_SIZE, sharey=True)
-    plt.subplots_adjust(wspace=0.1) # Reduce space between charts
+    # 2. Chart Setup (3 Rows, 1 Column)
+    # sharex=False is default, sharey=True forces Y-axis to be the same, 
+    # which is what we want for aligning the bar labels.
+    fig, axes = plt.subplots(3, 1, figsize=FIG_SIZE, sharey=True) 
+    # Adjust space between charts to minimize it vertically
+    plt.subplots_adjust(hspace=0.4) 
 
-    # List of metrics to plot, titles, and colors
     metrics = ["Average", "StrikeRate", "Wickets"]
     titles = ["Batting Average", "Batting Strike Rate", "Dismissals"]
-    colors = ['#88C1B4', '#88C1B4', '#88C1B4'] # Teal color as shown in image
+    colors = ['#88C1B4', '#88C1B4', '#88C1B4']
 
-    # Maximum limits for consistent scaling (Dismissals are small, SR is large)
+    # Define limits for each chart to ensure proper scaling
     max_avg = df_summary["Average"].max() * 1.1 if df_summary["Average"].max() > 0 else 60
     max_sr = df_summary["StrikeRate"].max() * 1.1 if df_summary["StrikeRate"].max() > 0 else 100
     max_wkts = df_summary["Wickets"].max() * 1.5 if df_summary["Wickets"].max() > 0 else 5
 
-    # Define limits for each chart
     xlim_limits = {
         "Average": (0, max_avg),
         "StrikeRate": (0, max_sr),
@@ -532,19 +533,20 @@ def create_pitch_length_bars(df_in, delivery_type):
         ax.tick_params(axis='x', labelsize=8)
         ax.tick_params(axis='y', length=0) # Hide y ticks
 
-        # Only set Y-axis labels on the leftmost chart (ax[0])
-        if i == 0:
+        # Set Y-axis labels only on the bottom-most chart (ax[2])
+        # This keeps the labels at the bottom, mimicking the style in your image
+        if i == 2:
             ax.set_yticks(np.arange(len(categories)), labels=[c.upper() for c in categories], fontsize=9)
         else:
+             # Remove y-tick labels for the top two charts
             ax.set_yticks(np.arange(len(categories)), labels=[''] * len(categories))
             
-        # Hide the X-axis grid, keep the horizontal lines for bar separation
         ax.xaxis.grid(False) 
         ax.yaxis.grid(True, linestyle='-', alpha=0.3)
 
-        # Hide the axes (except for the visible spines)
-        ax.set_xticks([]) # Hide x labels/ticks
-        ax.set_xlim(0, xlim_limits[metric][1]) # Reset xlim after ticks are hidden
+        # Hide x labels/ticks
+        ax.set_xticks([]) 
+        ax.set_xlim(0, xlim_limits[metric][1]) 
         
         # --- Custom Spines: Right, Top, Bottom ---
         spine_color = 'lightgray'
@@ -556,7 +558,7 @@ def create_pitch_length_bars(df_in, delivery_type):
             ax.spines[spine_name].set_color(spine_color)
             ax.spines[spine_name].set_linewidth(spine_width)
 
-        # Hide the Left spine (since categories are already labeled there)
+        # Hide the Left spine (since categories are only labeled on the bottom)
         ax.spines['left'].set_visible(False)
         
     plt.tight_layout(pad=0.5)
