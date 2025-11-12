@@ -285,12 +285,6 @@ def create_crease_beehive(df_in, delivery_type):
 
 # --- CHART 3: PITCHMAP ---
 # --- Helper function for Pitch Bins (Centralized) ---
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-import pandas as pd
-import numpy as np
-
-# --- Helper function for Pitch Bins (Centralized) ---
 def get_pitch_bins(delivery_type):
     if delivery_type == "Seam":
         # Seam Bins: 1.2-6: Full, 6-8 Length, 8-10 Short, 10-15 Bouncer
@@ -311,10 +305,6 @@ def get_pitch_bins(delivery_type):
     return {} # Default
 
 def create_pitch_map(df_in, delivery_type):
-    """
-    Creates a single Matplotlib figure combining the Pitch Map (left) and 
-    the Pitch Length Bar Charts (right) with a single border.
-    """
     FIG_WIDTH = 8
     FIG_HEIGHT = 6 
     FIG_SIZE = (FIG_WIDTH, FIG_HEIGHT)
@@ -328,7 +318,6 @@ def create_pitch_map(df_in, delivery_type):
     # --- SETUP GRID FOR TWO COLUMNS ---
     # Col 0: Pitch Map (Wider) | Col 1: Bar Charts (Narrower)
     fig = plt.figure(figsize=FIG_SIZE)
-    # 1 row, 2 columns. Ratio 60% for pitch map, 40% for bars.
     gs = fig.add_gridspec(1, 2, width_ratios=[1, 1], wspace=0.2) 
     
     # Left Column: Pitch Map (ax_map)
@@ -336,7 +325,7 @@ def create_pitch_map(df_in, delivery_type):
     
     # Right Column: Bar Charts (Split into 3 vertical subplots)
     # Create a sub-gridspec for the bar charts
-    gs_bars = gs[0, 1].subgridspec(3, 1, hspace=0.3)
+    gs_bars = gs[0, 1].subgridspec(3, 1, hspace=0.2)
     axes_bars = [fig.add_subplot(gs_bars[i, 0]) for i in range(3)]
 
     fig.patch.set_facecolor('white')
@@ -366,29 +355,21 @@ def create_pitch_map(df_in, delivery_type):
             ax_map.text(x=-1.45, y=mid_y, s=length.upper(), ha='left', va='center', 
                         fontsize=8, color="grey", fontweight='bold')
 
-    # 2. Stump lines
-    ax_map.axvline(x=-0.18, color="#777777", linestyle="--", linewidth=1.2)
-    ax_map.axvline(x=0.18, color="#777777", linestyle="--", linewidth=1.2)
-    ax_map.axvline(x=0, color="#777777", linestyle="--", linewidth=0.8)
+    
 
     # 3. Plot Data
     ax_map.scatter(pitch_non_wickets["BounceY"], pitch_non_wickets["BounceX"], s=60, c='#D3D3D3', 
                    edgecolor='white', linewidths=1.0, alpha=0.9, label="No Wicket")
     ax_map.scatter(pitch_wickets["BounceY"], pitch_wickets["BounceX"], s=90, c='red', 
                    edgecolor='white', linewidths=1.0, alpha=0.95, label="Wicket")
-
+    # 2. Stump lines
+    ax_map.axvline(x=-0.18, color="#777777", linestyle="--", linewidth=1.2)
+    ax_map.axvline(x=0.18, color="#777777", linestyle="--", linewidth=1.2)
+    ax_map.axvline(x=0, color="#777777", linestyle="--", linewidth=0.8)
+    
     # 4. Layout & Spines
     ax_map.set_xlim([-1.5, 1.5]); ax_map.set_ylim([16.0, -4.0])
     ax_map.set_xticks([]); ax_map.set_yticks([]); ax_map.grid(False)
-    
-    # Pitch Map Spines: Left, Top, Bottom
-    spine_color = 'black'; spine_width = 0.5
-    for spine_name in ['left', 'top', 'bottom']:
-        ax_map.spines[spine_name].set_visible(True)
-        ax_map.spines[spine_name].set_color(spine_color)
-        ax_map.spines[spine_name].set_linewidth(spine_width)
-    ax_map.spines['right'].set_visible(False)
-
 
     # ----------------------------------------------------------------------
     ## --- PART 2: CHART 3b - PITCH LENGTH BARS (axes_bars) ---
@@ -447,26 +428,14 @@ def create_pitch_map(df_in, delivery_type):
                     bbox=dict(facecolor='White', alpha=0.8, edgecolor='none', pad=2), zorder=4)
 
         # Formatting
-        ax.set_title(title, fontsize=11, fontweight='bold', pad=5, loc='left') # Title left-aligned
+        ax.set_title(title, fontsize=8, fontweight='bold', pad=5, loc='left') # Title left-aligned
         ax.set_facecolor('white')
         ax.tick_params(axis='x', labelsize=8); ax.tick_params(axis='y', length=0)
         
-        # Set Y-axis labels only on the left (on the top-most chart for clean visual)
-        if i == 0:
-            # Hide the Y-axis labels from the far left of the bar chart (not needed with custom labels)
-            ax.set_yticks(np.arange(len(categories)), labels=[''] * len(categories))
-        
-        # Instead, we manually add the categories on the far left of the first plot
-        if i == 0:
-            for j, cat in enumerate(categories):
-                # Using transformed coordinates to place labels to the left of the axis
-                ax.text(-0.05, j, cat.upper(), transform=ax.get_yaxis_transform(),
-                        ha='right', va='center', fontsize=9, color='gray', fontweight='bold')
-            ax.set_yticks(np.arange(len(categories)), labels=[''] * len(categories)) # Hide default yticks
-
-        else:
-            ax.set_yticks(np.arange(len(categories)), labels=[''] * len(categories))
-            
+        for j, cat in enumerate(categories):
+            # Using transformed coordinates to place labels to the left of the axis
+            ax.text(-0.05, j, cat.upper(), transform=ax.get_yaxis_transform(),
+                    ha='right', va='center', fontsize=9, color='gray')
         ax.xaxis.grid(False); ax.yaxis.grid(False)
         ax.set_xticks([]); ax.set_xlim(0, xlim_limits[metric][1]) 
         
@@ -510,7 +479,7 @@ def create_pitch_map(df_in, delivery_type):
         height_pad,  
         facecolor='none', 
         edgecolor='black', 
-        linewidth=2.0, 
+        linewidth=0.5, 
         transform=fig.transFigure, 
         clip_on=False
     )
