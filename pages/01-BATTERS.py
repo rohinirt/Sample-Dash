@@ -93,19 +93,8 @@ def create_zonal_analysis(df_in, batsman_name, delivery_type):
 
 # Chart 2: CREASE BEEHIVE
 def create_crease_beehive(df_in, delivery_type):
-    """
-    Creates a single Matplotlib figure containing two subplots:
-    1. Crease Beehive (Pitch scatter plot)
-    2. Lateral Performance Boxes (Horizontal KPI heatmap)
-    Includes handedness-aware zone ordering and a single, padded border.
-    """
-    import matplotlib.pyplot as plt
-    from matplotlib import cm, colors, patches
-    import matplotlib.colors as mcolors
-    import pandas as pd # Ensure pandas is imported if not globally available
-    
     if df_in.empty:
-        fig, ax = plt.subplots(figsize=(8, 5)); 
+        fig, ax = plt.subplots(figsize=(7, 5)); 
         ax.text(0.5, 0.5, "No data for Analysis", ha='center', va='center', fontsize=12); 
         ax.axis('off'); 
         return fig
@@ -118,9 +107,9 @@ def create_crease_beehive(df_in, delivery_type):
     
     # --- Lateral Zone Data Prep (Chart 2b) ---
     df_lateral = df_in.copy()
-    
-    # 1. Determine handedness from the first row of data
     is_rhb = df_in["IsBatsmanRightHanded"].iloc[0] if not df_in.empty and "IsBatsmanRightHanded" in df_in.columns else True
+
+    
 
     def assign_lateral_zone(row):
         y = row["CreaseY"]
@@ -153,87 +142,113 @@ def create_crease_beehive(df_in, delivery_type):
         # Reverses the DataFrame for LHB (LEG, STUMPS, OUTSIDE OFF, WAY OUTSIDE OFF)
         summary = summary.iloc[::-1]
 
+    
+
     # -----------------------------------------------------------
-    # --- 4. SETUP SUBPLOTS ---
-    fig = plt.figure(figsize=(8, 5)) 
-    # Reduced hspace for minimal gap between charts
-    gs = fig.add_gridspec(2, 1, height_ratios=[4, 1], hspace=0.01) 
+    # --- 1. SETUP SUBPLOTS (Increased Figure Width) ---
+    # Increased width from 7 to 8 for a wider Beehive chart relative to height
+    fig = plt.figure(figsize=(7, 5)) 
+    gs = fig.add_gridspec(2, 1, height_ratios=[4, 1], hspace=0.005) 
     ax_bh = fig.add_subplot(gs[0, 0])      # Top subplot (Beehive)
     ax_boxes = fig.add_subplot(gs[1, 0])   # Bottom subplot (Lateral Boxes)
-    
     fig.patch.set_facecolor('white')
 
     # -----------------------------------------------------------
-    ## --- 5. CHART 2a: CREASE BEEHIVE (ax_bh) ---
+    ## --- 2. CHART 2a: CREASE BEEHIVE (ax_bh) ---
     
-    # Traces
+    # --- Traces ---
     ax_bh.scatter(regular_balls["CreaseY"], regular_balls["CreaseZ"], s=40, c='lightgrey', edgecolor='white', linewidths=1.0, alpha=0.95, label="Regular Ball")
     ax_bh.scatter(boundaries["CreaseY"], boundaries["CreaseZ"], s=80, c='royalblue', edgecolor='white', linewidths=1.0, alpha=0.95, label="Boundary")
     ax_bh.scatter(wickets["CreaseY"], wickets["CreaseZ"], s=80, c='red', edgecolor='white', linewidths=1.0, alpha=0.95, label="Wicket")
 
-    # Reference Lines
-    ax_bh.axvline(x=-0.18, color="grey", linestyle="--", linewidth=0.5); ax_bh.axvline(x=0.18, color="grey", linestyle="--", linewidth=0.5)
-    ax_bh.axvline(x=0, color="grey", linestyle="--", linewidth=0.5); ax_bh.axvline(x=-0.92, color="grey", linestyle="-", linewidth=0.5) 
-    ax_bh.axvline(x=0.92, color="grey", linestyle="-", linewidth=0.5); ax_bh.axhline(y=0.78, color="grey", linestyle="-", linewidth=0.5)
+    # --- Reference Lines ---
+    ax_bh.axvline(x=-0.18, color="grey", linestyle="--", linewidth=0.5) 
+    ax_bh.axvline(x=0.18, color="grey", linestyle="--", linewidth=0.5)
+    ax_bh.axvline(x=0, color="grey", linestyle="--", linewidth=0.5) 
+    ax_bh.axvline(x=-0.92, color="grey", linestyle="-", linewidth=0.5) 
+    ax_bh.axvline(x=0.92, color="grey", linestyle="-", linewidth=0.5)
+    ax_bh.axhline(y=0.78, color="grey", linestyle="-", linewidth=0.5)
 
-    # Annotation and Title
+    # --- Annotation ---
     ax_bh.text(-1.5, 0.78, "Stump line", ha='left', va='bottom', fontsize=8, color="grey", transform=ax_bh.transData)
-    ax_bh.set_title(f"Crease Beehive ({delivery_type})", fontsize=12)
     
-    # Formatting
-    ax_bh.set_xlim([-1.5, 1.5]); ax_bh.set_ylim([0, 2]); ax_bh.set_aspect('equal', adjustable='box')
+    # --- Formatting ---
+    ax_bh.set_xlim([-2, 2])
+    ax_bh.set_ylim([0, 2])
+    ax_bh.set_aspect('equal', adjustable='box')
     ax_bh.set_xticks([]); ax_bh.set_yticks([]); ax_bh.grid(False)
-    for spine in ax_bh.spines.values(): spine.set_visible(False)
+    for spine in ax_bh.spines.values():
+        spine.set_visible(False)
     ax_bh.set_facecolor('white')
     
     # -----------------------------------------------------------
-    ## --- 6. CHART 2b: LATERAL PERFORMANCE BOXES (ax_boxes) ---
+    ## --- 3. CHART 2b: LATERAL PERFORMANCE BOXES (ax_boxes) ---
     
-    num_regions = len(summary); box_width = 1 / num_regions; box_height = 0.5; left = 0
-    avg_values = summary["Avg Runs/Wicket"]; avg_max = avg_values.max() if avg_values.max() > 0 else 50
-    norm = mcolors.Normalize(vmin=0, vmax=avg_max if avg_max > 50 else 50); cmap = cm.get_cmap('YlGnBu')
+    num_regions = len(ordered_zones)
+    box_width = 1 / num_regions
+    box_height = 0.5 
+    left = 0
     
-    # Vertical Reference Lines for Lateral Zones 
-    for i in range(1, num_regions):
-        ax_boxes.axvline(x=box_width * i, color="grey", linestyle="-", linewidth=0.5)
+    # Color Normalization
+    avg_values = summary["Avg Runs/Wicket"]
+    avg_max = avg_values.max() if avg_values.max() > 0 else 50
+    norm = mcolors.Normalize(vmin=0, vmax=avg_max if avg_max > 50 else 50)
+    cmap = cm.get_cmap('Reds') # Using a different cmap for contrast on the boxe
 
 
     for index, row in summary.iterrows():
-        avg = row["Avg Runs/Wicket"]; wkts = int(row["Wickets"])
+        avg = row["Avg Runs/Wicket"]
+        wkts = int(row["Wickets"])
+        
         color = cmap(norm(avg)) if row["Balls"] > 0 else 'whitesmoke' 
         
-        # Draw the Rectangle: Using black border for consistency
-        ax_boxes.add_patch(patches.Rectangle((left, 0), box_width, box_height, edgecolor="black", facecolor=color, linewidth=1))
+        # Draw the Rectangle
+        ax_boxes.add_patch(
+            patches.Rectangle((left, 0), box_width, box_height, 
+                              edgecolor="white", facecolor=color, linewidth=1)
+        )
         
         # Label 1: Zone Name (Above the box)
-        ax_boxes.text(left + box_width / 2, box_height + 0.1, index, ha='center', va='bottom', fontsize=8, color='black', fontweight='bold')
+        ax_boxes.text(left + box_width / 2, box_height + 0.1, 
+                      index, 
+                      ha='center', va='bottom', fontsize=7, color='black')
         
         # Calculate text color for contrast
         text_color = 'black'
         if row["Balls"] > 0:
-            r, g, b, a = color; luminosity = 0.2126 * r + 0.7152 * g + 0.0722 * b
+            r, g, b, a = color
+            luminosity = 0.2126 * r + 0.7152 * g + 0.0722 * b
             text_color = 'white' if luminosity < 0.5 else 'black'
         
         # Label 2: Wickets and Average (Middle of the box)
         label_wkts_avg = f"{wkts}W - Ave {avg:.1f}"
-        ax_boxes.text(left + box_width / 2, box_height * 0.5, label_wkts_avg, ha='center', va='center', fontsize=9, fontweight='bold', color=text_color)
+        ax_boxes.text(left + box_width / 2, box_height * 0.5, 
+                      label_wkts_avg,
+                      ha='center', va='center', fontsize=9, fontweight='bold', color=text_color)
         
         left += box_width
 
     # Formatting
-    ax_boxes.set_xlim(0, 1); ax_boxes.set_ylim(0, box_height + 0.3); ax_boxes.axis('off')
-    for spine in ax_boxes.spines.values(): spine.set_visible(False)
+    ax_boxes.set_xlim(0, 1)
+    ax_boxes.set_ylim(0, box_height + 0.3) 
+    ax_boxes.axis('off')
+    for spine in ax_boxes.spines.values():
+        spine.set_visible(False)
     ax_boxes.set_facecolor('white')
 
     # -----------------------------------------------------------
-    ## --- 7. DRAW SINGLE COMPACT BORDER WITH PADDING ---
+    ## --- 4. DRAW SINGLE COMPACT BORDER AROUND THE ENTIRE FIGURE ---
     
+    # 1. Ensure plots are drawn tight (removes outer whitespace)
+    ## --- 4. DRAW SINGLE COMPACT BORDER WITH PADDING ---
+    
+    # 1. Ensure plots are drawn tight
     plt.tight_layout(pad=0.2)
     
     # Define Padding Value (in figure coordinates)
-    PADDING = 0.005 
+    PADDING = 0.008
 
-    # Get the bounding box of the two subplots in Figure coordinates
+    # 2. Get the bounding box of the two subplots in Figure coordinates
     bh_bbox = ax_bh.get_position()
     box_bbox = ax_boxes.get_position()
     
@@ -243,7 +258,7 @@ def create_crease_beehive(df_in, delivery_type):
     x1_orig = max(bh_bbox.x1, box_bbox.x1)
     y1_orig = bh_bbox.y1
     
-    # Apply Padding
+    # 3. Apply Padding
     x0_pad = x0_orig - PADDING
     y0_pad = y0_orig - PADDING
     
@@ -251,15 +266,15 @@ def create_crease_beehive(df_in, delivery_type):
     width_pad = (x1_orig - x0_orig) + (2 * PADDING)
     height_pad = (y1_orig - y0_orig) + (2 * PADDING)
 
-    # Draw the custom Rectangle using the padded bounds
+    # 4. Draw the custom Rectangle using the padded bounds
     border_rect = patches.Rectangle(
         (x0_pad, y0_pad), 
         width_pad, 
         height_pad,  
         facecolor='none', 
         edgecolor='black', 
-        linewidth=2.0, 
-        transform=fig.transFigure,
+        linewidth=0.5, 
+        transform=fig.transFigure, # Use the figure's coordinate system
         clip_on=False
     )
 
