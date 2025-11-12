@@ -849,10 +849,45 @@ def create_interception_front_on(df_in, delivery_type):
     
 
 
+def calculate_scoring_wagon(row):
+    """Calculates the scoring area based on LandingX/Y coordinates and handedness."""
+    LX = row.get("LandingX"); LY = row.get("LandingY"); RH = row.get("IsBatsmanRightHanded")
+    if RH is None or LX is None or LY is None or row.get("Runs", 0) == 0: return None
+    
+    def atan_safe(numerator, denominator): return np.arctan(numerator / denominator) if denominator != 0 else np.nan 
+    
+    # Right Handed Batsman Logic
+    if RH == True: 
+        if LX <= 0 and LY > 0: return "FINE LEG"
+        elif LX <= 0 and LY <= 0: return "THIRD MAN"
+        elif LX > 0 and LY < 0:
+            if atan_safe(LY, LX) < np.pi / -4: return "COVER"
+            elif atan_safe(LX, LY) <= np.pi / -4: return "LONG OFF" 
+        elif LX > 0 and LY >= 0:
+            if atan_safe(LY, LX) >= np.pi / 4: return "SQUARE LEG"
+            elif atan_safe(LY, LX) <= np.pi / 4: return "LONG ON"
+    # Left Handed Batsman Logic
+    elif RH == False: 
+        if LX <= 0 and LY > 0: return "THIRD MAN"
+        elif LX <= 0 and LY <= 0: return "FINE LEG"
+        elif LX > 0 and LY < 0:
+            if atan_safe(LY, LX) < np.pi / -4: return "SQUARE LEG"
+            elif atan_safe(LX, LY) <= np.pi / -4: return "LONG ON"
+        elif LX > 0 and LY >= 0:
+            if atan_safe(LY, LX) >= np.pi / 4: return "COVER"
+            elif atan_safe(LY, LX) <= np.pi / 4: return "LONG OFF"
+    return None
+
+def calculate_scoring_angle(area):
+    """Defines the fixed angle size for each wedge."""
+    if area in ["FINE LEG", "THIRD MAN"]: return 90
+    elif area in ["COVER", "SQUARE LEG", "LONG OFF", "LONG ON"]: return 45
+    return 0
+
 # --- Main Combined Function ---
-def create_wagon_wheel(df_in, delivery_type):
-    FIG_WIDTH = 5.0
-    FIG_HEIGHT = 8.0 # Adjusted height for the vertical stack
+def scoring_wagon_wheel(df_in, delivery_type):
+    FIG_WIDTH = 4.0
+    FIG_HEIGHT = 6.0 # Adjusted height for the vertical stack
     FIG_SIZE = (FIG_WIDTH, FIG_HEIGHT)
 
     if df_in.empty:
@@ -1079,7 +1114,7 @@ def create_wagon_wheel(df_in, delivery_type):
         height_pad,  
         facecolor='none', 
         edgecolor='black', 
-        linewidth= 0.5, 
+        linewidth=2.0, 
         transform=fig.transFigure, 
         clip_on=False
     )
@@ -1384,7 +1419,7 @@ with col2:
         
     with bottom_col_right:
         st.markdown("###### SCORING AREAS")
-        st.pyplot(create_wagon_wheel(df_spin), use_container_width=True)
+        st.pyplot(create_wagon_wheel(df_spin,"djf'), use_container_width=True)
             
 
     # Row 8: Swing/Deviation Direction Analysis (Side-by-Side)
