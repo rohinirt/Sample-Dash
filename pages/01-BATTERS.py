@@ -91,7 +91,7 @@ def create_zonal_analysis(df_in, batsman_name, delivery_type):
     return fig_boxes
 
 
-Chart 2: CREASE BEEHIVE
+# Chart 2: CREASE BEEHIVE
 def create_crease_beehive(df_in, delivery_type):
     if df_in.empty:
         fig, ax = plt.subplots(figsize=(7, 5)); 
