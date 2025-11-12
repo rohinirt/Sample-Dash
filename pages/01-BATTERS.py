@@ -1271,7 +1271,7 @@ with col2:
     
     # Row 2: Crease Beehive Scatter
     st.markdown("###### CREASE BEEHIVE")
-    st.pyplot(create_crease_beehive(df_spin, "Spin"), width='stretch')
+    st.pyplot(create_crease_beehive(df_spin, "Spin"), use_container_width=True)
  
 
     # Row 4: Pitch Map and Vertical Run % Bar (Side-by-Side)
