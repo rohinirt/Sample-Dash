@@ -305,8 +305,8 @@ def get_pitch_bins(delivery_type):
     return {} # Default
 
 def create_pitch_map(df_in, delivery_type):
-    FIG_WIDTH = 10
-    FIG_HEIGHT = 8 
+    FIG_WIDTH = 6.5
+    FIG_HEIGHT = 8
     FIG_SIZE = (FIG_WIDTH, FIG_HEIGHT)
     # Use a wider figure to accommodate two charts side-by-side
     if df_in.empty:
@@ -318,7 +318,7 @@ def create_pitch_map(df_in, delivery_type):
     # --- SETUP GRID FOR TWO COLUMNS ---
     # Col 0: Pitch Map (Wider) | Col 1: Bar Charts (Narrower)
     fig = plt.figure(figsize=FIG_SIZE)
-    gs = fig.add_gridspec(1, 2, width_ratios=[1, 1], wspace=0.2) 
+    gs = fig.add_gridspec(1, 2, width_ratios=[4, 5], wspace=0.3) 
     
     # Left Column: Pitch Map (ax_map)
     ax_map = fig.add_subplot(gs[0, 0])
@@ -368,7 +368,7 @@ def create_pitch_map(df_in, delivery_type):
     ax_map.axvline(x=0, color="#777777", linestyle="--", linewidth=0.8)
     
     # 4. Layout & Spines
-    ax_map.set_xlim([-1.5, 1.5]); ax_map.set_ylim([16.0, -4.0])
+    ax_map.set_xlim([-1.5, 1.5]); ax_map.set_ylim([18.0, -4.0])
     ax_map.set_xticks([]); ax_map.set_yticks([]); ax_map.grid(False)
     for spine_name in ['left', 'right', 'top', 'bottom']:
             ax_map.spines[spine_name].set_visible(False)
@@ -426,7 +426,7 @@ def create_pitch_map(df_in, delivery_type):
         for j, (cat, val) in enumerate(zip(categories, values)):
             label = f"{int(val)}" if metric == "Wickets" else f"{val:.2f}"
             ax.text(val, j, label, ha='left', va='center', fontsize=10, fontweight = 'bold', color='black',
-                    bbox=dict(facecolor='White', alpha=0.8, edgecolor='none', pad=2), zorder=4)
+                    bbox=dict(facecolor='White', alpha=0.8, edgecolor='none', pad=0), zorder=4)
 
         # Formatting
         ax.set_title(title, fontsize=11, fontweight='bold', pad=5, loc='left')
