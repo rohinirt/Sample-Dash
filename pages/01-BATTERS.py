@@ -959,7 +959,7 @@ def create_combined_interception_analysis_v2(df_in, delivery_type):
     
     # Determine the total bounds (figure coordinates)
     x0_orig = scatter_bbox.x0         
-    y0_orig = bar_bbox.y0         
+    y0_orig = 0        
     x1_orig = scatter_bbox.x1     
     y1_orig = scatter_bbox.y1         
     
