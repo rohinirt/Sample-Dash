@@ -505,7 +505,7 @@ def create_pitch_length_bars(df_in, delivery_type):
         ax.set_xlim(xlim_limits[metric])
         
         # Horizontal Bar Chart
-        ax.barh(categories, values, height=0.5, color=colors[i], zorder=3, alpha=0.9)
+        ax.barh(categories, values, height=0.5, color='Red', zorder=3, alpha=0.9)
         
         # --- Annotations ---
         for j, (cat, val) in enumerate(zip(categories, values)):
