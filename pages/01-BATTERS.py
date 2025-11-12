@@ -1313,7 +1313,7 @@ with col1:
         st.pyplot(create_pitch_map(df_seam, "Seam"), use_container_width=True)    
     with run_pct_col:
         st.markdown("###### ")
-        st.pyplot(create_pitch_length_run_pct(df_seam, "Seam"), use_container_width=True)
+        st.pyplot(create_pitch_length_bars(df_seam, "Seam"), use_container_width=True)
         
     st.divider()
 
@@ -1370,7 +1370,7 @@ with col2:
         
     with run_pct_col:
         st.markdown("###### ")
-        st.pyplot(create_pitch_length_run_pct(df_spin, "Spin"), use_container_width=True)
+        st.pyplot(create_pitch_length_bars(df_spin, "Spin"), use_container_width=True)
         
     st.divider()
     
