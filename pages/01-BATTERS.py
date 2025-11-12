@@ -628,7 +628,7 @@ def create_interception_side_on(df_in, delivery_type):
         ax_scatter.axhline(y=0.5, color='lightgrey', linestyle='--', linewidth=0.6, alpha=0.7) 
         
         # Labels at the top of the chart
-        ax_scatter.text(x_val, ax_scatter.get_ylim()[1] + 0.05, label, 
+        ax_scatter.text(x_val, ax_scatter.get_ylim()[1] - 0.01, label, 
                         ha='center', va='bottom', fontsize=8, color='grey', 
                         bbox=dict(facecolor='white', alpha=0.7, edgecolor='none', pad=1),
                         transform=ax_scatter.get_xaxis_transform()) # Use x-axis transform for consistent top placement
