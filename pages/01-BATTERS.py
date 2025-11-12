@@ -305,8 +305,8 @@ def get_pitch_bins(delivery_type):
     return {} # Default
 
 def create_pitch_map(df_in, delivery_type):
-    FIG_WIDTH = 6
-    FIG_HEIGHT = 8
+    FIG_WIDTH = 8
+    FIG_HEIGHT = 6
     FIG_SIZE = (FIG_WIDTH, FIG_HEIGHT)
     # Use a wider figure to accommodate two charts side-by-side
     if df_in.empty:
