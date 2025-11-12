@@ -368,7 +368,7 @@ def create_pitch_map(df_in, delivery_type):
     ax_map.axvline(x=0, color="#777777", linestyle="--", linewidth=0.8)
     
     # 4. Layout & Spines
-    ax_map.set_xlim([-1.5, 1.5]); ax_map.set_ylim([18.0, -4.0])
+    ax_map.set_xlim([-1.5, 1.5]); ax_map.set_ylim([16.0, -4.0])
     ax_map.set_xticks([]); ax_map.set_yticks([]); ax_map.grid(False)
     for spine_name in ['left', 'right', 'top', 'bottom']:
             ax_map.spines[spine_name].set_visible(False)
