@@ -557,13 +557,6 @@ def create_pitch_length_bars(df_in, delivery_type):
     
   
 # --- CHART 4a: INTERCEPTION SIDE-ON --- (Wide View)
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-import pandas as pd
-import numpy as np
-import matplotlib.cm as cm
-import matplotlib.colors as mcolors
-
 # --- Helper function for Interception Bins ---
 def get_interception_bins():
     """Defines the bins for the Crease Width Split chart."""
@@ -606,7 +599,6 @@ def create_interception_side_on(df_in, delivery_type):
     ## --- PART 1: CHART 4a - INTERCEPTION SIDE-ON SCATTER (ax_scatter) ---
     # ----------------------------------------------------------------------
     df_interception = df_in[df_in["InterceptionX"] > -999].copy()
-    
     df_interception["ColorType"] = "Other"
     df_interception.loc[df_interception["Wicket"] == True, "ColorType"] = "Wicket"
     df_interception.loc[df_interception["Runs"].isin([4, 6]), "ColorType"] = "Boundary"
@@ -1338,10 +1330,9 @@ with col1:
         st.pyplot(create_pitch_length_bars(df_seam, "Seam"), use_container_width=True)   
 
     # Row 5: Interception Side-On (Wide View)
+    # Row 5: Interception Side-On (Wide View)
     st.markdown("###### INTERCEPTION SIDE-ON")
     st.pyplot(create_interception_side_on(df_seam, "Seam"), use_container_width=True)
-    # Row 6: Interception Side-On Bins (Length Bins)
-    # st.pyplot(create_crease_width_split(df_seam, "Seam"), use_container_width=True)
 
     # Row 7: Interception Front-On and Scoring Areas (Side-by-Side)
     bottom_col_left, bottom_col_right = st.columns(2)
@@ -1355,7 +1346,6 @@ with col1:
         st.pyplot(create_wagon_wheel(df_seam, "Seam"), use_container_width=True)
         st.pyplot(create_left_right_split(df_seam, "Seam"), use_container_width=True)
         
-    st.divider()
     
     # Row 8: Swing/Deviation Direction Analysis (Side-by-Side)
     final_col_swing, final_col_deviation = st.columns(2)
@@ -1394,9 +1384,6 @@ with col2:
     # Row 5: Interception Side-On (Wide View)
     st.markdown("###### INTERCEPTION SIDE-ON")
     st.pyplot(create_interception_side_on(df_spin, "Spin"), use_container_width=True)
-
-    # Row 6: Interception Side-On Bins (Length Bins)
-    # st.pyplot(create_crease_width_split(df_spin, "Spin"), use_container_width=True)
 
     # Row 7: Interception Front-On and Scoring Areas (Side-by-Side)
     bottom_col_left, bottom_col_right = st.columns(2)
