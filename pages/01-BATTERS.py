@@ -828,9 +828,9 @@ def create_interception_front_on(df_in, delivery_type):
         ax_8.text(-0.95, y_val, label.split(':')[-1].strip(), ha='left', va='center', fontsize=6, color='grey', bbox=dict(facecolor='white', alpha=0.7, edgecolor='none', pad=1))
 
     # Boundary lines (FIXED LINES: -0.18, 0.18)
-    ax_8.axvline(x=-0.18, color='lightgrey', linestyle='--', linewidth=0.8, alpha=0.7)
-    ax_8.axvline(x= 0.18, color='lightgrey', linestyle='--', linewidth=0.8, alpha=0.7)
-    ax_8.axvline(x= 0, color='lightgrey', linestyle='--', linewidth=0.8, alpha=0.7)
+    ax_8.axvline(x=-0.18, color='grey', linestyle='--', linewidth=1, alpha=0.7)
+    ax_8.axvline(x= 0.18, color='grey', linestyle='--', linewidth=1, alpha=0.7)
+    ax_8.axvline(x= 0, color='grey', linestyle='--', linewidth=1, alpha=0.7)
     
     # 3. Set Axes Limits and Labels (FIXED LIMITS: Y-axis -0.2 to 3.5)
     ax_8.set_xlim(-1, 1); ax_8.set_ylim(-0.2, 3.5); ax_8.invert_yaxis()      
@@ -848,7 +848,7 @@ def create_interception_front_on(df_in, delivery_type):
     return fig_8
     
 
-# Chart 6 Scoring wagon whee;
+# Chart 6 Scoring wagon wheel
 def calculate_scoring_wagon(row):
     """Calculates the scoring area based on LandingX/Y coordinates and handedness."""
     LX = row.get("LandingX"); LY = row.get("LandingY"); RH = row.get("IsBatsmanRightHanded")
@@ -887,7 +887,7 @@ def calculate_scoring_angle(area):
 # --- Main Combined Function ---
 def create_wagon_wheel(df_in, delivery_type):
     FIG_WIDTH = 10.0
-    FIG_HEIGHT = 16.0 # Adjusted height for the vertical stack
+    FIG_HEIGHT = 16.8 # Adjusted height for the vertical stack
     FIG_SIZE = (FIG_WIDTH, FIG_HEIGHT)
 
     if df_in.empty:
@@ -978,8 +978,6 @@ def create_wagon_wheel(df_in, delivery_type):
             wedgeprops={"width": 1, "edgecolor": "black"}, 
             startangle=90, 
             counterclock=False, 
-            labels=labels, # Use labels for the area names (outside the slices)
-            labeldistance=1.1,
             autopct='%.0f', 
             pctdistance=0.5 # Keeps percentage label centered in radius
         )
@@ -1010,7 +1008,6 @@ def create_wagon_wheel(df_in, delivery_type):
                 autotext.set_verticalalignment('center')
                 
                 # Add a white stroke (outline) for text visibility
-                autotext.set_path_effects([pe.withStroke(linewidth=1.5, foreground='white')])
             else:
                 autotext.set_text('')
                 
@@ -1019,7 +1016,7 @@ def create_wagon_wheel(df_in, delivery_type):
             luminosity = 0.2126 * color_rgb[0] + 0.7152 * color_rgb[1] + 0.0722 * color_rgb[2]
             
             autotext.set_color('white' if luminosity < 0.5 and colors[i] == COLOR_HIGH else 'black') 
-            autotext.set_fontsize(16)
+            autotext.set_fontsize(18)
         
         ax_wagon.axis('equal'); 
 
