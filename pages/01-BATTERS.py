@@ -92,7 +92,7 @@ def create_zonal_analysis(df_in, batsman_name, delivery_type):
 
 
 # Chart 2: CREASE BEEHIVE
-def create_combined_pitch_analysis(df_in, delivery_type, batsman_name):
+def create_crease_beehive(df_in, delivery_type):
     """
     Creates a single Matplotlib figure containing two subplots:
     1. Crease Beehive (Pitch scatter plot)
