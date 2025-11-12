@@ -849,7 +849,7 @@ def create_interception_front_on(df_in, delivery_type):
     
 
 # Chart 6 Scoring wagon whee;
-def create_wagon_wheel(row):
+def calculate_scoring_wagon(row):
     """Calculates the scoring area based on LandingX/Y coordinates and handedness."""
     LX = row.get("LandingX"); LY = row.get("LandingY"); RH = row.get("IsBatsmanRightHanded")
     if RH is None or LX is None or LY is None or row.get("Runs", 0) == 0: return None
@@ -885,7 +885,7 @@ def calculate_scoring_angle(area):
     return 0
 
 # --- Main Combined Function ---
-def scoring_wagon_wheel(df_in, delivery_type):
+def create_wagon_wheel(df_in, delivery_type):
     FIG_WIDTH = 4.0
     FIG_HEIGHT = 6.0 # Adjusted height for the vertical stack
     FIG_SIZE = (FIG_WIDTH, FIG_HEIGHT)
