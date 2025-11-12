@@ -1060,7 +1060,7 @@ def calculate_scoring_angle(area):
     return 0
 
 # --- Main Combined Function ---
-def calculate_scoring_wagon(df_in, delivery_type):
+def create_wagon_wheel(df_in, delivery_type):
     FIG_WIDTH = 4.0
     FIG_HEIGHT = 6.0 # Adjusted height for the vertical stack
     FIG_SIZE = (FIG_WIDTH, FIG_HEIGHT)
@@ -1594,7 +1594,7 @@ with col2:
         
     with bottom_col_right:
         st.markdown("###### SCORING AREAS")
-        st.pyplot(create_wagon_wheel(df_spin, "Spin"), use_container_width=True)
+        st.pyplot(create_wagon_wheel(df_spin), use_container_width=True)
             
 
     # Row 8: Swing/Deviation Direction Analysis (Side-by-Side)
