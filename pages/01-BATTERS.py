@@ -594,17 +594,12 @@ def create_interception_side_on(df_in, delivery_type):
     # ----------------------------------------------------------------------
     ## --- PART 1: CHART 4a - INTERCEPTION SIDE-ON SCATTER (ax_scatter) ---
     # ----------------------------------------------------------------------
-    df_interception = df_in[df_in["InterceptionX"] > -999].copy()
-    if df_interception.empty:
-        fig, ax = plt.subplots(figsize=(1.7, 4)); ax.text(0.5, 0.5, "No Data", ha='center', va='center'); ax.axis('off'); return fig
-        
+    df_interception = df_in[df_in["InterceptionX"] > -999].copy()    
     df_interception["ColorType"] = "Other"
     df_interception.loc[df_interception["Wicket"] == True, "ColorType"] = "Wicket"
     df_interception.loc[df_interception["Runs"].isin([4, 6]), "ColorType"] = "Boundary"
     # Define color_map inline as it's needed for the loop
     color_map = {"Wicket": "red", "Boundary": "royalblue", "Other": "white"}
-    
-    fig_7, ax_7 = plt.subplots(figsize=(3, 1.7), subplot_kw={'xticks': [], 'yticks': []}) 
     
     # 1. Plot Data (Layered for correct border visibility)
     
