@@ -1337,12 +1337,11 @@ with col1:
         st.markdown("###### ")
         st.pyplot(create_pitch_length_bars(df_seam, "Seam"), use_container_width=True)   
 
-
     # Row 5: Interception Side-On (Wide View)
     st.markdown("###### INTERCEPTION SIDE-ON")
     st.pyplot(create_interception_side_on(df_seam, "Seam"), use_container_width=True)
     # Row 6: Interception Side-On Bins (Length Bins)
-    #st.pyplot(create_crease_width_split(df_seam, "Seam"), use_container_width=True)
+    # st.pyplot(create_crease_width_split(df_seam, "Seam"), use_container_width=True)
 
     # Row 7: Interception Front-On and Scoring Areas (Side-by-Side)
     bottom_col_left, bottom_col_right = st.columns(2)
@@ -1397,7 +1396,7 @@ with col2:
     st.pyplot(create_interception_side_on(df_spin, "Spin"), use_container_width=True)
 
     # Row 6: Interception Side-On Bins (Length Bins)
-    #st.pyplot(create_crease_width_split(df_spin, "Spin"), use_container_width=True)
+    # st.pyplot(create_crease_width_split(df_spin, "Spin"), use_container_width=True)
 
     # Row 7: Interception Front-On and Scoring Areas (Side-by-Side)
     bottom_col_left, bottom_col_right = st.columns(2)
