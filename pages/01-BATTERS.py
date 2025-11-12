@@ -427,7 +427,7 @@ def create_pitch_length_bars(df_in, delivery_type):
     for Batting Average, Strike Rate, and Dismissals by Pitch Length.
     """
     # Increased height to accommodate three stacked charts comfortably
-    FIG_SIZE = (4.5, 7.5) 
+    FIG_SIZE = (4, 6) 
     
     if df_in.empty:
         fig, ax = plt.subplots(figsize=FIG_SIZE)
@@ -508,7 +508,7 @@ def create_pitch_length_bars(df_in, delivery_type):
         ax.set_xlim(xlim_limits[metric])
         
         # Horizontal Bar Chart
-        ax.barh(categories, values, height=0.7, color=colors[i], zorder=3, alpha=0.9)
+        ax.barh(categories, values, height=0.4, color=colors[i], zorder=3, alpha=0.9)
         
         # --- Annotations ---
         for j, (cat, val) in enumerate(zip(categories, values)):
@@ -551,15 +551,6 @@ def create_pitch_length_bars(df_in, delivery_type):
         # --- Custom Spines: Right, Top, Bottom ---
         spine_color = 'lightgray'
         spine_width = 1.0 
-        
-        # Ensure all spines are visible initially
-        for spine_name in ['left', 'right', 'top', 'bottom']:
-            ax.spines[spine_name].set_visible(True)
-            ax.spines[spine_name].set_color(spine_color)
-            ax.spines[spine_name].set_linewidth(spine_width)
-
-        # Hide the Left spine (since categories are only labeled on the bottom)
-        ax.spines['left'].set_visible(False)
         
     plt.tight_layout(pad=0.5)
     return fig
