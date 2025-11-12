@@ -318,7 +318,7 @@ def create_pitch_map(df_in, delivery_type):
     pitch_non_wickets = df_in[df_in["Wicket"] == False]
     
     # --- Chart Setup ---
-    fig, ax = plt.subplots(figsize=(10,8))
+    fig, ax = plt.subplots(figsize=(8,10))
     ax.set_facecolor('white')
     fig.patch.set_facecolor('white')
 
