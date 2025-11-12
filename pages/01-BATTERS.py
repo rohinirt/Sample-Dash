@@ -91,7 +91,7 @@ def create_zonal_analysis(df_in, batsman_name, delivery_type):
     return fig_boxes
 
 # --- CHART 2a: CREASE BEEHIVE ---
-def create_crease_beehive_mpl(df_in, delivery_type):
+def create_crease_beehive(df_in, delivery_type):
     """
     Creates a Matplotlib Crease Beehive chart (scatter plot) showing ball pitch
     locations categorized by Wicket, Boundary, and Regular Ball. Includes a 
