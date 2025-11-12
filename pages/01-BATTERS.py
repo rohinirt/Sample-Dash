@@ -278,7 +278,7 @@ def create_crease_beehive(df_in, delivery_type):
         clip_on=False
     )
     # Add a small padding (e.g., 0.005) to the height and y0 to keep the bottom border distinct
-     border_rect = patches.Rectangle(
+    border_rect = patches.Rectangle(
         (x0, y0 - 0.005), 
         width, 
         height + 0.01,  
