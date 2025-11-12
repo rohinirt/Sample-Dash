@@ -1298,6 +1298,111 @@ def calculate_scoring_wagon(df_in, delivery_type):
 
     return fig
 
+# --- CHART 9/10: DIRECTIONAL SPLIT (Side-by-Side Bars) ---
+def create_directional_split(df_in, direction_col, chart_title, delivery_type):
+    df_dir = df_in.copy()
+    if df_dir.empty:
+        fig, ax = plt.subplots(figsize=(6, 2.5)); ax.text(0.5, 0.5, "No Data", ha='center', va='center'); ax.axis('off'); return fig
+    
+    # 1. Prepare Data
+    df_dir["Direction"] = np.where(df_dir[direction_col] < 0, "LEFT", "RIGHT")
+    
+    summary = df_dir.groupby("Direction").agg(
+        Runs=("Runs", "sum"), 
+        Wickets=("Wicket", lambda x: (x == True).sum()), 
+        Balls=("Wicket", "count")
+    ).reset_index().set_index("Direction").reindex(["LEFT", "RIGHT"]).fillna(0)
+    
+    summary["Average"] = summary.apply(
+        lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else (row["Runs"] if row["Balls"] > 0 else 0), axis=1
+    )
+    
+    # --- Prepare for Butterfly Effect & Order (LEFT on top, RIGHT on bottom) ---
+    # Reindex to plot RIGHT (index 0) then LEFT (index 1) for the desired vertical visual order
+    summary = summary.reset_index().set_index("Direction").reindex(["RIGHT", "LEFT"]) 
+    
+    # Set LEFT side to negative values for mirroring
+    summary.loc["LEFT", "Average_Mirrored"] = summary.loc["LEFT", "Average"] * -1
+    summary.loc["RIGHT", "Average_Mirrored"] = summary.loc["RIGHT", "Average"]
+    
+    # Extract lists (Order: RIGHT, LEFT)
+    directions = summary.index.tolist()
+    averages_mirrored = summary["Average_Mirrored"].tolist()
+    averages_abs = summary["Average"].tolist()
+    wickets = summary["Wickets"].tolist()
+    
+    # 2. Create Plot
+    fig_dir, ax_dir = plt.subplots(figsize=(6, 2.5)) 
+    
+    # --- Plotting the Bars ---
+    y_positions = [0, 1] 
+    colors = ['#d52221', '#d52221'] 
+    
+    # Plot horizontal bars
+    bars = ax_dir.barh(y_positions, averages_mirrored, color=colors, edgecolor='black', linewidth=0.5, height=0.6)
+
+    # 3. Add Labels and Styling
+    
+    # Set the y-axis labels. The list ['RIGHT', 'LEFT'] matches y_positions [0, 1]
+    ax_dir.set_yticks(y_positions)
+    ax_dir.set_yticklabels(directions, fontsize=12, color='black') 
+
+    # Calculate max absolute value for x-axis limit
+    max_abs_avg = summary["Average"].max()
+    x_limit = max_abs_avg * 1.15 if max_abs_avg > 0 else 10 
+    ax_dir.set_xlim(-x_limit, x_limit)
+    
+    # Custom X-Axis: HIDE AXIS AND LABELS
+    ax_dir.set_xticks([]) 
+    ax_dir.set_xticklabels([]) 
+
+    # --- Add Data Labels (Wickets and Average) ---
+    for i, bar in enumerate(bars):
+        avg = averages_abs[i]
+        wkts = wickets[i]
+        label = f"{int(wkts)}W\n{avg:.1f} Ave"
+        
+        # Determine bar properties
+        bar_end_x = bar.get_x() + bar.get_width() # The tip of the bar
+        padding = 0.05 * x_limit 
+
+        if directions[i] == 'LEFT': # LEFT bar (index 1, negative values)
+            # Positioned inside the bar: move right (positive direction) from the tip (negative)
+            text_x = bar_end_x + padding 
+            ha_align = 'left' 
+        else: # RIGHT bar (index 0, positive values)
+            # Positioned inside the bar: move left (negative direction) from the tip (positive)
+            text_x = bar_end_x - padding 
+            ha_align = 'right' 
+
+        # Set text color to white for contrast, and apply black outline for guaranteed visibility
+        text_color = 'black' 
+
+        text_object = ax_dir.text(text_x, 
+                    bar.get_y() + bar.get_height() / 2, 
+                    label,
+                    ha=ha_align, va='center', 
+                    fontsize=14, 
+                    color=text_color, weight='bold') 
+
+    # --- Final Styling and Spines ---
+    ax_dir.set_title(chart_title, fontsize=14, weight='bold', color='black', pad=10)
+    
+    # Hide all spines
+    ax_dir.spines['top'].set_visible(False)
+    ax_dir.spines['bottom'].set_visible(False) 
+    ax_dir.spines['left'].set_visible(False)
+    ax_dir.spines['right'].set_visible(False)
+    
+    # Add a subtle vertical line at x=0 for the axis center
+    ax_dir.axvline(0, color='gray', linewidth=0.8)
+    
+    # Remove y-ticks
+    ax_dir.tick_params(axis='y', which='both', length=0)
+    
+    plt.tight_layout(pad=1.0)
+    return fig_dir
+
 
 # Set page title (optional, but good practice)
 st.set_page_config(
