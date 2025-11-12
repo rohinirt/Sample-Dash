@@ -308,7 +308,7 @@ def get_pitch_bins(delivery_type):
 def create_pitch_map(df_in, delivery_type):
     if df_in.empty:
         # Create an empty figure with a text note if data is missing
-        fig, ax = plt.subplots(figsize=(5,6))
+        fig, ax = plt.subplots(figsize=(4,7))
         ax.text(0.5, 0.5, f"No data for Pitch Map ({delivery_type})", ha='center', va='center', fontsize=12)
         ax.axis('off')
         return fig
@@ -318,7 +318,7 @@ def create_pitch_map(df_in, delivery_type):
     pitch_non_wickets = df_in[df_in["Wicket"] == False]
     
     # --- Chart Setup ---
-    fig, ax = plt.subplots(figsize=(5,6))
+    fig, ax = plt.subplots(figsize=(4,7))
     ax.set_facecolor('white')
     fig.patch.set_facecolor('white')
 
@@ -1296,7 +1296,7 @@ with col1:
     st.pyplot(create_crease_beehive(df_seam, "Seam"), use_container_width=True)
     
     # Row 4: Pitch Map and Vertical Run % Bar (Side-by-Side)
-    pitch_map_col, run_pct_col = st.columns([3, 1]) # 3:1 ratio
+    pitch_map_col, run_pct_col = st.columns([3, 2]) # 3:1 ratio
     with pitch_map_col:
         st.markdown("###### PITCHMAP")
         st.pyplot(create_pitch_map(df_seam, "Seam"), use_container_width=True)    
@@ -1352,7 +1352,7 @@ with col2:
  
 
     # Row 4: Pitch Map and Vertical Run % Bar (Side-by-Side)
-    pitch_map_col, run_pct_col = st.columns([3, 1]) 
+    pitch_map_col, run_pct_col = st.columns([3, 2]) 
     with pitch_map_col:
         st.markdown("###### PITCHMAP")
         st.pyplot(create_pitch_map(df_spin, "Spin"), use_container_width=True)    
