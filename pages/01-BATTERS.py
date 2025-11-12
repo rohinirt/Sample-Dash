@@ -887,7 +887,7 @@ def calculate_scoring_angle(area):
 # --- Main Combined Function ---
 def create_wagon_wheel(df_in, delivery_type):
     FIG_WIDTH = 10.0
-    FIG_HEIGHT = 16.5 # Adjusted height for the vertical stack
+    FIG_HEIGHT = 16.2 # Adjusted height for the vertical stack
     FIG_SIZE = (FIG_WIDTH, FIG_HEIGHT)
 
     if df_in.empty:
@@ -979,7 +979,7 @@ def create_wagon_wheel(df_in, delivery_type):
             startangle=90, 
             counterclock=False, 
             autopct='%.0f', 
-            pctdistance=0.8 # Keeps percentage label centered in radius
+            pctdistance=0.7 # Keeps percentage label centered in radius
         )
         
         if len(pie_output) == 3:
