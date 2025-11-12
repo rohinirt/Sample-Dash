@@ -886,8 +886,8 @@ def calculate_scoring_angle(area):
 
 # --- Main Combined Function ---
 def create_wagon_wheel(df_in, delivery_type):
-    FIG_WIDTH = 6.0
-    FIG_HEIGHT = 8.0 # Adjusted height for the vertical stack
+    FIG_WIDTH = 8.0
+    FIG_HEIGHT = 12.0 # Adjusted height for the vertical stack
     FIG_SIZE = (FIG_WIDTH, FIG_HEIGHT)
 
     if df_in.empty:
@@ -1020,11 +1020,6 @@ def create_wagon_wheel(df_in, delivery_type):
             
             autotext.set_color('white' if luminosity < 0.5 and colors[i] == COLOR_HIGH else 'black') 
             autotext.set_fontsize(12)
-            autotext.set_fontweight('bold')
-
-        # Style external texts (area names)
-        for text in texts:
-            text.set_color('black'); text.set_fontsize(8); text.set_fontweight('bold')
         
         ax_wagon.axis('equal'); 
 
