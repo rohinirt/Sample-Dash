@@ -733,7 +733,8 @@ def create_crease_width_split(df_in, delivery_type):
             center_x, center_y, 
             label_text,
             ha='center', va='center', 
-            fontsize=7, 
+            fontsize=7,
+            fontweight = 'bold',
             color=text_color
         )
         
