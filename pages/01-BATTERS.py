@@ -1203,14 +1203,11 @@ def create_directional_split(df_in, direction_col, chart_title, delivery_type):
                     fontsize=14, 
                     color=text_color, weight='bold') 
     
-    # Hide all spines
-    ax_dir.spines['top'].set_visible(False)
-    ax_dir.spines['bottom'].set_visible(False) 
-    ax_dir.spines['left'].set_visible(False)
-    ax_dir.spines['right'].set_visible(False)
     
     # Add a subtle vertical line at x=0 for the axis center
     ax_dir.axvline(0, color='gray', linewidth=0.8)
+    spine_color = 'black'
+    spine_width = 0.5
     for spine_name in ['left', 'top', 'bottom','right']:
         ax_dir.spines[spine_name].set_visible(True)
         ax_dir.spines[spine_name].set_color(spine_color)
