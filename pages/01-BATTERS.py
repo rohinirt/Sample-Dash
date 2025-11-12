@@ -595,62 +595,71 @@ def create_interception_side_on(df_in, delivery_type):
     ## --- PART 1: CHART 4a - INTERCEPTION SIDE-ON SCATTER (ax_scatter) ---
     # ----------------------------------------------------------------------
     df_interception = df_in[df_in["InterceptionX"] > -999].copy()
+    if df_interception.empty:
+        fig, ax = plt.subplots(figsize=(1.7, 4)); ax.text(0.5, 0.5, "No Data", ha='center', va='center'); ax.axis('off'); return fig
+        
     df_interception["ColorType"] = "Other"
     df_interception.loc[df_interception["Wicket"] == True, "ColorType"] = "Wicket"
     df_interception.loc[df_interception["Runs"].isin([4, 6]), "ColorType"] = "Boundary"
+    # Define color_map inline as it's needed for the loop
     color_map = {"Wicket": "red", "Boundary": "royalblue", "Other": "white"}
     
-    # 1. Plot Data (Layered)
+    fig_7, ax_7 = plt.subplots(figsize=(3, 1.7), subplot_kw={'xticks': [], 'yticks': []}) 
+    
+    # 1. Plot Data (Layered for correct border visibility)
+    
+    # Plot "Other" (White with Grey Border)
     df_other = df_interception[df_interception["ColorType"] == "Other"]
-    ax_scatter.scatter(
+    # === USING PROVIDED LOGIC: PLOT (InterceptionX + 10) on X-axis ===
+    ax_7.scatter(
         df_other["InterceptionX"] + 10, df_other["InterceptionZ"], 
-        color='#D3D3D3', edgecolors='white', linewidths=0.3, s=30, label="Other" # Using gray edge for visibility
+        color='#D3D3D3', edgecolors='white', linewidths=0.3, s=20, label="Other"
     )
     
+    # Plot "Wicket" and "Boundary" (Solid colors)
     for ctype in ["Boundary", "Wicket"]:
         df_slice = df_interception[df_interception["ColorType"] == ctype]
-        ax_scatter.scatter(
+        # === USING PROVIDED LOGIC: PLOT (InterceptionX + 10) on X-axis ===
+        ax_7.scatter(
             df_slice["InterceptionX"] + 10, df_slice["InterceptionZ"], 
-            color=color_map[ctype], edgecolors='white', linewidths=0.3, s=50, label=ctype
+            color=color_map[ctype],edgecolors='white', linewidths=0.3, s=30, label=ctype
         )
 
-    # 2. Draw Vertical Dashed Lines with Labels
+    # 2. Draw Vertical Dashed Lines with Labels (FIXED LINES: 0.0, 1.25, 2.0, 3.0)
     line_specs = {
         0.0: "Stumps",
         1.250: "Crease",
-        2.000: "2m",   
+        2.000: "2m",     
         3.000: "3m" 
     }
     
     for x_val, label in line_specs.items():
-        ax_scatter.axvline(x=x_val, color='lightgrey', linestyle='--', linewidth=0.6, alpha=0.7)          
-        # Horizontal Line (Approx half height)
-        ax_scatter.axhline(y=0.5, color='lightgrey', linestyle='--', linewidth=0.6, alpha=0.7) 
-        
-        # Labels at the top of the chart
-        ax_scatter.text(x_val, ax_scatter.get_ylim()[1] - 0.05, label, 
-                        ha='center', va='bottom', fontsize=8, color='grey', 
-                        bbox=dict(facecolor='white', alpha=0.7, edgecolor='none', pad=1),
-                        transform=ax_scatter.get_xaxis_transform()) # Use x-axis transform for consistent top placement
+        ax_7.axvline(x=x_val, color='lightgrey', linestyle='--', linewidth=0.6, alpha=0.7)  
+        ax_7.axhline(y=0.5, color='lightgrey', linestyle='--', linewidth=0.6, alpha=0.7)   
+        ax_7.text(x_val, 1.45, label.split(':')[-1].strip(), ha='center', va='center', fontsize=5, color='grey', bbox=dict(facecolor='white', alpha=0.7, edgecolor='none', pad=1))
 
-    # 3. Axis Limits and Styling
+    # Set Y limit as fixed
     y_limit = 1.5
+    
+    # Set X limit based on delivery type
     if delivery_type == "Seam":
         x_limit_max = 3.4
     elif delivery_type == "Spin":
         x_limit_max = 4.4
     else:
+        # Fallback to the original seam limit if type is unknown
         x_limit_max = 3.4 
         
     x_limit_min = -0.2
     
-    ax_scatter.set_xlim(x_limit_min, x_limit_max) 
-    ax_scatter.set_ylim(0, y_limit) 
-    
-    # Hide all ticks, labels, and spines for a clean look
-    ax_scatter.set_xticks([]); ax_scatter.set_yticks([]); ax_scatter.grid(False)
-    for spine_name in ['right', 'top', 'left', 'bottom']:
-        ax_scatter.spines[spine_name].set_visible(False)
+    ax_7.set_xlim(x_limit_min, x_limit_max) 
+    ax_7.set_ylim(0, y_limit) 
+    # ... (Rest of the styling remains the same)
+    ax_7.tick_params(axis='y', which='both', labelleft=False, left=False); ax_7.tick_params(axis='x', which='both', labelbottom=False, bottom=False)
+    ax_7.spines['right'].set_visible(False)
+    ax_7.spines['top'].set_visible(False)
+    ax_7.spines['left'].set_visible(False)
+    ax_7.spines['bottom'].set_visible(False)
 
 
     # ----------------------------------------------------------------------
