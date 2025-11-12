@@ -315,13 +315,16 @@ def create_pitch_map(df_in, delivery_type):
     Creates a single Matplotlib figure combining the Pitch Map (left) and 
     the Pitch Length Bar Charts (right) with a single border.
     """
+    FIG_WIDTH = 8
+    FIG_HEIGHT = 6 
+    FIG_SIZE = (FIG_WIDTH, FIG_HEIGHT)
     # Use a wider figure to accommodate two charts side-by-side
     if df_in.empty:
-        fig, ax = plt.subplots(figsize=(4,6))
+        fig, ax = plt.subplots(figsize=FIG_SIZE)
         ax.text(0.5, 0.5, "No Data for Combined Analysis", ha='center', va='center', fontsize=12)
         ax.axis('off')
         return fig
-
+    
     # --- SETUP GRID FOR TWO COLUMNS ---
     # Col 0: Pitch Map (Wider) | Col 1: Bar Charts (Narrower)
     fig = plt.figure(figsize=FIG_SIZE)
