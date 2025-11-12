@@ -310,7 +310,7 @@ def create_lateral_performance_boxes(df_in, delivery_type, batsman_name):
     ax_boxes.spines['left'].set_visible(False)
     ax_boxes.spines['bottom'].set_visible(False)
     
-    plt.tight_layout(pad=0)
+    plt.tight_layout(pad=0.8)
     return fig_boxes
 
 # --- CHART 3: PITCH MAP ---
