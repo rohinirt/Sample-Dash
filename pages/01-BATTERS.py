@@ -606,7 +606,7 @@ def create_interception_side_on(df_in, delivery_type):
     # Plot "Other" (White with Grey Border)
     df_other = df_interception[df_interception["ColorType"] == "Other"]
     # === USING PROVIDED LOGIC: PLOT (InterceptionX + 10) on X-axis ===
-    ax_7.scatter(
+    ax_scatter.scatter(
         df_other["InterceptionX"] + 10, df_other["InterceptionZ"], 
         color='#D3D3D3', edgecolors='white', linewidths=0.3, s=20, label="Other"
     )
@@ -615,7 +615,7 @@ def create_interception_side_on(df_in, delivery_type):
     for ctype in ["Boundary", "Wicket"]:
         df_slice = df_interception[df_interception["ColorType"] == ctype]
         # === USING PROVIDED LOGIC: PLOT (InterceptionX + 10) on X-axis ===
-        ax_7.scatter(
+        ax_scatter.scatter(
             df_slice["InterceptionX"] + 10, df_slice["InterceptionZ"], 
             color=color_map[ctype],edgecolors='white', linewidths=0.3, s=30, label=ctype
         )
@@ -629,9 +629,9 @@ def create_interception_side_on(df_in, delivery_type):
     }
     
     for x_val, label in line_specs.items():
-        ax_7.axvline(x=x_val, color='lightgrey', linestyle='--', linewidth=0.6, alpha=0.7)  
-        ax_7.axhline(y=0.5, color='lightgrey', linestyle='--', linewidth=0.6, alpha=0.7)   
-        ax_7.text(x_val, 1.45, label.split(':')[-1].strip(), ha='center', va='center', fontsize=5, color='grey', bbox=dict(facecolor='white', alpha=0.7, edgecolor='none', pad=1))
+        ax_scatter.axvline(x=x_val, color='lightgrey', linestyle='--', linewidth=0.6, alpha=0.7)  
+        ax_scatter.axhline(y=0.5, color='lightgrey', linestyle='--', linewidth=0.6, alpha=0.7)   
+        ax_scatter.text(x_val, 1.45, label.split(':')[-1].strip(), ha='center', va='center', fontsize=5, color='grey', bbox=dict(facecolor='white', alpha=0.7, edgecolor='none', pad=1))
 
     # Set Y limit as fixed
     y_limit = 1.5
@@ -647,14 +647,14 @@ def create_interception_side_on(df_in, delivery_type):
         
     x_limit_min = -0.2
     
-    ax_7.set_xlim(x_limit_min, x_limit_max) 
-    ax_7.set_ylim(0, y_limit) 
+    ax_scatter.set_xlim(x_limit_min, x_limit_max) 
+    ax_scatter.set_ylim(0, y_limit) 
     # ... (Rest of the styling remains the same)
-    ax_7.tick_params(axis='y', which='both', labelleft=False, left=False); ax_7.tick_params(axis='x', which='both', labelbottom=False, bottom=False)
-    ax_7.spines['right'].set_visible(False)
-    ax_7.spines['top'].set_visible(False)
-    ax_7.spines['left'].set_visible(False)
-    ax_7.spines['bottom'].set_visible(False)
+    ax_scatter.tick_params(axis='y', which='both', labelleft=False, left=False); ax_scatter.tick_params(axis='x', which='both', labelbottom=False, bottom=False)
+    ax_scatter.spines['right'].set_visible(False)
+    ax_scatter.spines['top'].set_visible(False)
+    ax_scatter.spines['left'].set_visible(False)
+    ax_scatter.spines['bottom'].set_visible(False)
 
 
     # ----------------------------------------------------------------------
