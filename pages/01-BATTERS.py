@@ -886,8 +886,8 @@ def calculate_scoring_angle(area):
 
 # --- Main Combined Function ---
 def create_wagon_wheel(df_in, delivery_type):
-    FIG_WIDTH = 4.0
-    FIG_HEIGHT = 6.0 # Adjusted height for the vertical stack
+    FIG_WIDTH = 6.0
+    FIG_HEIGHT = 8.0 # Adjusted height for the vertical stack
     FIG_SIZE = (FIG_WIDTH, FIG_HEIGHT)
 
     if df_in.empty:
