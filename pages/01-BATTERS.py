@@ -1296,7 +1296,7 @@ with col1:
     st.pyplot(create_crease_beehive(df_seam, "Seam"), use_container_width=True)
     
     # Row 4: Pitch Map and Vertical Run % Bar (Side-by-Side)
-    pitch_map_col, run_pct_col = st.columns([3, 2]) # 3:1 ratio
+    pitch_map_col, run_pct_col = st.columns([1, 1]) # 3:1 ratio
     with pitch_map_col:
         st.markdown("###### PITCHMAP")
         st.pyplot(create_pitch_map(df_seam, "Seam"), use_container_width=True)    
@@ -1352,7 +1352,7 @@ with col2:
  
 
     # Row 4: Pitch Map and Vertical Run % Bar (Side-by-Side)
-    pitch_map_col, run_pct_col = st.columns([3, 2]) 
+    pitch_map_col, run_pct_col = st.columns([1, 1]) 
     with pitch_map_col:
         st.markdown("###### PITCHMAP")
         st.pyplot(create_pitch_map(df_spin, "Spin"), use_container_width=True)    
