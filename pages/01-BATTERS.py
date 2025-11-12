@@ -729,7 +729,7 @@ def create_interception_side_on(df_in, delivery_type):
         
         # --- Crease Width Label (Top of the box) ---
         ax_bar.text(
-            center_x, 1.02, 
+            center_x, 0.8, 
             index,          
             ha='center', va='bottom', 
             fontsize=9, 
