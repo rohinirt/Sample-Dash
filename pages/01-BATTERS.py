@@ -1306,7 +1306,7 @@ with col1:
         st.markdown("###### PITCHMAP")
         st.pyplot(create_pitch_map(df_seam, "Seam"), use_container_width=True)  
     with pitch_bars:
-        st.markdown("###### PITCHMAP")
+        st.markdown("###### ")
         st.pyplot(create_pitch_length_bars(df_seam, "Seam"), use_container_width=True)   
 
 
@@ -1361,7 +1361,7 @@ with col2:
         st.markdown("###### PITCHMAP")
         st.pyplot(create_pitch_map(df_spin, "Spin"), use_container_width=True)  
     with pitch_bars:
-        st.markdown("###### PITCHMAP")
+        st.markdown("###### ")
         st.pyplot(create_pitch_length_bars(df_spin, "Spin"), use_container_width=True)    
     
     # Row 5: Interception Side-On (Wide View)
