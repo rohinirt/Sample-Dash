@@ -133,13 +133,12 @@ def create_crease_beehive(df_in, delivery_type):
     summary["Avg Runs/Wicket"] = summary.apply(lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else 0, axis=1)
 
     # -----------------------------------------------------------
-    # --- 1. SETUP SUBPLOTS ---
-    fig = plt.figure(figsize=(7, 5))
-    # hspace=0.01 makes the gap between plots tiny
+    # --- 1. SETUP SUBPLOTS (Increased Figure Width) ---
+    # Increased width from 7 to 8 for a wider Beehive chart relative to height
+    fig = plt.figure(figsize=(8, 5)) 
     gs = fig.add_gridspec(2, 1, height_ratios=[4, 1], hspace=0.01) 
     ax_bh = fig.add_subplot(gs[0, 0])      # Top subplot (Beehive)
     ax_boxes = fig.add_subplot(gs[1, 0])   # Bottom subplot (Lateral Boxes)
-    
     fig.patch.set_facecolor('white')
 
     # -----------------------------------------------------------
@@ -218,7 +217,7 @@ def create_crease_beehive(df_in, delivery_type):
         left += box_width
 
     # Formatting
-    ax_boxes.set_xlim(0, 1)
+    ax_boxes.set_xlim(0, 3)
     ax_boxes.set_ylim(0, box_height + 0.3) 
     ax_boxes.axis('off')
     for spine in ax_boxes.spines.values():
@@ -229,48 +228,43 @@ def create_crease_beehive(df_in, delivery_type):
     ## --- 4. DRAW SINGLE COMPACT BORDER AROUND THE ENTIRE FIGURE ---
     
     # 1. Ensure plots are drawn tight (removes outer whitespace)
-    plt.tight_layout(pad=0.5)
+    ## --- 4. DRAW SINGLE COMPACT BORDER WITH PADDING ---
     
+    # 1. Ensure plots are drawn tight
+    plt.tight_layout(pad=0.2)
+    
+    # Define Padding Value (in figure coordinates)
+    PADDING = 0.005 
+
     # 2. Get the bounding box of the two subplots in Figure coordinates
     bh_bbox = ax_bh.get_position()
     box_bbox = ax_boxes.get_position()
     
-    # Determine the total bounds:
-    # x0 (left edge) is the minimum of the two left edges
-    # y0 (bottom edge) is the bottom edge of the bottom plot
-    # x1 (right edge) is the maximum of the two right edges
-    # y1 (top edge) is the top edge of the top plot
-    x0 = min(bh_bbox.x0, box_bbox.x0)
-    y0 = box_bbox.y0
-    x1 = max(bh_bbox.x1, box_bbox.x1)
-    y1 = bh_bbox.y1
+    # Determine the total bounds (original compact bounds)
+    x0_orig = min(bh_bbox.x0, box_bbox.x0)
+    y0_orig = box_bbox.y0
+    x1_orig = max(bh_bbox.x1, box_bbox.x1)
+    y1_orig = bh_bbox.y1
     
-    # Calculate width and height
-    width = x1 - x0
-    height = y1 - y0
+    # 3. Apply Padding
+    x0_pad = x0_orig - PADDING
+    y0_pad = y0_orig - PADDING
+    
+    # Width and Height must be increased by 2*PADDING (one for each side)
+    width_pad = (x1_orig - x0_orig) + (2 * PADDING)
+    height_pad = (y1_orig - y0_orig) + (2 * PADDING)
 
-    # 3. Draw the custom Rectangle using the calculated compact bounds
+    # 4. Draw the custom Rectangle using the padded bounds
     border_rect = patches.Rectangle(
-        (x0, y0), 
-        width, 
-        height,  
+        (x0_pad, y0_pad), 
+        width_pad, 
+        height_pad,  
         facecolor='none', 
         edgecolor='black', 
-        linewidth=0.5, 
+        linewidth=2.0, 
         transform=fig.transFigure, # Use the figure's coordinate system
         clip_on=False
     )
-    # Add a small padding (e.g., 0.005) to the height and y0 to keep the bottom border distinct
-    border_rect = patches.Rectangle(
-        (x0, y0 - 0.009), 
-        width, 
-        height + 0.01,  
-         facecolor='none', 
-         edgecolor='black', 
-        linewidth=0.5, 
-        transform=fig.transFigure,
-        clip_on=False
-     )
 
     fig.patches.append(border_rect)
 
