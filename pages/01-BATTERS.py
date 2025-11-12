@@ -629,9 +629,9 @@ def create_interception_side_on(df_in, delivery_type):
     }
     
     for x_val, label in line_specs.items():
-        ax_scatter.axvline(x=x_val, color='lightgrey', linestyle='--', linewidth=0.6, alpha=0.7)  
-        ax_scatter.axhline(y=0.5, color='lightgrey', linestyle='--', linewidth=0.6, alpha=0.7)   
-        ax_scatter.text(x_val, 1.45, label.split(':')[-1].strip(), ha='center', va='center', fontsize=5, color='grey', bbox=dict(facecolor='white', alpha=0.7, edgecolor='none', pad=1))
+        ax_scatter.axvline(x=x_val, color='lightgrey', linestyle='--', linewidth=0.8, alpha=0.7)  
+        ax_scatter.axhline(y=0.5, color='lightgrey', linestyle='--', linewidth=0.8, alpha=0.7)   
+        ax_scatter.text(x_val, 1.45, label.split(':')[-1].strip(), ha='center', va='center', fontsize=8, color='grey', bbox=dict(facecolor='white', alpha=0.7, edgecolor='none', pad=1))
 
     # Set Y limit as fixed
     y_limit = 1.5
@@ -685,7 +685,7 @@ def create_interception_side_on(df_in, delivery_type):
     # 2. Plotting Equal Boxes
     num_boxes = len(ordered_keys)
     box_width = 1.0 / num_boxes 
-    left = 0.0 
+    left = 0.0
     
     max_avg = df_summary["Average"].max() if df_summary["Average"].max() > 0 else 100
     norm = mcolors.Normalize(vmin=0, vmax=max_avg)
@@ -701,7 +701,7 @@ def create_interception_side_on(df_in, delivery_type):
         ax_bar.barh(
             y=0.5,           
             width=box_width,
-            height=0.5,        
+            height=0.6,        
             left=left,       
             color=color,
             edgecolor='white', # Use black edge for consistency with image
@@ -729,7 +729,7 @@ def create_interception_side_on(df_in, delivery_type):
         
         # --- Crease Width Label (Top of the box) ---
         ax_bar.text(
-            center_x, 1.05, 
+            center_x, 1.02, 
             index,          
             ha='center', va='bottom', 
             fontsize=9, 
@@ -754,8 +754,7 @@ def create_interception_side_on(df_in, delivery_type):
 
     # Get the bounding box of the top (scatter) and bottom (bar) charts
     scatter_bbox = ax_scatter.get_position()
-    bar_bbox = ax_bar.get_position()
-    
+    bar_bbox = ax_bar.get_position() 
     # Determine the total bounds (figure coordinates)
     x0_orig = scatter_bbox.x0         
     y0_orig = bar_bbox.y0         
@@ -776,7 +775,7 @@ def create_interception_side_on(df_in, delivery_type):
         height_pad,  
         facecolor='none', 
         edgecolor='black', 
-        linewidth=2.0, 
+        linewidth=0.5, 
         transform=fig.transFigure, 
         clip_on=False
     )
