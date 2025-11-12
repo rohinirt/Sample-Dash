@@ -92,7 +92,6 @@ def create_zonal_analysis(df_in, batsman_name, delivery_type):
 
 # --- CHART 2a: CREASE BEEHIVE ---
 def create_crease_beehive(df_in, delivery_type):
-    # ... (Crease Beehive logic remains the same)
     if df_in.empty:
         return go.Figure().update_layout(title="No data for Beehive", height=400)
 
@@ -150,9 +149,35 @@ def create_crease_beehive(df_in, delivery_type):
     fig_cbh.update_layout(
         height=300, 
         margin=dict(l=0, r=0, t=0, b=0),
-        xaxis=dict(range=[-1.5, 1.5], showgrid=False, zeroline=False, visible=False, scaleanchor="y", scaleratio=1),
-        yaxis=dict(range=[0, 2], showgrid=False, zeroline=True, visible=False),
-        plot_bgcolor="white", paper_bgcolor="white", showlegend=False
+        plot_bgcolor="white", paper_bgcolor="white", showlegend=False,
+        
+        # X-AXIS CONFIGURATION (for Spines)
+        xaxis=dict(
+            range=[-1.5, 1.5], 
+            showgrid=False, 
+            zeroline=False, 
+            visible=True,           # <--- Must be True for spines to draw
+            showticklabels=False,   # Hide numbers/ticks
+            scaleanchor="y", 
+            scaleratio=1,
+            showline=True,          # <--- DRAW THE SPINE LINE
+            linecolor='black',      # <--- Spine Color
+            linewidth=1,
+            mirror=True             # Draw the top spine
+        ),
+        
+        # Y-AXIS CONFIGURATION (for Spines)
+        yaxis=dict(
+            range=[0, 2], 
+            showgrid=False, 
+            zeroline=True, 
+            visible=True,           # <--- Must be True for spines to draw
+            showticklabels=False,   # Hide numbers/ticks
+            showline=True,          # <--- DRAW THE SPINE LINE
+            linecolor='black',      # <--- Spine Color
+            linewidth=1,
+            mirror=True             # Draw the right spine
+        )
     )
     
     return fig_cbh
