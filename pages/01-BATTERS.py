@@ -887,7 +887,7 @@ def calculate_scoring_angle(area):
 # --- Main Combined Function ---
 def create_wagon_wheel(df_in, delivery_type):
     FIG_WIDTH = 10.0
-    FIG_HEIGHT = 16.8 # Adjusted height for the vertical stack
+    FIG_HEIGHT = 16.5 # Adjusted height for the vertical stack
     FIG_SIZE = (FIG_WIDTH, FIG_HEIGHT)
 
     if df_in.empty:
@@ -979,7 +979,7 @@ def create_wagon_wheel(df_in, delivery_type):
             startangle=90, 
             counterclock=False, 
             autopct='%.0f', 
-            pctdistance=0.5 # Keeps percentage label centered in radius
+            pctdistance=0.8 # Keeps percentage label centered in radius
         )
         
         if len(pie_output) == 3:
@@ -1016,7 +1016,8 @@ def create_wagon_wheel(df_in, delivery_type):
             luminosity = 0.2126 * color_rgb[0] + 0.7152 * color_rgb[1] + 0.0722 * color_rgb[2]
             
             autotext.set_color('white' if luminosity < 0.5 and colors[i] == COLOR_HIGH else 'black') 
-            autotext.set_fontsize(18)
+            autotext.set_fontsize(20)
+            autotext.set_fontweight('bold')
         
         ax_wagon.axis('equal'); 
 
@@ -1067,7 +1068,7 @@ def create_wagon_wheel(df_in, delivery_type):
         if right_pct > 0:
             text_color_right = get_text_color(right_color)
             ax_split.text(left_pct + right_pct / 2, 0, f"RIGHT\n{right_pct:.0f}%", 
-                          ha='center', va='center', color=text_color_right, weight='bold', fontsize=12)
+                          ha='center', va='center', color=text_color_right, weight='bold', fontsize=20)
 
         # 5. Styling
         ax_split.set_xlim(0, 100)
@@ -1106,7 +1107,7 @@ def create_wagon_wheel(df_in, delivery_type):
         height_pad,  
         facecolor='none', 
         edgecolor='black', 
-        linewidth=2.0, 
+        linewidth=0.5, 
         transform=fig.transFigure, 
         clip_on=False
     )
