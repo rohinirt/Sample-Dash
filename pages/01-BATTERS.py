@@ -835,10 +835,15 @@ def create_interception_front_on(df_in, delivery_type):
     # 3. Set Axes Limits and Labels (FIXED LIMITS: Y-axis -0.2 to 3.5)
     ax_8.set_xlim(-1, 1); ax_8.set_ylim(-0.2, 3.5); ax_8.invert_yaxis()      
     ax_8.tick_params(axis='y', which='both', labelleft=False, left=False); ax_8.tick_params(axis='x', which='both', labelbottom=False, bottom=False)
-    ax_8.spines['right'].set_visible(True)
-    ax_8.spines['top'].set_visible(True)
-    ax_8.spines['left'].set_visible(True)
-    ax_8.spines['bottom'].set_visible(True)
+     # Hide axis spines (plot border)
+    # 1. Set line style for all spines you want visible
+    spine_color = 'black'
+    spine_width = 0.5
+    
+    for spine_name in ['left', 'top', 'bottom','right']:
+        ax_8.spines[spine_name].set_visible(True)
+        ax_8.spines[spine_name].set_color(spine_color)
+        ax_8.spines[spine_name].set_linewidth(spine_width)
     plt.tight_layout(pad=0.5)
     return fig_8
     
