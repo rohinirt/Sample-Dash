@@ -87,7 +87,7 @@ def create_zonal_analysis(df_in, batsman_name, delivery_type):
         linespacing=1.2)
 
     ax.set_xlim(-0.75, 0.75); ax.set_ylim(0, 2); ax.axis('off'); 
-    plt.tight_layout(pad=0.5) 
+    plt.tight_layout(pad=0) 
     return fig_boxes
 
 
@@ -237,10 +237,10 @@ def create_crease_beehive(df_in, delivery_type):
     # We use a custom rectangle around the figure's outer edges
     rect = patches.Rectangle(
         (0.01, 0.01), 
-        0.98, 0.98,  # x=0.01 to 0.99, y=0.01 to 0.99 (98% width/height)
+        0.7, 0.7,  # x=0.01 to 0.99, y=0.01 to 0.99 (98% width/height)
         facecolor='none', 
         edgecolor='black', 
-        linewidth=2.0, 
+        linewidth=0.5, 
         transform=fig.transFigure, # Use the figure's coordinate system
         clip_on=False
     )
