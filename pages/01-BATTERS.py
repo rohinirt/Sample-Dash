@@ -508,7 +508,7 @@ def create_pitch_length_bars(df_in, delivery_type):
         ax.set_xlim(xlim_limits[metric])
         
         # Horizontal Bar Chart
-        ax.barh(categories, values, height=0.4, color=colors[i], zorder=3, alpha=0.9)
+        ax.barh(categories, values, height=0.6, color=colors[i], zorder=3, alpha=0.9)
         
         # --- Annotations ---
         for j, (cat, val) in enumerate(zip(categories, values)):
@@ -526,7 +526,7 @@ def create_pitch_length_bars(df_in, delivery_type):
                     zorder=4)
 
         # --- Formatting ---
-        ax.set_title(title, fontsize=11, fontweight='bold', pad=10)
+        ax.set_title(title, fontsize=11, fontweight='bold', pad=5)
         ax.set_facecolor('white')
 
         # Set Ticks and Spines
@@ -542,7 +542,7 @@ def create_pitch_length_bars(df_in, delivery_type):
             ax.set_yticks(np.arange(len(categories)), labels=[''] * len(categories))
             
         ax.xaxis.grid(False) 
-        ax.yaxis.grid(True, linestyle='-', alpha=0.3)
+        ax.yaxis.grid(False)
 
         # Hide x labels/ticks
         ax.set_xticks([]) 
@@ -551,7 +551,10 @@ def create_pitch_length_bars(df_in, delivery_type):
         # --- Custom Spines: Right, Top, Bottom ---
         spine_color = 'lightgray'
         spine_width = 1.0 
-        
+        for spine_name in ['left', 'right', 'top', 'bottom']:
+            ax.spines[spine_name].set_visible(False)
+            ax.spines[spine_name].set_color(spine_color)
+            ax.spines[spine_name].set_linewidth(spine_width)
     plt.tight_layout(pad=0.5)
     return fig
   
