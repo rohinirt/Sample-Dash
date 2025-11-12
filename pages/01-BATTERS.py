@@ -91,96 +91,118 @@ def create_zonal_analysis(df_in, batsman_name, delivery_type):
     return fig_boxes
 
 # --- CHART 2a: CREASE BEEHIVE ---
-def create_crease_beehive(df_in, delivery_type):
+def create_crease_beehive_mpl(df_in, delivery_type):
+    """
+    Creates a Matplotlib Crease Beehive chart (scatter plot) showing ball pitch
+    locations categorized by Wicket, Boundary, and Regular Ball. Includes a 
+    four-sided border (spines) and internal reference lines.
+    """
+    import matplotlib.pyplot as plt
+    
     if df_in.empty:
-        return go.Figure().update_layout(title="No data for Beehive", height=400)
+        # Create an empty figure with a text note if data is missing
+        fig, ax = plt.subplots(figsize=(7, 4))
+        ax.text(0.5, 0.5, "No data for Beehive", ha='center', va='center', fontsize=12)
+        ax.axis('off')
+        return fig
 
     # --- Data Filtering ---
     wickets = df_in[df_in["Wicket"] == True]
-    
-    # 1. Filter Non-Wickets
     non_wickets_all = df_in[df_in["Wicket"] == False]
 
-    # 2. Filter Boundaries (Runs = 4 or 6) from Non-Wickets
     boundaries = non_wickets_all[
         (non_wickets_all["Runs"] == 4) | (non_wickets_all["Runs"] == 6)
     ]
     
-    # 3. Filter Regular Balls (Runs != 4 and Runs != 6)
     regular_balls = non_wickets_all[
         (non_wickets_all["Runs"] != 4) & (non_wickets_all["Runs"] != 6)
     ]
-    fig_cbh = go.Figure()
 
-    # 1. TRACE: Regular Balls (Non-Wicket, Non-Boundary) - Light Grey
-    fig_cbh.add_trace(go.Scatter(
-        x=regular_balls["CreaseY"], y=regular_balls["CreaseZ"], mode='markers', name="Regular Ball",
-        marker=dict(color='lightgrey', size=10, line=dict(width=1, color="white"), opacity=0.95)
-    ))
+    # --- Chart Setup ---
+    # Set figsize to approximate the 300px height aspect ratio
+    fig, ax = plt.subplots(figsize=(7, 4)) 
 
-    # 2. NEW TRACE: Boundary Balls (Runs 4 or 6) - Royal Blue
-    fig_cbh.add_trace(go.Scatter(
-        x=boundaries["CreaseY"], y=boundaries["CreaseZ"], mode='markers', name="Boundary",
-        marker=dict(color='royalblue', size=12, line=dict(width=1, color="white"), opacity=0.95)
-    ))
-
-    # 3. TRACE: Wickets - Red (Kept as the largest marker size for emphasis)
-    fig_cbh.add_trace(go.Scatter(
-        x=wickets["CreaseY"], y=wickets["CreaseZ"], mode='markers', name="Wicket",
-        marker=dict(color='red', size=12, line=dict(width=1, color="white"), opacity=0.95)
-    ))
-
-    # Stump lines & Crease lines (No change)
-    fig_cbh.add_vline(x=-0.18, line=dict(color="grey", dash="dot", width=0.5)) 
-    fig_cbh.add_vline(x=0.18, line=dict(color="grey", dash="dot", width=0.5))
-    fig_cbh.add_vline(x=0, line=dict(color="grey", dash="dot", width=0.5))
-    fig_cbh.add_vline(x=-0.92, line=dict(color="grey", width=0.5)) 
-    fig_cbh.add_vline(x=0.92, line=dict(color="grey", width=0.5))
-    fig_cbh.add_hline(y=0.78, line=dict(color="grey", width=0.5)) 
-    fig_cbh.add_annotation(
-        x=-1.5,                 # X-position on the far left
-        y=0.78,                 # Y-position (on the line)
-        text="Stump line",      # The label text
-        showarrow=False,
-        font=dict(size=8, color="grey"),
-        xanchor='left',         # Anchor text to the left
-        yanchor='bottom'        # Place text slightly above the line
+    # --- 1. TRACE: Regular Balls (Non-Wicket, Non-Boundary) - Light Grey
+    ax.scatter(
+        regular_balls["CreaseY"], regular_balls["CreaseZ"], 
+        s=40, # size = 40 (equivalent to Plotly size=10)
+        c='lightgrey', 
+        edgecolor='white', # white border line
+        linewidths=1.0, 
+        alpha=0.95,
+        label="Regular Ball"
     )
-    fig_cbh.update_layout(
-        height=300, 
-        margin=dict(l=0, r=0, t=0, b=0),
-        plot_bgcolor="white", paper_bgcolor="white", showlegend=False,
-        
-        # X-AXIS CONFIGURATION (for Spines)
-        xaxis=dict(
-            range=[-1.5, 1.5], 
-            showgrid=False, 
-            zeroline=False, 
-            visible=True,           # <--- Must be True for spines to draw
-            showticklabels=False,   # Hide numbers/ticks
-            scaleanchor="y", 
-            scaleratio=1,
-            showline=True,          # <--- DRAW THE SPINE LINE
-            linecolor='black',      # <--- Spine Color
-            linewidth=2,
-            mirror=True             # Draw the top spine
-        ),
-        
-        # Y-AXIS CONFIGURATION (for Spines)
-        yaxis=dict(
-            range=[0, 2], 
-            showgrid=False, 
-            zeroline=True, 
-            visible=True,           # <--- Must be True for spines to draw
-            showticklabels=False,   # Hide numbers/ticks
-            showline=True,          # <--- DRAW THE SPINE LINE
-            linecolor='black',      # <--- Spine Color
-            linewidth=2,
-            mirror=True             # Draw the right spine
-        )
+
+    # --- 2. TRACE: Boundary Balls (Runs 4 or 6) - Royal Blue
+    ax.scatter(
+        boundaries["CreaseY"], boundaries["CreaseZ"], 
+        s=80, # size = 80 (equivalent to Plotly size=12)
+        c='royalblue', 
+        edgecolor='white', 
+        linewidths=1.0, 
+        alpha=0.95,
+        label="Boundary"
     )
+
+    # --- 3. TRACE: Wickets - Red (Emphasis)
+    ax.scatter(
+        wickets["CreaseY"], wickets["CreaseZ"], 
+        s=80, # size = 80 (equivalent to Plotly size=12)
+        c='red', 
+        edgecolor='white', 
+        linewidths=1.0, 
+        alpha=0.95,
+        label="Wicket"
+    )
+
+    # --- Stump lines & Crease lines (Verticals - vlines) ---
+    ax.axvline(x=-0.18, color="grey", linestyle="--", linewidth=0.5) 
+    ax.axvline(x=0.18, color="grey", linestyle="--", linewidth=0.5)
+    ax.axvline(x=0, color="grey", linestyle="--", linewidth=0.5) # Center stump
+    ax.axvline(x=-0.92, color="grey", linestyle="-", linewidth=0.5) # Wide crease line
+    ax.axvline(x=0.92, color="grey", linestyle="-", linewidth=0.5)
+
+    # --- Crease line (Horizontal - hline) ---
+    ax.axhline(y=0.78, color="grey", linestyle="-", linewidth=0.5)
+
+    # --- Annotation ---
+    ax.text(
+        -1.5, 0.78, "Stump line", 
+        ha='left', va='bottom', 
+        fontsize=8, color="grey",
+        transform=ax.transData
+    )
+
+    # --- SET AXIS RANGES ---
+    ax.set_xlim([-1.5, 1.5])
+    ax.set_ylim([0, 2])
     
-    return fig_cbh
+    # --- ENSURE ASPECT RATIO (Scaleanchor="y" / Scaleratio=1) ---
+    ax.set_aspect('equal', adjustable='box')
+
+    # --- FORMATTING AND SPINES (Border) ---
+    
+    # 1. Hide ticks, labels, and internal grid
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.set_xlabel("")
+    ax.set_ylabel("")
+    ax.grid(False)
+    
+    # 2. Draw 4-sided Spines (Border)
+    # The default Matplotlib spines must be turned ON and styled
+    for spine in ['left', 'right', 'top', 'bottom']:
+        ax.spines[spine].set_visible(True)
+        ax.spines[spine].set_color('black')
+        ax.spines[spine].set_linewidth(2.0) # Line width set to 2.0 as requested
+        
+    # 3. Set Background
+    fig.patch.set_facecolor('white')
+    ax.set_facecolor('white')
+
+    plt.tight_layout()
+    
+    return fig
     
 
 # --- CHART 2b: LATERAL PERFORMANCE STACKED BAR ---
@@ -1255,7 +1277,7 @@ with col1:
     
     # Row 2: Crease Beehive Scatter
     st.markdown("###### CREASE BEEHIVE")
-    st.plotly_chart(create_crease_beehive(df_seam, "Seam"), use_container_width=True)
+    st.pyplot(create_crease_beehive(df_seam, "Seam"), use_container_width=True)
 
     # Row 3: Lateral Performance Boxes
     st.pyplot(create_lateral_performance_boxes(df_seam, "Seam", batsman), use_container_width=True)
@@ -1314,7 +1336,7 @@ with col2:
     
     # Row 2: Crease Beehive Scatter
     st.markdown("###### CREASE BEEHIVE")
-    st.plotly_chart(create_crease_beehive(df_spin, "Spin"), use_container_width=True)
+    st.pyplot(create_crease_beehive(df_spin, "Spin"), use_container_width=True)
     # Row 3: Lateral Performance Boxes
     st.pyplot(create_lateral_performance_boxes(df_spin, "Spin", batsman), use_container_width=True)
 
