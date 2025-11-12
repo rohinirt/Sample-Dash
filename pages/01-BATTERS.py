@@ -421,18 +421,34 @@ def create_pitch_map(df_in, delivery_type):
         
         # Horizontal Bar Chart
         ax.barh(categories, values, height=0.5, color=colors[i], zorder=3, alpha=0.9)
+        
+        # Annotations (Labels)
+        for j, (cat, val) in enumerate(zip(categories, values)):
+            label = f"{int(val)}" if metric == "Wickets" else f"{val:.2f}"
+            ax.text(val, j, label, ha='left', va='center', fontsize=10, fontweight = 'bold', color='black',
+                    bbox=dict(facecolor='White', alpha=0.8, edgecolor='none', pad=2), zorder=4)
 
         # Formatting
-        ax.set_title(title, fontsize=8, fontweight='bold', pad=5, loc='left') # Title left-aligned
+        ax.set_title(title, fontsize=11, fontweight='bold', pad=5, loc='left')
         ax.set_facecolor('white')
         ax.tick_params(axis='x', labelsize=8); ax.tick_params(axis='y', length=0)
         
+        
+        # ------------------------------------------------------------------
+        # --- MODIFIED LOGIC: Place Y-axis labels on ALL subplots ---
+        # ------------------------------------------------------------------
+        
+        # 1. Hide default yticks for all charts
+        ax.set_yticks(np.arange(len(categories)), labels=[''] * len(categories))
+        
+        # 2. Manually add the category labels (ax.text) to the left of the axis for ALL charts
         for j, cat in enumerate(categories):
             # Using transformed coordinates to place labels to the left of the axis
             ax.text(-0.05, j, cat.upper(), transform=ax.get_yaxis_transform(),
-                    ha='right', va='center', fontsize=9, color='gray')
+                    ha='right', va='center', fontsize=9, color='gray', fontweight='bold')
+       
         ax.xaxis.grid(False); ax.yaxis.grid(False)
-        ax.set_xticks([]); ax.set_xlim(0, xlim_limits[metric][1]) 
+        ax.set_xticks([]); ax.set_xlim(0, xlim_limits[metric][1])
         
         # Hide ALL spines on subplots
         for spine_name in ['left', 'right', 'top', 'bottom']:
