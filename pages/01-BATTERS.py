@@ -1173,6 +1173,8 @@ def create_directional_split(df_in, direction_col, chart_title, delivery_type):
     # Custom X-Axis: HIDE AXIS AND LABELS
     ax_dir.set_xticks([]) 
     ax_dir.set_xticklabels([]) 
+    ax_dir.set_yticks([]) 
+    ax_dir.set_yticklabels([]) 
 
     # --- Add Data Labels (Wickets and Average) ---
     for i, bar in enumerate(bars):
@@ -1212,8 +1214,10 @@ def create_directional_split(df_in, direction_col, chart_title, delivery_type):
         ax_dir.spines[spine_name].set_visible(True)
         ax_dir.spines[spine_name].set_color(spine_color)
         ax_dir.spines[spine_name].set_linewidth(spine_width)
+    
     # Remove y-ticks
     ax_dir.tick_params(axis='y', which='both', length=0)
+    ax_dir.tick_params(axis='x', which='both', length=0)
     
     plt.tight_layout(pad=1.0)
     return fig_dir
