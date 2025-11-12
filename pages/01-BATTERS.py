@@ -439,9 +439,9 @@ def create_pitch_length_bars(df_in, delivery_type):
     PITCH_BINS_DICT = get_pitch_bins(delivery_type)
     
     if delivery_type == "Seam":
-        ordered_keys = ["Bouncer", "Short", "Length", "Full"]
+        ordered_keys = ["Full","Length", "Short", "Bouncer" ]
     elif delivery_type == "Spin":
-        ordered_keys = ["Short", "Good", "Full", "Over Pitched"]
+        ordered_keys = ["Over Pitched", "Full" , "Good", "Short"]
     else:
         fig, ax = plt.subplots(figsize=FIG_SIZE)
         ax.text(0.5, 0.5, "Invalid Delivery Type", ha='center', va='center', fontsize=12)
