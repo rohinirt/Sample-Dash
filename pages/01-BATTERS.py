@@ -414,7 +414,7 @@ def create_pitch_map(df_in, delivery_type):
 # --- CHART 3b: PITCH LENGTH RUN % (EQUAL SIZED BOXES) ---
 def create_pitch_length_run_pct(df_in, delivery_type):
     # Adjust figsize height to accommodate the four boxes and title comfortably
-    FIG_HEIGHT = 5.7
+    FIG_HEIGHT = 3
     
     if df_in.empty:
         fig, ax = plt.subplots(figsize=(2, FIG_HEIGHT)); 
