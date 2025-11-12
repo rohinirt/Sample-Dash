@@ -207,11 +207,18 @@ def create_crease_beehive(df_in, delivery_type):
 
 # --- CHART 2b: LATERAL PERFORMANCE STACKED BAR ---
 def create_lateral_performance_boxes(df_in, delivery_type, batsman_name):
+    """
+    Creates a Matplotlib Lateral Performance chart using colored boxes (horizontal heatmap).
+    The Zone Labels are now placed above the boxes, and the boxes' height is reduced.
+    """
+    import matplotlib.pyplot as plt
     from matplotlib import cm, colors, patches
+    import matplotlib.colors as mcolors
     
     df_lateral = df_in.copy()
     if df_lateral.empty:
-        fig, ax = plt.subplots(figsize=(7, 1)); ax.text(0.5, 0.5, "No Data", ha='center', va='center'); ax.axis('off'); return fig     
+        fig, ax = plt.subplots(figsize=(7, 1)); ax.text(0.5, 0.5, "No Data", ha='center', va='center'); ax.axis('off'); return fig    
+
     # 1. Define Zoning Logic (Same as before)
     def assign_lateral_zone(row):
         y = row["CreaseY"]
@@ -225,7 +232,7 @@ def create_lateral_performance_boxes(df_in, delivery_type, batsman_name):
             elif y > 0.18: return "OUTSIDE OFF"
             elif y >= -0.18: return "STUMPS"
             else: return "LEG"
-    
+            
     df_lateral["LateralZone"] = df_lateral.apply(assign_lateral_zone, axis=1)
     
     # 2. Calculate Summary Metrics
@@ -245,65 +252,63 @@ def create_lateral_performance_boxes(df_in, delivery_type, batsman_name):
     summary["Avg Runs/Wicket"] = summary.apply(lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else 0, axis=1)
     
     # 3. Chart Setup
-    fig_boxes, ax_boxes = plt.subplots(figsize=(7, 1)) 
+    # Adjusted figsize to accommodate labels above the boxes (taller figure)
+    fig_boxes, ax_boxes = plt.subplots(figsize=(7, 1.5)) 
     
     num_regions = len(ordered_zones)
     box_width = 1 / num_regions # Fixed width for each box (total width = 1)
+    box_height = 0.5            # <--- REDUCED BOX HEIGHT (from 1 to 0.5)
     left = 0
     
     # Color Normalization (based on Average)
     avg_values = summary["Avg Runs/Wicket"]
-    # Normalize color range: Use 0 to 50 for a reasonable cap on average
     avg_max = avg_values.max() if avg_values.max() > 0 else 50
     norm = mcolors.Normalize(vmin=0, vmax=avg_max if avg_max > 50 else 50)
-    cmap = cm.get_cmap('Reds') # Use inverted Reds_r: lower avg (good) is darker/redder
+    cmap = cm.get_cmap('Reds')
     
     # 4. Plotting Equal Boxes (Horizontal Heatmap)
     for index, row in summary.iterrows():
         avg = row["Avg Runs/Wicket"]
         wkts = int(row["Wickets"])
         
-        # Color hue based on Average
-        # Use white/light color if no data (zero balls)
+        # Determine color
         color = cmap(norm(avg)) if row["Balls"] > 0 else 'whitesmoke' 
         
-        # Draw the Rectangle (Fixed width, full height)
+        # Draw the Rectangle (Fixed width, reduced height: 0 to 0.5)
         ax_boxes.add_patch(
-            patches.Rectangle((left, 0), box_width, 1, 
+            patches.Rectangle((left, 0), box_width, box_height,  # Y range: 0 to box_height (0.5)
                               edgecolor="black", facecolor=color, linewidth=1)
         )
         
-        # Add labels (Zone Name, Wickets, Average)
-        label_wkts_avg = f"{wkts}W - Ave {avg:.1f}"
+        # --- NEW LABEL POSITION: Zone Name (Above the box) ---
+        ax_boxes.text(left + box_width / 2, box_height + 0.1, # Positioned at y=0.6 (just above the box)
+                      index.replace(" ", "\n"),              # Use newline for better fitting
+                      ha='center', va='bottom', fontsize=9, color='black',
+                      fontweight='bold')
         
-        # Calculate text color for contrast
+        # Calculate text color for contrast (only need to calculate if there's data)
+        text_color = 'black'
         if row["Balls"] > 0:
-            r, g, b, a = color # This is safe now, as 'color' is an RGBA tuple
-            # Calculate luminosity for RGBA tuples (from cmap)
+            r, g, b, a = color
             luminosity = 0.2126 * r + 0.7152 * g + 0.0722 * b
             text_color = 'white' if luminosity < 0.5 else 'black'
-        else:
-            # If the color is 'whitesmoke' (from the initial check), use black text
-            text_color = 'black' 
-
-        # Label 1: Zone Name (Top of the box)
-        ax_boxes.text(left + box_width / 2, 0.75, 
-                      index,
-                      ha='center', va='center', fontsize=10, color=text_color)
-                      
+        
         # Label 2: Wickets and Average (Middle of the box)
-        ax_boxes.text(left + box_width / 2, 0.4, 
+        label_wkts_avg = f"{wkts}W - Ave {avg:.1f}"
+        ax_boxes.text(left + box_width / 2, box_height * 0.5,  # Positioned at y=0.25 (middle of the box)
                       label_wkts_avg,
-                      ha='center', va='center', fontsize= 10, fontweight = 'bold', color=text_color)
+                      ha='center', va='center', fontsize= 9, fontweight = 'bold', color=text_color)
         
         left += box_width
         
     # 5. Styling
-    ax_boxes.set_xlim(0, 1); ax_boxes.set_ylim(0, 1)
+    ax_boxes.set_xlim(0, 1)
+    # Set Y-limit to accommodate the top labels (e.g., 0 to 0.8)
+    ax_boxes.set_ylim(0, box_height + 0.3) 
+    
     ax_boxes.axis('off') # Hide all axes/ticks/labels
-
-
-    # Remove the border (spines)
+    
+    # Remove the border (spines) - Kept hidden as requested in the original code
     ax_boxes.spines['right'].set_visible(False)
     ax_boxes.spines['top'].set_visible(False)
     ax_boxes.spines['left'].set_visible(False)
