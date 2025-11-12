@@ -162,7 +162,7 @@ def create_crease_beehive(df_in, delivery_type):
             scaleratio=1,
             showline=True,          # <--- DRAW THE SPINE LINE
             linecolor='black',      # <--- Spine Color
-            linewidth=1,
+            linewidth=2,
             mirror=True             # Draw the top spine
         ),
         
@@ -175,7 +175,7 @@ def create_crease_beehive(df_in, delivery_type):
             showticklabels=False,   # Hide numbers/ticks
             showline=True,          # <--- DRAW THE SPINE LINE
             linecolor='black',      # <--- Spine Color
-            linewidth=1,
+            linewidth=2,
             mirror=True             # Draw the right spine
         )
     )
