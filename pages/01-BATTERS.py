@@ -283,7 +283,7 @@ def create_crease_beehive(df_in, delivery_type):
     return fig
 
 
-# --- CHART 3: PITCH MAP ---
+# --- CHART 3: PITCHMAP ---
 # --- Helper function for Pitch Bins (Centralized) ---
 def get_pitch_bins(delivery_type):
     if delivery_type == "Seam":
@@ -307,64 +307,109 @@ def get_pitch_bins(delivery_type):
 # --- CHART 3: PITCH MAP (BOUNCE LOCATION) ---
 def create_pitch_map(df_in, delivery_type):
     if df_in.empty:
-        return go.Figure().update_layout(title=f"No data for Pitch Map ({delivery_type})", height=300)
+        # Create an empty figure with a text note if data is missing
+        fig, ax = plt.subplots(figsize=(7, 5))
+        ax.text(0.5, 0.5, f"No data for Pitch Map ({delivery_type})", ha='center', va='center', fontsize=12)
+        ax.axis('off')
+        return fig
 
+    # --- Data Filtering ---
+    pitch_wickets = df_in[df_in["Wicket"] == True]
+    pitch_non_wickets = df_in[df_in["Wicket"] == False]
+    
+    # --- Chart Setup ---
+    fig, ax = plt.subplots(figsize=(7, 5))
+    ax.set_facecolor('white')
+    fig.patch.set_facecolor('white')
+
+    # --- Pitch Bins & Full Toss Adjustment ---
     PITCH_BINS = get_pitch_bins(delivery_type)
     
-    # Add a catch-all bin for plotting range/data outside the defined bins if needed
+    # Add Full Toss bin based on delivery type
     if delivery_type == "Seam":
         PITCH_BINS["Full Toss"] = [-4.0, 1.2] 
     elif delivery_type == "Spin":
         PITCH_BINS["Full Toss"] = [-4.0, 1.22] 
-        
-    fig_pitch = go.Figure()
     
-    # 1. Add Zone Lines & Labels (using y0, which is the start of the zone)
-    # The dictionary keys must be sorted to ensure labels appear correctly if not iterating directly
+    # --- 1. Add Zone Lines & Labels (Horizontal Lines) ---
     
-    # Determine boundary keys for lines (excluding the start of the lowest bin)
-    boundary_y_values = sorted([v[0] for v in PITCH_BINS.values() if v[0] > -4.0])
+    # Determine boundary Y values to draw lines (excluding the start of the lowest bin)
+    # The 'Full Toss' bin is assumed to start at -4.0, which is the bottom plot limit.
+    boundary_y_values = sorted([v[0] for v in PITCH_BINS.values() if v[0] > -4.0], reverse=True)
 
     for y_val in boundary_y_values:
-        fig_pitch.add_hline(y=y_val, line=dict(color="lightgrey", width=1.0, dash="dot"))
+        # ax.axhline is the Matplotlib equivalent of fig_pitch.add_hline
+        ax.axhline(y=y_val, color="lightgrey", linewidth=1.0, linestyle="--")
 
-    # Add zone labels
+    # Add zone labels (equivalent to fig_pitch.add_annotation)
     for length, bounds in PITCH_BINS.items():
-        if length != "Full Toss": # Skip full toss for placement of label
+        if length != "Full Toss": 
             mid_y = (bounds[0] + bounds[1]) / 2
-            fig_pitch.add_annotation(x=-1.45, y=mid_y, text=length.upper(), showarrow=False,
-                font=dict(size=8, color="grey", weight='bold'), xanchor='left')
+            # Use ax.text for annotation, positioned on the far left (x=-1.45)
+            ax.text(
+                x=-1.45, 
+                y=mid_y, 
+                s=length.upper(), 
+                ha='left', 
+                va='center', 
+                fontsize=8, 
+                color="grey", 
+                fontweight='bold'
+            )
 
-    # 2. Add Stump lines
-    fig_pitch.add_vline(x=-0.18, line=dict(color="#777777", dash="dot", width=1.2))
-    fig_pitch.add_vline(x=0.18, line=dict(color="#777777", dash="dot", width=1.2))
-    fig_pitch.add_vline(x=0, line=dict(color="#777777", dash="dot", width=0.8))
+    # --- 2. Add Stump lines (Vertical Lines) ---
+    # ax.axvline is the Matplotlib equivalent of fig_pitch.add_vline
+    ax.axvline(x=-0.18, color="#777777", linestyle="--", linewidth=1.2)
+    ax.axvline(x=0.18, color="#777777", linestyle="--", linewidth=1.2)
+    ax.axvline(x=0, color="#777777", linestyle="--", linewidth=0.8)
 
-    # 3. Plot Data
-    pitch_wickets = df_in[df_in["Wicket"] == True]
-    pitch_non_wickets = df_in[df_in["Wicket"] == False]
-
-    fig_pitch.add_trace(go.Scatter(
-        x=pitch_non_wickets["BounceY"], y=pitch_non_wickets["BounceX"], mode='markers', name="No Wicket",
-        marker=dict(color='#D3D3D3', size=10, line=dict(width=1, color="white"), opacity=0.9)
-    ))
-
-    fig_pitch.add_trace(go.Scatter(
-        x=pitch_wickets["BounceY"], y=pitch_wickets["BounceX"], mode='markers', name="Wicket",
-        marker=dict(color='red', size=12, line=dict(width=1, color="white")), opacity=0.95)
-    )
-
-    # 4. Layout
-    fig_pitch.update_layout(
-        height = 400,
-        margin=dict(l=0, r=100, t=0, b=10),
-        xaxis=dict(range=[-1.5, 1.5], showgrid=False, zeroline=False, visible=False),
-        # Ensure Y-axis range covers the custom bins
-        yaxis=dict(range=[16.0, -4.0], showgrid=False, zeroline=False, visible=False), 
-        plot_bgcolor="white", paper_bgcolor="white", showlegend=False
-    )
+    # --- 3. Plot Data (Scatter Traces) ---
     
-    return fig_pitch
+    # Non-Wickets (light grey)
+    ax.scatter(
+        pitch_non_wickets["BounceY"], pitch_non_wickets["BounceX"], 
+        s=40, # Matplotlib size equivalent to Plotly size=10
+        c='#D3D3D3', 
+        edgecolor='white', 
+        linewidths=1.0, 
+        alpha=0.9,
+        label="No Wicket"
+    )
+
+    # Wickets (red)
+    ax.scatter(
+        pitch_wickets["BounceY"], pitch_wickets["BounceX"], 
+        s=80, # Matplotlib size equivalent to Plotly size=12
+        c='red', 
+        edgecolor='white', 
+        linewidths=1.0, 
+        alpha=0.95,
+        label="Wicket"
+    )
+
+    # --- 4. Layout (Axis and Spines) ---
+    
+    # Set axis limits
+    ax.set_xlim([-1.5, 1.5])
+    # Note: Matplotlib typically plots y-axis increasing upwards, but here we set 
+    # the range from [16.0, -4.0] to reverse the axis and match the Plotly visual 
+    # where lower values (closer to batter) are at the bottom.
+    ax.set_ylim([16.0, -4.0])
+
+    # Hide all axis elements (equivalent to visible=False)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.set_xlabel("")
+    ax.set_ylabel("")
+    ax.grid(False)
+    
+    # Hide axis spines (plot border)
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+        
+    plt.tight_layout()
+    
+    return fig
 
 # --- CHART 3b: PITCH LENGTH RUN % (EQUAL SIZED BOXES) ---
 def create_pitch_length_run_pct(df_in, delivery_type):
@@ -1252,10 +1297,9 @@ with col1:
     
     # Row 4: Pitch Map and Vertical Run % Bar (Side-by-Side)
     pitch_map_col, run_pct_col = st.columns([3, 1]) # 3:1 ratio
-
     with pitch_map_col:
         st.markdown("###### PITCHMAP")
-        st.plotly_chart(create_pitch_map(df_seam, "Seam"), use_container_width=True)    
+        st.pyplot(create_pitch_map(df_seam, "Seam"), use_container_width=True)    
     with run_pct_col:
         st.markdown("###### ")
         st.pyplot(create_pitch_length_run_pct(df_seam, "Seam"), use_container_width=True)
@@ -1311,7 +1355,7 @@ with col2:
     pitch_map_col, run_pct_col = st.columns([3, 1]) 
     with pitch_map_col:
         st.markdown("###### PITCHMAP")
-        st.plotly_chart(create_pitch_map(df_spin, "Spin"), use_container_width=True)    
+        st.pyplot(create_pitch_map(df_spin, "Spin"), use_container_width=True)    
         
     with run_pct_col:
         st.markdown("###### ")
