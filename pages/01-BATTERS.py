@@ -421,7 +421,7 @@ def create_pitch_map(df_in, delivery_type):
     return fig
 
 # --- CHART 3b: PITCH LENGTH RUN % (EQUAL SIZED BOXES) ---
-def create_pitch_length_comparison_mpl(df_in, delivery_type):
+def create_pitch_length_bars(df_in, delivery_type):
     """
     Generates a figure with three vertically stacked horizontal bar charts 
     for Batting Average, Strike Rate, and Dismissals by Pitch Length.
