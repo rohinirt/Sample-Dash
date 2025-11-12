@@ -557,208 +557,242 @@ def create_pitch_length_bars(df_in, delivery_type):
     
   
 # --- CHART 4a: INTERCEPTION SIDE-ON --- (Wide View)
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import pandas as pd
+import numpy as np
+import matplotlib.cm as cm
+import matplotlib.colors as mcolors
+
+# --- Helper function for Interception Bins ---
+def get_interception_bins():
+    """Defines the bins for the Crease Width Split chart."""
+    return {
+        "0m-1m": [0, 1],
+        "1m-2m": [1, 2],
+        "2m-3m": [2, 3],
+        "3m+": [3, 100]  # Assuming max possible value is < 100
+    }
+
 def create_interception_side_on(df_in, delivery_type):
+    """
+    Creates a single Matplotlib figure combining the Interception Side-On 
+    Scatter Plot (top) and the Crease Width Split Bar Chart (bottom) 
+    with a single border.
+    """
+    # Define Figure Size (slightly narrower and taller for the vertical stack)
+    FIG_WIDTH = 4.0
+    FIG_HEIGHT = 5.5
+    FIG_SIZE = (FIG_WIDTH, FIG_HEIGHT)
+
+    if df_in.empty or df_in["InterceptionX"].isnull().all():
+        fig, ax = plt.subplots(figsize=FIG_SIZE)
+        ax.text(0.5, 0.5, "No Data for Combined Interception Analysis", ha='center', va='center', fontsize=12)
+        ax.axis('off')
+        return fig
+
+    # --- SETUP GRID FOR TWO ROWS ---
+    # Top: Scatter Plot (Larger) | Bottom: Bar Chart (Smaller)
+    fig = plt.figure(figsize=FIG_SIZE)
+    # Ratio: 80% for scatter plot, 20% for bar chart
+    gs = fig.add_gridspec(2, 1, height_ratios=[4, 1], hspace=0.1) 
+    
+    ax_scatter = fig.add_subplot(gs[0, 0])
+    ax_bar = fig.add_subplot(gs[1, 0])
+    
+    fig.patch.set_facecolor('white')
+
+    # ----------------------------------------------------------------------
+    ## --- PART 1: CHART 4a - INTERCEPTION SIDE-ON SCATTER (ax_scatter) ---
+    # ----------------------------------------------------------------------
     df_interception = df_in[df_in["InterceptionX"] > -999].copy()
-    if df_interception.empty:
-        fig, ax = plt.subplots(figsize=(1.7, 4)); ax.text(0.5, 0.5, "No Data", ha='center', va='center'); ax.axis('off'); return fig
-        
+    
     df_interception["ColorType"] = "Other"
     df_interception.loc[df_interception["Wicket"] == True, "ColorType"] = "Wicket"
     df_interception.loc[df_interception["Runs"].isin([4, 6]), "ColorType"] = "Boundary"
-    # Define color_map inline as it's needed for the loop
     color_map = {"Wicket": "red", "Boundary": "royalblue", "Other": "white"}
     
-    fig_7, ax_7 = plt.subplots(figsize=(3, 1.7), subplot_kw={'xticks': [], 'yticks': []}) 
-    
-    # 1. Plot Data (Layered for correct border visibility)
-    
-    # Plot "Other" (White with Grey Border)
+    # 1. Plot Data (Layered)
     df_other = df_interception[df_interception["ColorType"] == "Other"]
-    # === USING PROVIDED LOGIC: PLOT (InterceptionX + 10) on X-axis ===
-    ax_7.scatter(
+    ax_scatter.scatter(
         df_other["InterceptionX"] + 10, df_other["InterceptionZ"], 
-        color='#D3D3D3', edgecolors='white', linewidths=0.3, s=20, label="Other"
+        color='#D3D3D3', edgecolors='gray', linewidths=0.3, s=20, label="Other" # Using gray edge for visibility
     )
     
-    # Plot "Wicket" and "Boundary" (Solid colors)
     for ctype in ["Boundary", "Wicket"]:
         df_slice = df_interception[df_interception["ColorType"] == ctype]
-        # === USING PROVIDED LOGIC: PLOT (InterceptionX + 10) on X-axis ===
-        ax_7.scatter(
+        ax_scatter.scatter(
             df_slice["InterceptionX"] + 10, df_slice["InterceptionZ"], 
-            color=color_map[ctype],edgecolors='white', linewidths=0.3, s=30, label=ctype
+            color=color_map[ctype], edgecolors='white', linewidths=0.3, s=30, label=ctype
         )
 
-    # 2. Draw Vertical Dashed Lines with Labels (FIXED LINES: 0.0, 1.25, 2.0, 3.0)
+    # 2. Draw Vertical Dashed Lines with Labels
     line_specs = {
         0.0: "Stumps",
         1.250: "Crease",
-        2.000: "2m",     
+        2.000: "2m",   
         3.000: "3m" 
     }
     
     for x_val, label in line_specs.items():
-        ax_7.axvline(x=x_val, color='lightgrey', linestyle='--', linewidth=0.6, alpha=0.7)  
-        ax_7.axhline(y=0.5, color='lightgrey', linestyle='--', linewidth=0.6, alpha=0.7)   
-        ax_7.text(x_val, 1.45, label.split(':')[-1].strip(), ha='center', va='center', fontsize=5, color='grey', bbox=dict(facecolor='white', alpha=0.7, edgecolor='none', pad=1))
+        ax_scatter.axvline(x=x_val, color='lightgrey', linestyle='--', linewidth=0.6, alpha=0.7)  
+        
+        # Horizontal Line (Approx half height)
+        ax_scatter.axhline(y=0.5, color='lightgrey', linestyle='--', linewidth=0.6, alpha=0.7) 
+        
+        # Labels at the top of the chart
+        ax_scatter.text(x_val, ax_scatter.get_ylim()[1] + 0.05, label, 
+                        ha='center', va='bottom', fontsize=8, color='grey', 
+                        bbox=dict(facecolor='white', alpha=0.7, edgecolor='none', pad=1),
+                        transform=ax_scatter.get_xaxis_transform()) # Use x-axis transform for consistent top placement
 
-    # Set Y limit as fixed
+    # 3. Axis Limits and Styling
     y_limit = 1.5
-    
-    # Set X limit based on delivery type
     if delivery_type == "Seam":
         x_limit_max = 3.4
     elif delivery_type == "Spin":
         x_limit_max = 4.4
     else:
-        # Fallback to the original seam limit if type is unknown
         x_limit_max = 3.4 
         
     x_limit_min = -0.2
     
-    ax_7.set_xlim(x_limit_min, x_limit_max) 
-    ax_7.set_ylim(0, y_limit) 
-    # ... (Rest of the styling remains the same)
-    ax_7.tick_params(axis='y', which='both', labelleft=False, left=False); ax_7.tick_params(axis='x', which='both', labelbottom=False, bottom=False)
-    ax_7.spines['right'].set_visible(False)
-    ax_7.spines['top'].set_visible(False)
-    ax_7.spines['left'].set_visible(False)
-    ax_7.spines['bottom'].set_visible(False)
-    plt.tight_layout(pad=0.5)
-    return fig_7
+    ax_scatter.set_xlim(x_limit_min, x_limit_max) 
+    ax_scatter.set_ylim(0, y_limit) 
+    
+    # Hide all ticks, labels, and spines for a clean look
+    ax_scatter.set_xticks([]); ax_scatter.set_yticks([]); ax_scatter.grid(False)
+    for spine_name in ['right', 'top', 'left', 'bottom']:
+        ax_scatter.spines[spine_name].set_visible(False)
 
-# Chart 4b: Interception Side on Bins ---
-def create_crease_width_split(df_in, delivery_type):
-    # Adjust figsize width for horizontal display, height for four boxes
-    FIG_WIDTH = 5
-    FIG_HEIGHT = 0.6
-    
-    if df_in.empty:
-        fig, ax = plt.subplots(figsize=(FIG_WIDTH, FIG_HEIGHT)); 
-        ax.text(0.5, 0.5, "No Data", ha='center', va='center'); 
-        ax.axis('off'); 
-        return fig
-    
-    # 1. Define Interception Bins and Order
-    INTERCEPTION_BINS = {
-        "0m-1m": [0, 1],
-        "1m-2m": [1, 2],
-        "2m-3m": [2, 3],
-        "3m+": [3, 100] 
-    }
-    
-    ordered_keys = ["0m-1m", "1m-2m", "2m-3m", "3m+"] 
-    COLORMAP = 'Reds' # Color hue based on Avg
 
-    # 2. Data Preparation
+    # ----------------------------------------------------------------------
+    ## --- PART 2: CHART 4b - CREASE WIDTH SPLIT BARS (ax_bar) ---
+    # ----------------------------------------------------------------------
+    
+    # 1. Data Preparation (Same as previous function)
+    INTERCEPTION_BINS = get_interception_bins()
+    ordered_keys = ["0m-1m", "1m-2m", "2m-3m", "3m+"]  # Order: Close to Wide
+    COLORMAP = 'Reds'
+    
     def assign_crease_width(x):
         for width, bounds in INTERCEPTION_BINS.items():
-            # NOTE: We assume 'x' here is already InterceptionX + 10
             if bounds[0] <= x < bounds[1]: return width
         return None
 
     df_crease = df_in.copy()
-    # Apply the required transformation: InterceptionX + 10
     df_crease["CreaseWidth"] = (df_crease["InterceptionX"] + 10).apply(assign_crease_width)
     
-    if df_crease["CreaseWidth"].isnull().all() or df_crease.empty:
-        fig, ax = plt.subplots(figsize=(FIG_WIDTH, FIG_HEIGHT)); 
-        ax.text(0.5, 0.5, "No Crease Width Assigned", ha='center', va='center'); 
-        ax.axis('off'); 
-        return fig
-
-    # Aggregate data 
     df_summary = df_crease.groupby("CreaseWidth").agg(
-        Runs=("Runs", "sum"), 
-        Wickets=("Wicket", lambda x: (x == True).sum()), 
-        Balls=("Wicket", "count")
+        Runs=("Runs", "sum"), Wickets=("Wicket", lambda x: (x == True).sum()), Balls=("Wicket", "count")
     ).reset_index().set_index("CreaseWidth").reindex(ordered_keys).fillna(0)
     
-    # --- CALCULATE AVG and SR ---
     df_summary["Average"] = df_summary.apply(
         lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else (row["Runs"] if row["Balls"] > 0 else 0), axis=1
     )
-    df_summary["StrikeRate"] = df_summary.apply(
-        lambda row: (row["Runs"] / row["Balls"]) * 100 if row["Balls"] > 0 else 0, axis=1
-    )
-    # -----------------------------
     
-    # 3. Chart Setup
-    fig_stack, ax_stack = plt.subplots(figsize=(FIG_WIDTH, FIG_HEIGHT)) 
-
-    # Plotting setup variables (Horizontal)
+    # 2. Plotting Equal Boxes
     num_boxes = len(ordered_keys)
-    box_width = 1.0 / num_boxes # X-dimension split
-    left = 0.0 # X-start position
+    box_width = 1.0 / num_boxes 
+    left = 0.0 
     
-    # Colormap and Normalization based on Average (Avg) - used for color hue
     max_avg = df_summary["Average"].max() if df_summary["Average"].max() > 0 else 100
     norm = mcolors.Normalize(vmin=0, vmax=max_avg)
     cmap = cm.get_cmap(COLORMAP)
     
-    # 4. Plotting Equal Boxes (Stacked Heat Map - Horizontal)
     for index, row in df_summary.iterrows():
         wickets = row["Wickets"]
         avg = row["Average"] 
         
-        # Determine box color based on Average
         color = cmap(norm(avg)) 
         
-        # Draw the box (barh with height=1)
-        ax_stack.barh(
-            y=0.6,            # Y-position (center of the chart)
+        # Draw the box 
+        ax_bar.barh(
+            y=0.5,           
             width=box_width,
-            height=1,         # Full height (from 0 to 1 on the Y-axis)
-            left=left,        # X-start position
+            height=1,        
+            left=left,       
             color=color,
-            edgecolor='white', 
+            edgecolor='black', # Use black edge for consistency with image
             linewidth=0.7
         )
         
-        # --- Apply Dynamic Text Color Logic ---
-        # MODIFICATION 1: Update the label format
+        # --- Text Label (6W - Ave 22.5) ---
         label_text = f"{int(wickets)}W - Ave {avg:.1f}"
         
-        # Calculate text color for contrast
         r, g, b, a = color
         luminosity = 0.2126 * r + 0.7152 * g + 0.0722 * b
         text_color = 'white' if luminosity < 0.5 else 'black'
-        # -------------------------------------
         
         center_x = left + box_width / 2
         center_y = 0.5
         
-        # Label 1: Wickets and Average (Middle of the box)
-        ax_stack.text(
+        ax_bar.text(
             center_x, center_y, 
             label_text,
             ha='center', va='center', 
-            fontsize=7,
+            fontsize=9, # Adjusted fontsize for fitting
             fontweight = 'bold',
             color=text_color
         )
         
-        # MODIFICATION 2: Crease Width Label moved to the TOP of the box
-        ax_stack.text(
-            center_x, 1.05, # Position slightly above the box (y=1.0 is the top edge)
-            index,          # The CreaseWidth label (e.g., '3m+')
-            ha='center', va='bottom', # va='bottom' ensures it starts just above y=1.05
-            fontsize=8, 
+        # --- Crease Width Label (Top of the box) ---
+        ax_bar.text(
+            center_x, 1.05, 
+            index,          
+            ha='center', va='bottom', 
+            fontsize=9, 
             color='black',
         )
 
-        left += box_width # Advance the starting position for the next box
+        left += box_width
 
-    # 5. Styling
+    # 3. Styling for Bar Chart
+    ax_bar.set_xlim(0, 1)
+    ax_bar.set_ylim(0, 1) # Set Y limits to ensure the top label is visible
+    ax_bar.axis('off')
 
-    # Hide all axis lines, ticks, and labels
-    ax_stack.set_xlim(0, 1)
-    ax_stack.set_ylim(0, 1)
-    ax_stack.axis('off')
 
-    plt.tight_layout(pad=0.5)
+    # ----------------------------------------------------------------------
+    ## --- PART 3: DRAW SINGLE COMPACT BORDER ---
+    # ----------------------------------------------------------------------
     
-    return fig_stack
+    plt.tight_layout(pad=0.2) 
+    
+    PADDING = 0.005 
+
+    # Get the bounding box of the top (scatter) and bottom (bar) charts
+    scatter_bbox = ax_scatter.get_position()
+    bar_bbox = ax_bar.get_position()
+    
+    # Determine the total bounds (figure coordinates)
+    x0_orig = scatter_bbox.x0         
+    y0_orig = bar_bbox.y0         
+    x1_orig = scatter_bbox.x1     
+    y1_orig = scatter_bbox.y1         
+    
+    # Apply Padding
+    x0_pad = x0_orig - PADDING
+    y0_pad = y0_orig - PADDING
+    
+    width_pad = (x1_orig - x0_orig) + (2 * PADDING)
+    height_pad = (y1_orig - y0_orig) + (2 * PADDING)
+
+    # Draw the custom Rectangle 
+    border_rect = patches.Rectangle(
+        (x0_pad, y0_pad), 
+        width_pad, 
+        height_pad,  
+        facecolor='none', 
+        edgecolor='black', 
+        linewidth=2.0, 
+        transform=fig.transFigure, 
+        clip_on=False
+    )
+
+    fig.patches.append(border_rect)
+
+    return fig
 
 # --- CHART 5: INTERCEPTION FRONT-ON --- (Distance vs Width)
 def create_interception_front_on(df_in, delivery_type):
@@ -1308,7 +1342,7 @@ with col1:
     st.markdown("###### INTERCEPTION SIDE-ON")
     st.pyplot(create_interception_side_on(df_seam, "Seam"), use_container_width=True)
     # Row 6: Interception Side-On Bins (Length Bins)
-    st.pyplot(create_crease_width_split(df_seam, "Seam"), use_container_width=True)
+    #st.pyplot(create_crease_width_split(df_seam, "Seam"), use_container_width=True)
 
     # Row 7: Interception Front-On and Scoring Areas (Side-by-Side)
     bottom_col_left, bottom_col_right = st.columns(2)
@@ -1363,7 +1397,7 @@ with col2:
     st.pyplot(create_interception_side_on(df_spin, "Spin"), use_container_width=True)
 
     # Row 6: Interception Side-On Bins (Length Bins)
-    st.pyplot(create_crease_width_split(df_spin, "Spin"), use_container_width=True)
+    #st.pyplot(create_crease_width_split(df_spin, "Spin"), use_container_width=True)
 
     # Row 7: Interception Front-On and Scoring Areas (Side-by-Side)
     bottom_col_left, bottom_col_right = st.columns(2)
