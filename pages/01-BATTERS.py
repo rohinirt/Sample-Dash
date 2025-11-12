@@ -90,133 +90,24 @@ def create_zonal_analysis(df_in, batsman_name, delivery_type):
     plt.tight_layout(pad=0.5) 
     return fig_boxes
 
-# --- CHART 2a: CREASE BEEHIVE ---
+
+Chart 2: CREASE BEEHIVE
 def create_crease_beehive(df_in, delivery_type):
-    """
-    Creates a Matplotlib Crease Beehive chart (scatter plot) showing ball pitch
-    locations categorized by Wicket, Boundary, and Regular Ball. Includes a 
-    four-sided border (spines) and internal reference lines.
-    """
-    import matplotlib.pyplot as plt
-    
     if df_in.empty:
-        # Create an empty figure with a text note if data is missing
-        fig, ax = plt.subplots(figsize=(7, 4))
-        ax.text(0.5, 0.5, "No data for Beehive", ha='center', va='center', fontsize=12)
-        ax.axis('off')
+        fig, ax = plt.subplots(figsize=(7, 5)); 
+        ax.text(0.5, 0.5, "No data for Analysis", ha='center', va='center', fontsize=12); 
+        ax.axis('off'); 
         return fig
 
     # --- Data Filtering ---
     wickets = df_in[df_in["Wicket"] == True]
     non_wickets_all = df_in[df_in["Wicket"] == False]
-
-    boundaries = non_wickets_all[
-        (non_wickets_all["Runs"] == 4) | (non_wickets_all["Runs"] == 6)
-    ]
+    boundaries = non_wickets_all[(non_wickets_all["Runs"] == 4) | (non_wickets_all["Runs"] == 6)]
+    regular_balls = non_wickets_all[(non_wickets_all["Runs"] != 4) & (non_wickets_all["Runs"] != 6)]
     
-    regular_balls = non_wickets_all[
-        (non_wickets_all["Runs"] != 4) & (non_wickets_all["Runs"] != 6)
-    ]
-
-    # --- Chart Setup ---
-    # Set figsize to approximate the 300px height aspect ratio
-    fig, ax = plt.subplots(figsize=(7, 4)) 
-
-    # --- 1. TRACE: Regular Balls (Non-Wicket, Non-Boundary) - Light Grey
-    ax.scatter(
-        regular_balls["CreaseY"], regular_balls["CreaseZ"], 
-        s=40, # size = 40 (equivalent to Plotly size=10)
-        c='lightgrey', 
-        edgecolor='white', # white border line
-        linewidths=1.0, 
-        alpha=0.95,
-        label="Regular Ball"
-    )
-
-    # --- 2. TRACE: Boundary Balls (Runs 4 or 6) - Royal Blue
-    ax.scatter(
-        boundaries["CreaseY"], boundaries["CreaseZ"], 
-        s=80, # size = 80 (equivalent to Plotly size=12)
-        c='royalblue', 
-        edgecolor='white', 
-        linewidths=1.0, 
-        alpha=0.95,
-        label="Boundary"
-    )
-
-    # --- 3. TRACE: Wickets - Red (Emphasis)
-    ax.scatter(
-        wickets["CreaseY"], wickets["CreaseZ"], 
-        s=80, # size = 80 (equivalent to Plotly size=12)
-        c='red', 
-        edgecolor='white', 
-        linewidths=1.0, 
-        alpha=0.95,
-        label="Wicket"
-    )
-
-    # --- Stump lines & Crease lines (Verticals - vlines) ---
-    ax.axvline(x=-0.18, color="grey", linestyle="--", linewidth=0.5) 
-    ax.axvline(x=0.18, color="grey", linestyle="--", linewidth=0.5)
-    ax.axvline(x=0, color="grey", linestyle="--", linewidth=0.5) # Center stump
-    ax.axvline(x=-0.92, color="grey", linestyle="-", linewidth=0.5) # Wide crease line
-    ax.axvline(x=0.92, color="grey", linestyle="-", linewidth=0.5)
-
-    # --- Crease line (Horizontal - hline) ---
-    ax.axhline(y=0.78, color="grey", linestyle="-", linewidth=0.5)
-
-    # --- Annotation ---
-    ax.text(
-        -1.5, 0.78, "Stump line", 
-        ha='left', va='bottom', 
-        fontsize=8, color="grey",
-        transform=ax.transData
-    )
-
-    # --- SET AXIS RANGES ---
-    ax.set_xlim([-1.5, 1.5])
-    ax.set_ylim([0, 2])
-    
-    # --- ENSURE ASPECT RATIO (Scaleanchor="y" / Scaleratio=1) ---
-    ax.set_aspect('equal', adjustable='box')
-
-    # --- FORMATTING AND SPINES (Border) ---
-    
-    # 1. Hide ticks, labels, and internal grid
-    ax.set_xticks([])
-    ax.set_yticks([])
-    ax.set_xlabel("")
-    ax.set_ylabel("")
-    ax.grid(False)
-    
-    # 2. Draw 4-sided Spines (Border)
-    # The default Matplotlib spines must be turned ON and styled
-    for spine in ['left', 'right', 'top', 'bottom']:
-        ax.spines[spine].set_visible(True)
-        ax.spines[spine].set_color('black')
-        ax.spines[spine].set_linewidth(0.5) # Line width set to 2.0 as requested
-        
-    # 3. Set Background
-    fig.patch.set_facecolor('white')
-    ax.set_facecolor('white')
-
-    plt.tight_layout()
-    
-    return fig
-    
-
-# --- CHART 2b: LATERAL PERFORMANCE STACKED BAR ---
-def create_lateral_performance_boxes(df_in, delivery_type, batsman_name):
-    """
-    Creates a Matplotlib Lateral Performance chart using colored boxes (horizontal heatmap).
-    The Zone Labels are now placed above the boxes, and the boxes' height is reduced.
-    """
-    
+    # --- Lateral Zone Data Prep (Chart 2b) ---
     df_lateral = df_in.copy()
-    if df_lateral.empty:
-        fig, ax = plt.subplots(figsize=(7, 1)); ax.text(0.5, 0.5, "No Data", ha='center', va='center'); ax.axis('off'); return fig    
-
-    # 1. Define Zoning Logic (Same as before)
+    
     def assign_lateral_zone(row):
         y = row["CreaseY"]
         if row["IsBatsmanRightHanded"] == True:
@@ -232,57 +123,90 @@ def create_lateral_performance_boxes(df_in, delivery_type, batsman_name):
             
     df_lateral["LateralZone"] = df_lateral.apply(assign_lateral_zone, axis=1)
     
-    # 2. Calculate Summary Metrics
     summary = (
         df_lateral.groupby("LateralZone").agg(
-            Runs=("Runs", "sum"), 
-            Wickets=("Wicket", lambda x: (x == True).sum()), 
-            Balls=("Wicket", "count")
+            Runs=("Runs", "sum"), Wickets=("Wicket", lambda x: (x == True).sum()), Balls=("Wicket", "count")
         )
     )
-    
-    # Order the zones from Way Outside Off to Leg (Left to Right)
     ordered_zones = ["WAY OUTSIDE OFF", "OUTSIDE OFF", "STUMPS", "LEG"]
     summary = summary.reindex(ordered_zones).fillna(0)
-
-    # Calculate Average for coloring and labeling
     summary["Avg Runs/Wicket"] = summary.apply(lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else 0, axis=1)
+
+    # -----------------------------------------------------------
+    # --- 1. SETUP SUBPLOTS ---
+    # Create 2 subplots: 1 for Beehive (ax_bh) and 1 for Boxes (ax_boxes)
+    # The 'height_ratios' control the relative size: 4:1 ratio for Beehive:Boxes
+    fig = plt.figure(figsize=(7, 5))
+    gs = fig.add_gridspec(2, 1, height_ratios=[4, 1], hspace=0.1) 
+    ax_bh = fig.add_subplot(gs[0, 0])      # Top subplot (Beehive)
+    ax_boxes = fig.add_subplot(gs[1, 0])   # Bottom subplot (Lateral Boxes)
     
-    # 3. Chart Setup
-    # Adjusted figsize to accommodate labels above the boxes (taller figure)
-    fig_boxes, ax_boxes = plt.subplots(figsize=(7, 1)) 
+    # Set background for the figure
+    fig.patch.set_facecolor('white')
+
+    # -----------------------------------------------------------
+    ## --- 2. CHART 2a: CREASE BEEHIVE (ax_bh) ---
+    
+    # --- Traces ---
+    ax_bh.scatter(regular_balls["CreaseY"], regular_balls["CreaseZ"], s=40, c='lightgrey', edgecolor='white', linewidths=1.0, alpha=0.95, label="Regular Ball")
+    ax_bh.scatter(boundaries["CreaseY"], boundaries["CreaseZ"], s=80, c='royalblue', edgecolor='white', linewidths=1.0, alpha=0.95, label="Boundary")
+    ax_bh.scatter(wickets["CreaseY"], wickets["CreaseZ"], s=80, c='red', edgecolor='white', linewidths=1.0, alpha=0.95, label="Wicket")
+
+    # --- Reference Lines ---
+    ax_bh.axvline(x=-0.18, color="grey", linestyle="--", linewidth=0.5) 
+    ax_bh.axvline(x=0.18, color="grey", linestyle="--", linewidth=0.5)
+    ax_bh.axvline(x=0, color="grey", linestyle="--", linewidth=0.5) 
+    ax_bh.axvline(x=-0.92, color="grey", linestyle="-", linewidth=0.5) 
+    ax_bh.axvline(x=0.92, color="grey", linestyle="-", linewidth=0.5)
+    ax_bh.axhline(y=0.78, color="grey", linestyle="-", linewidth=0.5)
+
+    # --- Annotation ---
+    ax_bh.text(-1.5, 0.78, "Stump line", ha='left', va='bottom', fontsize=8, color="grey", transform=ax_bh.transData)
+
+    # --- Formatting ---
+    ax_bh.set_xlim([-1.5, 1.5])
+    ax_bh.set_ylim([0, 2])
+    ax_bh.set_aspect('equal', adjustable='box')
+    ax_bh.set_xticks([]); ax_bh.set_yticks([]); ax_bh.grid(False)
+    
+    # Hide axis spines for the individual plot (we will draw a single border for the figure later)
+    for spine in ax_bh.spines.values():
+        spine.set_visible(False)
+        
+    ax_bh.set_facecolor('white')
+    
+    # -----------------------------------------------------------
+    ## --- 3. CHART 2b: LATERAL PERFORMANCE BOXES (ax_boxes) ---
     
     num_regions = len(ordered_zones)
-    box_width = 1 / num_regions # Fixed width for each box (total width = 1)
-    box_height = 0.5            # <--- REDUCED BOX HEIGHT (from 1 to 0.5)
+    box_width = 1 / num_regions
+    box_height = 0.5 
     left = 0
     
-    # Color Normalization (based on Average)
+    # Color Normalization
     avg_values = summary["Avg Runs/Wicket"]
     avg_max = avg_values.max() if avg_values.max() > 0 else 50
     norm = mcolors.Normalize(vmin=0, vmax=avg_max if avg_max > 50 else 50)
     cmap = cm.get_cmap('Reds')
-    
-    # 4. Plotting Equal Boxes (Horizontal Heatmap)
+
     for index, row in summary.iterrows():
         avg = row["Avg Runs/Wicket"]
         wkts = int(row["Wickets"])
         
-        # Determine color
         color = cmap(norm(avg)) if row["Balls"] > 0 else 'whitesmoke' 
         
-        # Draw the Rectangle (Fixed width, reduced height: 0 to 0.5)
+        # Draw the Rectangle
         ax_boxes.add_patch(
-            patches.Rectangle((left, 0), box_width, box_height,  # Y range: 0 to box_height (0.5)
+            patches.Rectangle((left, 0), box_width, box_height, 
                               edgecolor="black", facecolor=color, linewidth=1)
         )
         
-        # --- NEW LABEL POSITION: Zone Name (Above the box) ---
-        ax_boxes.text(left + box_width / 2, box_height + 0.1, # Positioned at y=0.6 (just above the box)
-                      index,         
-                      ha='center', va='bottom', fontsize=8, color='black')
+        # Label 1: Zone Name (Above the box)
+        ax_boxes.text(left + box_width / 2, box_height + 0.1, 
+                      index, 
+                      ha='center', va='bottom', fontsize=8, color='black') # No newline
         
-        # Calculate text color for contrast (only need to calculate if there's data)
+        # Calculate text color for contrast
         text_color = 'black'
         if row["Balls"] > 0:
             r, g, b, a = color
@@ -291,27 +215,40 @@ def create_lateral_performance_boxes(df_in, delivery_type, batsman_name):
         
         # Label 2: Wickets and Average (Middle of the box)
         label_wkts_avg = f"{wkts}W - Ave {avg:.1f}"
-        ax_boxes.text(left + box_width / 2, box_height * 0.5,  # Positioned at y=0.25 (middle of the box)
+        ax_boxes.text(left + box_width / 2, box_height * 0.5, 
                       label_wkts_avg,
-                      ha='center', va='center', fontsize= 9, fontweight = 'bold', color=text_color)
+                      ha='center', va='center', fontsize=9, fontweight='bold', color=text_color)
         
         left += box_width
-        
-    # 5. Styling
+
+    # Formatting
     ax_boxes.set_xlim(0, 1)
-    # Set Y-limit to accommodate the top labels (e.g., 0 to 0.8)
     ax_boxes.set_ylim(0, box_height + 0.3) 
+    ax_boxes.axis('off')
     
-    ax_boxes.axis('off') # Hide all axes/ticks/labels
-    
-    # Remove the border (spines) - Kept hidden as requested in the original code
-    ax_boxes.spines['right'].set_visible(False)
-    ax_boxes.spines['top'].set_visible(False)
-    ax_boxes.spines['left'].set_visible(False)
-    ax_boxes.spines['bottom'].set_visible(False)
-    
-    plt.tight_layout(pad=0.8)
-    return fig_boxes
+    # Hide axis spines for the individual plot
+    for spine in ax_boxes.spines.values():
+        spine.set_visible(False)
+        
+    ax_boxes.set_facecolor('white')
+
+    # -----------------------------------------------------------
+    ## --- 4. DRAW SINGLE BORDER AROUND THE ENTIRE FIGURE ---
+    # We use a custom rectangle around the figure's outer edges
+    rect = patches.Rectangle(
+        (0.01, 0.01), 
+        0.98, 0.98,  # x=0.01 to 0.99, y=0.01 to 0.99 (98% width/height)
+        facecolor='none', 
+        edgecolor='black', 
+        linewidth=2.0, 
+        transform=fig.transFigure, # Use the figure's coordinate system
+        clip_on=False
+    )
+    fig.patches.append(rect)
+
+    plt.tight_layout(pad=0.2)
+    return fig
+
 
 # --- CHART 3: PITCH MAP ---
 # --- Helper function for Pitch Bins (Centralized) ---
@@ -1278,10 +1215,7 @@ with col1:
     
     # Row 2: Crease Beehive Scatter
     st.markdown("###### CREASE BEEHIVE")
-    st.pyplot(create_crease_beehive(df_seam, "Seam"), use_container_width=True)
-
-    # Row 3: Lateral Performance Boxes
-    st.pyplot(create_lateral_performance_boxes(df_seam, "Seam", batsman), use_container_width=True)
+    st.pyplot(create_crease_beehive(df_seam, "Seam"), use_container_width=True
     
     # Row 4: Pitch Map and Vertical Run % Bar (Side-by-Side)
     pitch_map_col, run_pct_col = st.columns([3, 1]) # 3:1 ratio
@@ -1338,8 +1272,7 @@ with col2:
     # Row 2: Crease Beehive Scatter
     st.markdown("###### CREASE BEEHIVE")
     st.pyplot(create_crease_beehive(df_spin, "Spin"), use_container_width=True)
-    # Row 3: Lateral Performance Boxes
-    st.pyplot(create_lateral_performance_boxes(df_spin, "Spin", batsman), use_container_width=True)
+ 
 
     # Row 4: Pitch Map and Vertical Run % Bar (Side-by-Side)
     pitch_map_col, run_pct_col = st.columns([3, 1]) 
