@@ -558,6 +558,7 @@ def create_pitch_length_bars(df_in, delivery_type):
   
 # --- CHART 4a: INTERCEPTION SIDE-ON --- (Wide View)
 # --- Helper function for Interception Bins ---
+
 def get_interception_bins():
     """Defines the bins for the Crease Width Split chart."""
     return {
@@ -574,8 +575,8 @@ def create_interception_side_on(df_in, delivery_type):
     with a single border.
     """
     # Define Figure Size (slightly narrower and taller for the vertical stack)
-    FIG_WIDTH = 4.0
-    FIG_HEIGHT = 5.5
+    FIG_WIDTH = 7
+    FIG_HEIGHT = 5
     FIG_SIZE = (FIG_WIDTH, FIG_HEIGHT)
 
     if df_in.empty or df_in["InterceptionX"].isnull().all():
