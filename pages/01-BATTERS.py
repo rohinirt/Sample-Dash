@@ -279,7 +279,7 @@ def create_lateral_performance_boxes(df_in, delivery_type, batsman_name):
         
         # --- NEW LABEL POSITION: Zone Name (Above the box) ---
         ax_boxes.text(left + box_width / 2, box_height + 0.1, # Positioned at y=0.6 (just above the box)
-                      index.replace(" ", "\n"),              # Use newline for better fitting
+                      index,         
                       ha='center', va='bottom', fontsize=8, color='black')
         
         # Calculate text color for contrast (only need to calculate if there's data)
