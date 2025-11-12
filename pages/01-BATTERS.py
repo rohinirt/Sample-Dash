@@ -638,7 +638,7 @@ import matplotlib.patches as patches
 def create_crease_width_split(df_in, delivery_type):
     # Adjust figsize width for horizontal display, height for four boxes
     FIG_WIDTH = 5
-    FIG_HEIGHT = 0.8
+    FIG_HEIGHT = 0.5
     
     if df_in.empty:
         fig, ax = plt.subplots(figsize=(FIG_WIDTH, FIG_HEIGHT)); 
@@ -740,8 +740,8 @@ def create_crease_width_split(df_in, delivery_type):
             center_x, center_y, 
             label_text,
             ha='center', va='center', 
-            fontsize=10, 
-            color=text_color, weight='bold' 
+            fontsize=9, 
+            color=text_color
         )
         
         # MODIFICATION 2: Crease Width Label moved to the TOP of the box
@@ -749,9 +749,8 @@ def create_crease_width_split(df_in, delivery_type):
             center_x, 1.05, # Position slightly above the box (y=1.0 is the top edge)
             index,          # The CreaseWidth label (e.g., '3m+')
             ha='center', va='bottom', # va='bottom' ensures it starts just above y=1.05
-            fontsize=10, 
+            fontsize=8, 
             color='black',
-            fontweight='bold'
         )
 
         left += box_width # Advance the starting position for the next box
