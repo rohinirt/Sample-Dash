@@ -835,10 +835,10 @@ def create_interception_front_on(df_in, delivery_type):
     # 3. Set Axes Limits and Labels (FIXED LIMITS: Y-axis -0.2 to 3.5)
     ax_8.set_xlim(-1, 1); ax_8.set_ylim(-0.2, 3.5); ax_8.invert_yaxis()      
     ax_8.tick_params(axis='y', which='both', labelleft=False, left=False); ax_8.tick_params(axis='x', which='both', labelbottom=False, bottom=False)
-    ax_8.spines['right'].set_visible(False)
-    ax_8.spines['top'].set_visible(False)
-    ax_8.spines['left'].set_visible(False)
-    ax_8.spines['bottom'].set_visible(False)
+    ax_8.spines['right'].set_visible(True)
+    ax_8.spines['top'].set_visible(True)
+    ax_8.spines['left'].set_visible(True)
+    ax_8.spines['bottom'].set_visible(True)
     plt.tight_layout(pad=0.5)
     return fig_8
     
