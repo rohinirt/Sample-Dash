@@ -1302,7 +1302,7 @@ with col1:
     
     # Row 4: Pitch Map and Vertical Run % Bar (Side-by-Side)
     pitch_col, pitch_bars = st.columns(2)
-    with pitc_col:
+    with pitch_col:
         st.markdown("###### PITCHMAP")
         st.pyplot(create_pitch_map(df_seam, "Seam"), use_container_width=True)  
     with pitch_bars:
@@ -1357,7 +1357,7 @@ with col2:
 
     # Row 4: Pitch Map and Vertical Run % Bar (Side-by-Side)
     pitch_col, pitch_bars = st.columns(2)
-    with pitc_col:
+    with pitch_col:
         st.markdown("###### PITCHMAP")
         st.pyplot(create_pitch_map(df_spin, "Spin"), use_container_width=True)  
     with pitch_bars:
