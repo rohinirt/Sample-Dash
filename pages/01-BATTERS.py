@@ -285,6 +285,12 @@ def create_crease_beehive(df_in, delivery_type):
 
 # --- CHART 3: PITCHMAP ---
 # --- Helper function for Pitch Bins (Centralized) ---
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import pandas as pd
+import numpy as np
+
+# --- Helper function for Pitch Bins (Centralized) ---
 def get_pitch_bins(delivery_type):
     if delivery_type == "Seam":
         # Seam Bins: 1.2-6: Full, 6-8 Length, 8-10 Short, 10-15 Bouncer
@@ -305,27 +311,32 @@ def get_pitch_bins(delivery_type):
     return {} # Default
 
 def create_pitch_map(df_in, delivery_type):
-    FIG_WIDTH = 8
-    FIG_HEIGHT = 6
+    """
+    Creates a single Matplotlib figure combining the Pitch Map (left) and 
+    the Pitch Length Bar Charts (right) with a single border.
+    
+    Includes fixes for title and label overflow.
+    """
+    # Increased width slightly and adjusted height for balance
+    FIG_WIDTH = 8.5
+    FIG_HEIGHT = 6 
     FIG_SIZE = (FIG_WIDTH, FIG_HEIGHT)
-    # Use a wider figure to accommodate two charts side-by-side
+
     if df_in.empty:
         fig, ax = plt.subplots(figsize=FIG_SIZE)
         ax.text(0.5, 0.5, "No Data for Combined Analysis", ha='center', va='center', fontsize=12)
         ax.axis('off')
         return fig
-    
+
     # --- SETUP GRID FOR TWO COLUMNS ---
-    # Col 0: Pitch Map (Wider) | Col 1: Bar Charts (Narrower)
+    # MODIFICATION: Changed width_ratios from [6, 4] to [5, 4] to give bar charts more relative space
     fig = plt.figure(figsize=FIG_SIZE)
-    gs = fig.add_gridspec(1, 2, width_ratios=[4, 5], wspace=0.3) 
+    gs = fig.add_gridspec(1, 2, width_ratios=[5, 4], wspace=0.15) 
     
-    # Left Column: Pitch Map (ax_map)
     ax_map = fig.add_subplot(gs[0, 0])
     
-    # Right Column: Bar Charts (Split into 3 vertical subplots)
     # Create a sub-gridspec for the bar charts
-    gs_bars = gs[0, 1].subgridspec(3, 1, hspace=0.2)
+    gs_bars = gs[0, 1].subgridspec(3, 1, hspace=0.3)
     axes_bars = [fig.add_subplot(gs_bars[i, 0]) for i in range(3)]
 
     fig.patch.set_facecolor('white')
@@ -355,23 +366,29 @@ def create_pitch_map(df_in, delivery_type):
             ax_map.text(x=-1.45, y=mid_y, s=length.upper(), ha='left', va='center', 
                         fontsize=8, color="grey", fontweight='bold')
 
-    
+    # 2. Stump lines
+    ax_map.axvline(x=-0.18, color="#777777", linestyle="--", linewidth=1.2)
+    ax_map.axvline(x=0.18, color="#777777", linestyle="--", linewidth=1.2)
+    ax_map.axvline(x=0, color="#777777", linestyle="--", linewidth=0.8)
 
     # 3. Plot Data
     ax_map.scatter(pitch_non_wickets["BounceY"], pitch_non_wickets["BounceX"], s=60, c='#D3D3D3', 
                    edgecolor='white', linewidths=1.0, alpha=0.9, label="No Wicket")
     ax_map.scatter(pitch_wickets["BounceY"], pitch_wickets["BounceX"], s=90, c='red', 
                    edgecolor='white', linewidths=1.0, alpha=0.95, label="Wicket")
-    # 2. Stump lines
-    ax_map.axvline(x=-0.18, color="#777777", linestyle="--", linewidth=1.2)
-    ax_map.axvline(x=0.18, color="#777777", linestyle="--", linewidth=1.2)
-    ax_map.axvline(x=0, color="#777777", linestyle="--", linewidth=0.8)
-    
+
     # 4. Layout & Spines
     ax_map.set_xlim([-1.5, 1.5]); ax_map.set_ylim([16.0, -4.0])
     ax_map.set_xticks([]); ax_map.set_yticks([]); ax_map.grid(False)
-    for spine_name in ['left', 'right', 'top', 'bottom']:
-            ax_map.spines[spine_name].set_visible(False)
+    
+    spine_color = 'black'; spine_width = 0.5
+    for spine_name in ['left', 'top', 'bottom']:
+        ax_map.spines[spine_name].set_visible(True)
+        ax_map.spines[spine_name].set_color(spine_color)
+        ax_map.spines[spine_name].set_linewidth(spine_width)
+    ax_map.spines['right'].set_visible(False)
+
+
     # ----------------------------------------------------------------------
     ## --- PART 2: CHART 3b - PITCH LENGTH BARS (axes_bars) ---
     # ----------------------------------------------------------------------
@@ -397,8 +414,7 @@ def create_pitch_map(df_in, delivery_type):
     df_summary["Average"] = df_summary.apply(lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else (row["Runs"] if row["Balls"] > 0 else 0), axis=1)
     df_summary["StrikeRate"] = df_summary.apply(lambda row: (row["Runs"] / row["Balls"]) * 100 if row["Balls"] > 0 else 0, axis=1)
     
-    # Categories for plotting (reversed for barh: Bouncer/Short at top, Full at bottom)
-    categories = df_summary.index.tolist()[::-1] # ['Bouncer', 'Short', 'Length', 'Full'] or similar
+    categories = df_summary.index.tolist()[::-1]
     
     metrics = ["Average", "StrikeRate", "Wickets"]
     titles = ["Batting Average", "Batting Strike Rate", "Dismissals"]
@@ -425,18 +441,18 @@ def create_pitch_map(df_in, delivery_type):
         # Annotations (Labels)
         for j, (cat, val) in enumerate(zip(categories, values)):
             label = f"{int(val)}" if metric == "Wickets" else f"{val:.2f}"
+            
+            # Place label slightly to the right of the bar tip
+            # NOTE: The default ha='left' works well if there's enough room
             ax.text(val, j, label, ha='left', va='center', fontsize=10, fontweight = 'bold', color='black',
-                    bbox=dict(facecolor='White', alpha=0.8, edgecolor='none', pad=0), zorder=4)
+                    bbox=dict(facecolor='White', alpha=0.8, edgecolor='none', pad=2), zorder=4)
 
         # Formatting
-        ax.set_title(title, fontsize=11, fontweight='bold', pad=5, loc='left')
+        # MODIFICATION: Title font size reduced to 10 and padding reduced to 2
+        ax.set_title(title, fontsize=10, fontweight='bold', pad=2, loc='left') 
         ax.set_facecolor('white')
         ax.tick_params(axis='x', labelsize=8); ax.tick_params(axis='y', length=0)
         
-        
-        # ------------------------------------------------------------------
-        # --- MODIFIED LOGIC: Place Y-axis labels on ALL subplots ---
-        # ------------------------------------------------------------------
         
         # 1. Hide default yticks for all charts
         ax.set_yticks(np.arange(len(categories)), labels=[''] * len(categories))
@@ -444,11 +460,13 @@ def create_pitch_map(df_in, delivery_type):
         # 2. Manually add the category labels (ax.text) to the left of the axis for ALL charts
         for j, cat in enumerate(categories):
             # Using transformed coordinates to place labels to the left of the axis
+            # x=-0.05 is just outside the invisible axis box, ensuring they align on the left
             ax.text(-0.05, j, cat.upper(), transform=ax.get_yaxis_transform(),
                     ha='right', va='center', fontsize=9, color='gray', fontweight='bold')
-       
+            
+
         ax.xaxis.grid(False); ax.yaxis.grid(False)
-        ax.set_xticks([]); ax.set_xlim(0, xlim_limits[metric][1])
+        ax.set_xticks([]); ax.set_xlim(0, xlim_limits[metric][1]) 
         
         # Hide ALL spines on subplots
         for spine_name in ['left', 'right', 'top', 'bottom']:
@@ -461,20 +479,18 @@ def create_pitch_map(df_in, delivery_type):
     # 3a. Ensure plots are drawn tight
     plt.tight_layout(pad=0.2) 
     
-    # Define Padding Value 
     PADDING = 0.005 
 
-    # 3b. Get the bounding box of the two columns (Left: ax_map, Right: axes_bars[2])
+    # 3b. Get the bounding box of the two columns
     map_bbox = ax_map.get_position()
-    # The bar charts occupy the space defined by the top bar chart (y1) and the bottom one (y0)
     top_bar_bbox = axes_bars[0].get_position()
     bottom_bar_bbox = axes_bars[2].get_position()
     
     # Determine the total bounds (figure coordinates)
-    x0_orig = map_bbox.x0         # Left edge of the Pitch Map
-    y0_orig = bottom_bar_bbox.y0  # Bottom edge of the last bar chart
-    x1_orig = top_bar_bbox.x1     # Right edge of the bar charts
-    y1_orig = map_bbox.y1         # Top edge of the Pitch Map (or first bar chart, they should align)
+    x0_orig = map_bbox.x0         
+    y0_orig = bottom_bar_bbox.y0  
+    x1_orig = top_bar_bbox.x1     
+    y1_orig = map_bbox.y1         
     
     # 3c. Apply Padding
     x0_pad = x0_orig - PADDING
@@ -490,7 +506,7 @@ def create_pitch_map(df_in, delivery_type):
         height_pad,  
         facecolor='none', 
         edgecolor='black', 
-        linewidth=0.5, 
+        linewidth=2.0, 
         transform=fig.transFigure, 
         clip_on=False
     )
