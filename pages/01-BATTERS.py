@@ -161,7 +161,7 @@ def create_crease_beehive(df_in, delivery_type):
     ax_bh.text(-1.5, 0.78, "Stump line", ha='left', va='bottom', fontsize=8, color="grey", transform=ax_bh.transData)
     
     # --- Formatting ---
-    ax_bh.set_xlim([-1.5, 1.5])
+    ax_bh.set_xlim([-2, 2])
     ax_bh.set_ylim([0, 2])
     ax_bh.set_aspect('equal', adjustable='box')
     ax_bh.set_xticks([]); ax_bh.set_yticks([]); ax_bh.grid(False)
