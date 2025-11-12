@@ -160,7 +160,6 @@ def create_crease_beehive(df_in, delivery_type):
 
     # --- Annotation ---
     ax_bh.text(-1.5, 0.78, "Stump line", ha='left', va='bottom', fontsize=8, color="grey", transform=ax_bh.transData)
-    ax_bh.set_title(f"Crease Beehive ({delivery_type})", fontsize=12) # Added Title
     
     # --- Formatting ---
     ax_bh.set_xlim([-1.5, 1.5])
@@ -201,7 +200,7 @@ def create_crease_beehive(df_in, delivery_type):
         # Label 1: Zone Name (Above the box)
         ax_boxes.text(left + box_width / 2, box_height + 0.1, 
                       index, 
-                      ha='center', va='bottom', fontsize=8, color='black', fontweight='bold')
+                      ha='center', va='bottom', fontsize=7, color='black')
         
         # Calculate text color for contrast
         text_color = 'black'
@@ -263,7 +262,7 @@ def create_crease_beehive(df_in, delivery_type):
     )
     # Add a small padding (e.g., 0.005) to the height and y0 to keep the bottom border distinct
     border_rect = patches.Rectangle(
-        (x0+0.009, y0 - 0.009), 
+        (x0, y0 - 0.009), 
         width, 
         height + 0.01,  
          facecolor='none', 
