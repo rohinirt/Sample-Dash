@@ -757,7 +757,7 @@ def create_interception_side_on(df_in, delivery_type):
     bar_bbox = ax_bar.get_position() 
     # Determine the total bounds (figure coordinates)
     x0_orig = scatter_bbox.x0         
-    y0_orig = -0.0005       
+    y0_orig = bar_bbox.y0 -0.5       
     x1_orig = scatter_bbox.x1     
     y1_orig = scatter_bbox.y1         
     
