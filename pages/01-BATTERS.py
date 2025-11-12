@@ -790,7 +790,7 @@ def create_interception_side_on(df_in, delivery_type):
 def create_interception_front_on(df_in, delivery_type):
     df_interception = df_in[df_in["InterceptionX"] > -999].copy()
     if df_interception.empty:
-        fig, ax = plt.subplots(figsize=(3, 5)); ax.text(0.5, 0.5, "No Data", ha='center', va='center'); ax.axis('off'); return fig
+        fig, ax = plt.subplots(figsize=(4, 6)); ax.text(0.5, 0.5, "No Data", ha='center', va='center'); ax.axis('off'); return fig
         
     df_interception["ColorType"] = "Other"
     df_interception.loc[df_interception["Wicket"] == True, "ColorType"] = "Wicket"
@@ -798,7 +798,7 @@ def create_interception_front_on(df_in, delivery_type):
     # Define color_map inline as it's needed for the loop
     color_map = {"Wicket": "red", "Boundary": "royalblue", "Other": "white"}
     
-    fig_8, ax_8 = plt.subplots(figsize=(3, 5), subplot_kw={'xticks': [], 'yticks': []}) 
+    fig_8, ax_8 = plt.subplots(figsize=(4, 6), subplot_kw={'xticks': [], 'yticks': []}) 
 
     # 1. Plot Data
     # Plot "Other" (White with Grey Border)
