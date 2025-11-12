@@ -608,7 +608,7 @@ def create_interception_side_on(df_in, delivery_type):
     # === USING PROVIDED LOGIC: PLOT (InterceptionX + 10) on X-axis ===
     ax_scatter.scatter(
         df_other["InterceptionX"] + 10, df_other["InterceptionZ"], 
-        color='#D3D3D3', edgecolors='white', linewidths=0.3, s=20, label="Other"
+        color='#D3D3D3', edgecolors='white', linewidths=0.3, s=40, label="Other"
     )
     
     # Plot "Wicket" and "Boundary" (Solid colors)
@@ -617,7 +617,7 @@ def create_interception_side_on(df_in, delivery_type):
         # === USING PROVIDED LOGIC: PLOT (InterceptionX + 10) on X-axis ===
         ax_scatter.scatter(
             df_slice["InterceptionX"] + 10, df_slice["InterceptionZ"], 
-            color=color_map[ctype],edgecolors='white', linewidths=0.3, s=30, label=ctype
+            color=color_map[ctype],edgecolors='white', linewidths=0.3, s=60, label=ctype
         )
 
     # 2. Draw Vertical Dashed Lines with Labels (FIXED LINES: 0.0, 1.25, 2.0, 3.0)
@@ -757,7 +757,7 @@ def create_interception_side_on(df_in, delivery_type):
     bar_bbox = ax_bar.get_position() 
     # Determine the total bounds (figure coordinates)
     x0_orig = scatter_bbox.x0         
-    y0_orig = bar_bbox.y0 +0.00000005     
+    y0_orig = 0  
     x1_orig = scatter_bbox.x1     
     y1_orig = scatter_bbox.y1         
     
