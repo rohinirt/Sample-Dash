@@ -92,7 +92,18 @@ def create_zonal_analysis(df_in, batsman_name, delivery_type):
 
 
 # Chart 2: CREASE BEEHIVE
-def create_crease_beehive(df_in, delivery_type):
+def create_combined_pitch_analysis(df_in, delivery_type, batsman_name):
+    """
+    Creates a single Matplotlib figure containing two subplots:
+    1. Crease Beehive (Pitch scatter plot)
+    2. Lateral Performance Boxes (Horizontal KPI heatmap)
+    A single, compact border is drawn around the entire figure by calculating
+    the precise bounds of the subplots.
+    """
+    import matplotlib.pyplot as plt
+    from matplotlib import cm, colors, patches
+    import matplotlib.colors as mcolors
+    
     if df_in.empty:
         fig, ax = plt.subplots(figsize=(7, 5)); 
         ax.text(0.5, 0.5, "No data for Analysis", ha='center', va='center', fontsize=12); 
@@ -134,14 +145,12 @@ def create_crease_beehive(df_in, delivery_type):
 
     # -----------------------------------------------------------
     # --- 1. SETUP SUBPLOTS ---
-    # Create 2 subplots: 1 for Beehive (ax_bh) and 1 for Boxes (ax_boxes)
-    # The 'height_ratios' control the relative size: 4:1 ratio for Beehive:Boxes
     fig = plt.figure(figsize=(7, 5))
-    gs = fig.add_gridspec(2, 1, height_ratios=[4, 1], hspace=0.1) 
+    # hspace=0.01 makes the gap between plots tiny
+    gs = fig.add_gridspec(2, 1, height_ratios=[4, 1], hspace=0.01) 
     ax_bh = fig.add_subplot(gs[0, 0])      # Top subplot (Beehive)
     ax_boxes = fig.add_subplot(gs[1, 0])   # Bottom subplot (Lateral Boxes)
     
-    # Set background for the figure
     fig.patch.set_facecolor('white')
 
     # -----------------------------------------------------------
@@ -162,17 +171,15 @@ def create_crease_beehive(df_in, delivery_type):
 
     # --- Annotation ---
     ax_bh.text(-1.5, 0.78, "Stump line", ha='left', va='bottom', fontsize=8, color="grey", transform=ax_bh.transData)
-
+    ax_bh.set_title(f"Crease Beehive ({delivery_type})", fontsize=12) # Added Title
+    
     # --- Formatting ---
     ax_bh.set_xlim([-1.5, 1.5])
     ax_bh.set_ylim([0, 2])
     ax_bh.set_aspect('equal', adjustable='box')
     ax_bh.set_xticks([]); ax_bh.set_yticks([]); ax_bh.grid(False)
-    
-    # Hide axis spines for the individual plot (we will draw a single border for the figure later)
     for spine in ax_bh.spines.values():
         spine.set_visible(False)
-        
     ax_bh.set_facecolor('white')
     
     # -----------------------------------------------------------
@@ -187,7 +194,13 @@ def create_crease_beehive(df_in, delivery_type):
     avg_values = summary["Avg Runs/Wicket"]
     avg_max = avg_values.max() if avg_values.max() > 0 else 50
     norm = mcolors.Normalize(vmin=0, vmax=avg_max if avg_max > 50 else 50)
-    cmap = cm.get_cmap('Reds')
+    cmap = cm.get_cmap('YlGnBu') # Using a different cmap for contrast on the boxes
+    
+    # Vertical Reference Lines for Lateral Zones (connecting the plots)
+    ax_boxes.axvline(x=box_width, color="grey", linestyle="-", linewidth=0.5)
+    ax_boxes.axvline(x=box_width*2, color="grey", linestyle="-", linewidth=0.5)
+    ax_boxes.axvline(x=box_width*3, color="grey", linestyle="-", linewidth=0.5)
+
 
     for index, row in summary.iterrows():
         avg = row["Avg Runs/Wicket"]
@@ -204,7 +217,7 @@ def create_crease_beehive(df_in, delivery_type):
         # Label 1: Zone Name (Above the box)
         ax_boxes.text(left + box_width / 2, box_height + 0.1, 
                       index, 
-                      ha='center', va='bottom', fontsize=8, color='black') # No newline
+                      ha='center', va='bottom', fontsize=8, color='black', fontweight='bold')
         
         # Calculate text color for contrast
         text_color = 'black'
@@ -225,28 +238,59 @@ def create_crease_beehive(df_in, delivery_type):
     ax_boxes.set_xlim(0, 1)
     ax_boxes.set_ylim(0, box_height + 0.3) 
     ax_boxes.axis('off')
-    
-    # Hide axis spines for the individual plot
     for spine in ax_boxes.spines.values():
         spine.set_visible(False)
-        
     ax_boxes.set_facecolor('white')
 
     # -----------------------------------------------------------
-    ## --- 4. DRAW SINGLE BORDER AROUND THE ENTIRE FIGURE ---
-    # We use a custom rectangle around the figure's outer edges
-    rect = patches.Rectangle(
-        (0.01, 0.01), 
-        0.7, 0.7,  # x=0.01 to 0.99, y=0.01 to 0.99 (98% width/height)
+    ## --- 4. DRAW SINGLE COMPACT BORDER AROUND THE ENTIRE FIGURE ---
+    
+    # 1. Ensure plots are drawn tight (removes outer whitespace)
+    plt.tight_layout(pad=0.2)
+    
+    # 2. Get the bounding box of the two subplots in Figure coordinates
+    bh_bbox = ax_bh.get_position()
+    box_bbox = ax_boxes.get_position()
+    
+    # Determine the total bounds:
+    # x0 (left edge) is the minimum of the two left edges
+    # y0 (bottom edge) is the bottom edge of the bottom plot
+    # x1 (right edge) is the maximum of the two right edges
+    # y1 (top edge) is the top edge of the top plot
+    x0 = min(bh_bbox.x0, box_bbox.x0)
+    y0 = box_bbox.y0
+    x1 = max(bh_bbox.x1, box_bbox.x1)
+    y1 = bh_bbox.y1
+    
+    # Calculate width and height
+    width = x1 - x0
+    height = y1 - y0
+
+    # 3. Draw the custom Rectangle using the calculated compact bounds
+    border_rect = patches.Rectangle(
+        (x0, y0), 
+        width, 
+        height,  
         facecolor='none', 
         edgecolor='black', 
-        linewidth=0.5, 
+        linewidth=2.0, 
         transform=fig.transFigure, # Use the figure's coordinate system
         clip_on=False
     )
-    fig.patches.append(rect)
+    # Add a small padding (e.g., 0.005) to the height and y0 to keep the bottom border distinct
+     border_rect = patches.Rectangle(
+        (x0, y0 - 0.005), 
+        width, 
+        height + 0.01,  
+         facecolor='none', 
+         edgecolor='black', 
+        linewidth=2.0, 
+        transform=fig.transFigure,
+        clip_on=False
+     )
 
-    plt.tight_layout(pad=0.2)
+    fig.patches.append(border_rect)
+
     return fig
 
 
