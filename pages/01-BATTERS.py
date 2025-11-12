@@ -1202,9 +1202,6 @@ def create_directional_split(df_in, direction_col, chart_title, delivery_type):
                     ha=ha_align, va='center', 
                     fontsize=14, 
                     color=text_color, weight='bold') 
-
-    # --- Final Styling and Spines ---
-    ax_dir.set_title(chart_title, fontsize=14, weight='bold', color='black', pad=10)
     
     # Hide all spines
     ax_dir.spines['top'].set_visible(False)
@@ -1214,7 +1211,10 @@ def create_directional_split(df_in, direction_col, chart_title, delivery_type):
     
     # Add a subtle vertical line at x=0 for the axis center
     ax_dir.axvline(0, color='gray', linewidth=0.8)
-    
+    for spine_name in ['left', 'top', 'bottom','right']:
+        ax_dir.spines[spine_name].set_visible(True)
+        ax_dir.spines[spine_name].set_color(spine_color)
+        ax_dir.spines[spine_name].set_linewidth(spine_width)
     # Remove y-ticks
     ax_dir.tick_params(axis='y', which='both', length=0)
     
