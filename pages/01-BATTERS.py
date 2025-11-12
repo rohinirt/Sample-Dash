@@ -521,7 +521,7 @@ def create_pitch_length_bars(df_in, delivery_type):
             # Place label slightly to the right of the bar tip
             ax.text(val, j, label, 
                     ha='left', va='center', 
-                    fontsize=9, color='black', fontweight='bold', 
+                    fontsize=9, color='black',
                     bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=2),
                     zorder=4)
 
