@@ -186,7 +186,7 @@ def create_crease_beehive(df_in, delivery_type):
     
     num_regions = len(ordered_zones)
     box_width = 1 / num_regions
-    box_height = 0.5 
+    box_height = 0.4 
     left = 0
     
     # Color Normalization
@@ -628,17 +628,10 @@ def create_interception_side_on(df_in, delivery_type):
     return fig_7
 
 # Chart 4b: Interception Side on Bins ---
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
-import matplotlib.cm as cm
-import matplotlib.colors as mcolors
-import matplotlib.patches as patches
-
 def create_crease_width_split(df_in, delivery_type):
     # Adjust figsize width for horizontal display, height for four boxes
     FIG_WIDTH = 5
-    FIG_HEIGHT = 0.5
+    FIG_HEIGHT = 0.6
     
     if df_in.empty:
         fig, ax = plt.subplots(figsize=(FIG_WIDTH, FIG_HEIGHT)); 
@@ -713,7 +706,7 @@ def create_crease_width_split(df_in, delivery_type):
         
         # Draw the box (barh with height=1)
         ax_stack.barh(
-            y=0.5,            # Y-position (center of the chart)
+            y=0.6,            # Y-position (center of the chart)
             width=box_width,
             height=1,         # Full height (from 0 to 1 on the Y-axis)
             left=left,        # X-start position
@@ -740,7 +733,7 @@ def create_crease_width_split(df_in, delivery_type):
             center_x, center_y, 
             label_text,
             ha='center', va='center', 
-            fontsize=9, 
+            fontsize=7, 
             color=text_color
         )
         
