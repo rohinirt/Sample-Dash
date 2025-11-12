@@ -1015,196 +1015,288 @@ def create_wagon_wheel(df_in, delivery_type):
     return fig
     
 # --- CHART 7: LEFT/RIGHT SCORING SPLIT (100% Bar) ---
-def create_left_right_split(df_in, delivery_type):
-    import matplotlib.colors as mcolors
-    import matplotlib.cm as cm
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import pandas as pd
+import numpy as np
+import matplotlib.cm as cm
+import matplotlib.colors as mcolors
+import matplotlib.patheffects as pe # For text outline
+
+# --- Helper function for Wagon Wheel Calculations ---
+def calculate_scoring_wagon(row):
+    """Calculates the scoring area based on LandingX/Y coordinates and handedness."""
+    LX = row.get("LandingX"); LY = row.get("LandingY"); RH = row.get("IsBatsmanRightHanded")
+    if RH is None or LX is None or LY is None or row.get("Runs", 0) == 0: return None
+    
+    def atan_safe(numerator, denominator): return np.arctan(numerator / denominator) if denominator != 0 else np.nan 
+    
+    # Right Handed Batsman Logic
+    if RH == True: 
+        if LX <= 0 and LY > 0: return "FINE LEG"
+        elif LX <= 0 and LY <= 0: return "THIRD MAN"
+        elif LX > 0 and LY < 0:
+            if atan_safe(LY, LX) < np.pi / -4: return "COVER"
+            elif atan_safe(LX, LY) <= np.pi / -4: return "LONG OFF" 
+        elif LX > 0 and LY >= 0:
+            if atan_safe(LY, LX) >= np.pi / 4: return "SQUARE LEG"
+            elif atan_safe(LY, LX) <= np.pi / 4: return "LONG ON"
+    # Left Handed Batsman Logic
+    elif RH == False: 
+        if LX <= 0 and LY > 0: return "THIRD MAN"
+        elif LX <= 0 and LY <= 0: return "FINE LEG"
+        elif LX > 0 and LY < 0:
+            if atan_safe(LY, LX) < np.pi / -4: return "SQUARE LEG"
+            elif atan_safe(LX, LY) <= np.pi / -4: return "LONG ON"
+        elif LX > 0 and LY >= 0:
+            if atan_safe(LY, LX) >= np.pi / 4: return "COVER"
+            elif atan_safe(LY, LX) <= np.pi / 4: return "LONG OFF"
+    return None
+
+def calculate_scoring_angle(area):
+    """Defines the fixed angle size for each wedge."""
+    if area in ["FINE LEG", "THIRD MAN"]: return 90
+    elif area in ["COVER", "SQUARE LEG", "LONG OFF", "LONG ON"]: return 45
+    return 0
+
+# --- Main Combined Function ---
+def calculate_scoring_wagon(df_in, delivery_type):
+    FIG_WIDTH = 4.0
+    FIG_HEIGHT = 6.0 # Adjusted height for the vertical stack
+    FIG_SIZE = (FIG_WIDTH, FIG_HEIGHT)
+
+    if df_in.empty:
+        fig, ax = plt.subplots(figsize=FIG_SIZE)
+        ax.text(0.5, 0.5, "No Data for Combined Scoring Analysis", ha='center', va='center', fontsize=12)
+        ax.axis('off')
+        return fig
+
+    # --- SETUP GRID FOR TWO ROWS ---
+    # Top: Wagon Wheel (Larger) | Bottom: Left/Right Split (Smaller)
+    fig = plt.figure(figsize=FIG_SIZE)
+    # Ratio: 75% for Wagon Wheel, 25% for Left/Right Split
+    gs = fig.add_gridspec(2, 1, height_ratios=[3, 1], hspace=0.1) 
+    
+    ax_wagon = fig.add_subplot(gs[0, 0])
+    ax_split = fig.add_subplot(gs[1, 0])
+    
+    fig.patch.set_facecolor('white')
+
+    # ----------------------------------------------------------------------
+    ## --- PART 1: CHART 6 - SCORING WAGON WHEEL (ax_wagon) ---
+    # ----------------------------------------------------------------------
+    wagon_summary = pd.DataFrame() 
+    try:
+        df_wagon = df_in.copy()
+        df_wagon["ScoringWagon"] = df_wagon.apply(calculate_scoring_wagon, axis=1)
+        df_wagon["FixedAngle"] = df_wagon["ScoringWagon"].apply(calculate_scoring_angle)
+        
+        summary_with_shots = df_wagon.groupby("ScoringWagon").agg(TotalRuns=("Runs", "sum"), FixedAngle=("FixedAngle", 'first')).reset_index().dropna(subset=["ScoringWagon"])
+        
+        handedness_mode = df_in["IsBatsmanRightHanded"].dropna().mode()
+        is_right_handed = handedness_mode.iloc[0] if not handedness_mode.empty else True
+        
+        if is_right_handed:
+            # RHB areas start from Fine Leg (top left) and go clockwise
+            all_areas = ["FINE LEG", "SQUARE LEG", "LONG ON", "LONG OFF", "COVER", "THIRD MAN"] 
+        else:
+            # LHB areas start from Third Man (top left) and go clockwise
+            all_areas = ["THIRD MAN", "COVER", "LONG OFF", "LONG ON", "SQUARE LEG", "FINE LEG"]
+            
+        template_df = pd.DataFrame({"ScoringWagon": all_areas, "FixedAngle": [calculate_scoring_angle(area) for area in all_areas]})
+
+        wagon_summary = template_df.merge(summary_with_shots.drop(columns=["FixedAngle"], errors='ignore'), on="ScoringWagon", how="left").fillna(0) 
+        wagon_summary["ScoringWagon"] = pd.Categorical(wagon_summary["ScoringWagon"], categories=all_areas, ordered=True)
+        wagon_summary = wagon_summary.sort_values("ScoringWagon")
+        
+        total_runs = wagon_summary["TotalRuns"].sum()
+        wagon_summary["RunPercentage"] = (wagon_summary["TotalRuns"] / total_runs) * 100 if total_runs > 0 else 0 
+        
+        wagon_summary["FixedAngle"] = pd.to_numeric(wagon_summary["FixedAngle"], errors='coerce').fillna(0).astype(int)
+    
+    except Exception as e:
+        ax_wagon.text(0.5, 0.5, f"Wagon Wheel Calculation Error: {e}", ha='center', va='center', fontsize=8)
+        ax_wagon.axis('off')
+        return fig # Return early if data processing fails
+
+    
+    # --- Data Extraction and CRITICAL Validation ---
+    angles = wagon_summary["FixedAngle"].tolist()
+    run_percentages = wagon_summary["RunPercentage"].tolist() 
+    labels = wagon_summary["ScoringWagon"].tolist()
+    
+    if not angles or all(a == 0 for a in angles):
+        ax_wagon.text(0.5, 0.5, "Insufficient Wagon Wheel Data", ha='center', va='center', fontsize=8) 
+        ax_wagon.axis('off')
+        # Skip plotting the pie chart, but allow the rest of the combined chart to proceed
+    else:
+        # --- Color Logic (Top 1 Rank Only) ---
+        wagon_summary['Rank'] = wagon_summary['RunPercentage'].rank(method='dense', ascending=False)
+        COLOR_HIGH = '#d52221'
+        COLOR_DEFAULT = 'white'
+
+        colors = []
+        for index, row in wagon_summary.iterrows():
+            current_rank = row['Rank']
+            if row['RunPercentage'] == 0:
+                colors.append(COLOR_DEFAULT)
+                continue
+            if current_rank == 1:
+                colors.append(COLOR_HIGH)
+            else:
+                colors.append(COLOR_DEFAULT)
+
+        # --- Plotting Call ---
+        pie_output = ax_wagon.pie(
+            angles, 
+            colors=colors, 
+            wedgeprops={"width": 1, "edgecolor": "black"}, 
+            startangle=90, 
+            counterclock=False, 
+            labels=labels, # Use labels for the area names (outside the slices)
+            labeldistance=1.1,
+            autopct='%.0f', 
+            pctdistance=0.5 # Keeps percentage label centered in radius
+        )
+        
+        if len(pie_output) == 3:
+            wedges, texts, autotexts = pie_output
+        elif len(pie_output) == 2:
+            wedges, texts = pie_output
+            autotexts = [] # Assign an empty list if autotexts are missing
+        else:
+            # Handle unexpected plot output
+            ax_wagon.text(0.5, 0.5, "Wagon Wheel Plotting Error", ha='center', va='center', fontsize=8)
+            ax_wagon.axis('off')
+            return fig
+        
+        # === CRITICAL FIX: CENTERING PERCENTAGE LABELS AND STYLING ===
+        for i, autotext in enumerate(autotexts):
+            if i >= len(run_percentages): break
+                
+            percent = run_percentages[i]
+            
+            # 1. Set the actual percentage text
+            if percent > 0:
+                autotext.set_text(f'{percent:.0f}%')
+                
+                # 💥 FIX: Ensure percentage text is centered in the slice (horizontally and vertically)
+                autotext.set_horizontalalignment('center')
+                autotext.set_verticalalignment('center')
+                
+                # Add a white stroke (outline) for text visibility
+                autotext.set_path_effects([pe.withStroke(linewidth=1.5, foreground='white')])
+            else:
+                autotext.set_text('')
+                
+            # 2. Set text color based on background color for contrast
+            color_rgb = mcolors.to_rgb(colors[i])
+            luminosity = 0.2126 * color_rgb[0] + 0.7152 * color_rgb[1] + 0.0722 * color_rgb[2]
+            
+            autotext.set_color('white' if luminosity < 0.5 and colors[i] == COLOR_HIGH else 'black') 
+            autotext.set_fontsize(12)
+            autotext.set_fontweight('bold')
+
+        # Style external texts (area names)
+        for text in texts:
+            text.set_color('black'); text.set_fontsize(8); text.set_fontweight('bold')
+        
+        ax_wagon.axis('equal'); 
+
+    # ----------------------------------------------------------------------
+    ## --- PART 2: CHART 7 - LEFT/RIGHT SCORING SPLIT (ax_split) ---
+    # ----------------------------------------------------------------------
     
     df_split = df_in.copy()
     
-    # 1. Define Side
-    # Assuming 'LandingY' < 0 is the batsman's right side (Off-side for RHB)
-    # Since you label it LEFT/RIGHT, we'll keep that.
+    # 1. Define Side based on LandingY
     df_split["Side"] = np.where(df_split["LandingY"] < 0, "LEFT", "RIGHT")
     
     # 2. Calculate Runs and Percentage
     summary = df_split.groupby("Side")["Runs"].sum().reset_index()
     total_runs = summary["Runs"].sum()
     
-    # --- Check for No Runs (Remains the same) ---
     if total_runs == 0:
-        # Decreased height applied here too
-        fig, ax = plt.subplots(figsize=(4, 2.0)); ax.text(0.5, 0.5, "No Runs Scored", ha='center', va='center'); ax.axis('off'); return fig
+        ax_split.text(0.5, 0.5, "No Runs Scored in Split", ha='center', va='center', fontsize=8) 
+        ax_split.axis('off')
+    else:
+        summary["Percentage"] = (summary["Runs"] / total_runs) * 100
+        summary = summary.set_index("Side").reindex(["LEFT", "RIGHT"]).fillna(0)
         
-    summary["Percentage"] = (summary["Runs"] / total_runs) * 100
-    
-    # Order the summary for consistent plotting
-    summary = summary.set_index("Side").reindex(["LEFT", "RIGHT"]).fillna(0)
-    
-    left_pct = summary.loc["LEFT", "Percentage"]
-    right_pct = summary.loc["RIGHT", "Percentage"]
+        left_pct = summary.loc["LEFT", "Percentage"]
+        right_pct = summary.loc["RIGHT", "Percentage"]
 
-    # 3. Apply Blue Hue Based on Percentage
-    
-    # Normalize percentage values (0 to 100)
-    norm = mcolors.Normalize(vmin=0, vmax=100)
-    # Use a sequential blue colormap. Use Blues_r if you want a lower percentage to be darker blue.
-    cmap = cm.get_cmap('Reds') 
-    
-    # Map the percentages to the colormap
-    left_color = cmap(norm(left_pct))
-    right_color = cmap(norm(right_pct))
-    
-    # 4. Create the 100% Stacked Bar Chart
-    # DECREASED HEIGHT: Changed figsize to (4, 1.0)
-    fig_split, ax_split = plt.subplots(figsize=(4, 2.0)) 
+        # 3. Apply Color Map (Reds hue based on percentage)
+        norm = mcolors.Normalize(vmin=0, vmax=100)
+        cmap = cm.get_cmap('Reds') 
+        left_color = cmap(norm(left_pct))
+        right_color = cmap(norm(right_pct))
+        
+        # 4. Create the 100% Stacked Bar Chart
+        ax_split.barh("Total", left_pct, color=left_color, edgecolor='black', linewidth=0.5)
+        ax_split.barh("Total", right_pct, left=left_pct, color=right_color, edgecolor='black', linewidth=0.5)
+        
+        # Add labels
+        def get_text_color(rgb_color):
+            r, g, b = mcolors.to_rgb(rgb_color)
+            luminosity = 0.2126 * r + 0.7152 * g + 0.0722 * b
+            return 'white' if luminosity < 0.5 else 'black'
 
-    # Plotting the left side
-    ax_split.barh("Total", left_pct, color=left_color, edgecolor='black', linewidth=0.5)
-    
-    # Plotting the right side stacked on the left side
-    ax_split.barh("Total", right_pct, left=left_pct, color=right_color, edgecolor='black', linewidth=0.5)
-    
-    # Add labels
-    # Use a luminosity check to ensure white text on dark blue and black text on light blue
-    
-    def get_text_color(rgb_color):
-        # Only unpack R, G, B (mcolors.to_rgb returns a 3-tuple)
-        r, g, b = rgb_color 
-        # Calculate luminosity (standard formula)
-        luminosity = 0.2126 * r + 0.7152 * g + 0.0722 * b
-        # Return contrast color
-        return 'white' if luminosity < 0.5 else 'black'
+        if left_pct > 0:
+            text_color_left = get_text_color(left_color)
+            ax_split.text(left_pct / 2, 0, f"LEFT\n{left_pct:.0f}%", 
+                          ha='center', va='center', color=text_color_left, weight='bold', fontsize=12)
+            
+        if right_pct > 0:
+            text_color_right = get_text_color(right_color)
+            ax_split.text(left_pct + right_pct / 2, 0, f"RIGHT\n{right_pct:.0f}%", 
+                          ha='center', va='center', color=text_color_right, weight='bold', fontsize=12)
 
-    if left_pct > 0:
-        text_color_left = get_text_color(mcolors.to_rgb(left_color))
-        ax_split.text(left_pct / 2, 0, f"LEFT\n{left_pct:.0f}%", 
-                      ha='center', va='center', color=text_color_left, weight='bold', fontsize=12)
-                      
-    if right_pct > 0:
-        text_color_right = get_text_color(mcolors.to_rgb(right_color))
-        ax_split.text(left_pct + right_pct / 2, 0, f"RIGHT\n{right_pct:.0f}%", 
-                      ha='center', va='center', color=text_color_right, weight='bold', fontsize=12)
+        # 5. Styling
+        ax_split.set_xlim(0, 100)
+        ax_split.axis('off') # Hide all axes/ticks
 
-    # 5. Styling (Remains the same)
-    ax_split.set_xlim(0, 100)
-    
-    # Remove all spines/borders
-    ax_split.spines['right'].set_visible(False)
-    ax_split.spines['top'].set_visible(False)
-    ax_split.spines['left'].set_visible(False)
-    ax_split.spines['bottom'].set_visible(False)
-    
-    # Hide ticks and labels
-    ax_split.tick_params(axis='both', which='both', length=0)
-    ax_split.set_yticklabels([]); ax_split.set_xticklabels([])
-    
-    plt.tight_layout(pad=0.5)
-    return fig_split
 
-# --- CHART 9/10: DIRECTIONAL SPLIT (Side-by-Side Bars) ---
-def create_directional_split(df_in, direction_col, chart_title, delivery_type):
-    df_dir = df_in.copy()
-    if df_dir.empty:
-        fig, ax = plt.subplots(figsize=(6, 2.5)); ax.text(0.5, 0.5, "No Data", ha='center', va='center'); ax.axis('off'); return fig
+    # ----------------------------------------------------------------------
+    ## --- PART 3: DRAW SINGLE COMPACT BORDER ---
+    # ----------------------------------------------------------------------
     
-    # 1. Prepare Data
-    df_dir["Direction"] = np.where(df_dir[direction_col] < 0, "LEFT", "RIGHT")
+    plt.tight_layout(pad=0.1) 
     
-    summary = df_dir.groupby("Direction").agg(
-        Runs=("Runs", "sum"), 
-        Wickets=("Wicket", lambda x: (x == True).sum()), 
-        Balls=("Wicket", "count")
-    ).reset_index().set_index("Direction").reindex(["LEFT", "RIGHT"]).fillna(0)
+    PADDING = 0.005 
+
+    # Get the bounding box of the top (wagon) and bottom (split) charts
+    wagon_bbox = ax_wagon.get_position()
+    split_bbox = ax_split.get_position()
     
-    summary["Average"] = summary.apply(
-        lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else (row["Runs"] if row["Balls"] > 0 else 0), axis=1
+    # Determine the total bounds (figure coordinates)
+    x0_orig = min(wagon_bbox.x0, split_bbox.x0)         
+    y0_orig = split_bbox.y0         
+    x1_orig = max(wagon_bbox.x1, split_bbox.x1)     
+    y1_orig = wagon_bbox.y1         
+    
+    # Apply Padding
+    x0_pad = x0_orig - PADDING
+    y0_pad = y0_orig - PADDING
+    
+    width_pad = (x1_orig - x0_orig) + (2 * PADDING)
+    height_pad = (y1_orig - y0_orig) + (2 * PADDING)
+
+    # Draw the custom Rectangle 
+    border_rect = patches.Rectangle(
+        (x0_pad, y0_pad), 
+        width_pad, 
+        height_pad,  
+        facecolor='none', 
+        edgecolor='black', 
+        linewidth=2.0, 
+        transform=fig.transFigure, 
+        clip_on=False
     )
-    
-    # --- Prepare for Butterfly Effect & Order (LEFT on top, RIGHT on bottom) ---
-    # Reindex to plot RIGHT (index 0) then LEFT (index 1) for the desired vertical visual order
-    summary = summary.reset_index().set_index("Direction").reindex(["RIGHT", "LEFT"]) 
-    
-    # Set LEFT side to negative values for mirroring
-    summary.loc["LEFT", "Average_Mirrored"] = summary.loc["LEFT", "Average"] * -1
-    summary.loc["RIGHT", "Average_Mirrored"] = summary.loc["RIGHT", "Average"]
-    
-    # Extract lists (Order: RIGHT, LEFT)
-    directions = summary.index.tolist()
-    averages_mirrored = summary["Average_Mirrored"].tolist()
-    averages_abs = summary["Average"].tolist()
-    wickets = summary["Wickets"].tolist()
-    
-    # 2. Create Plot
-    fig_dir, ax_dir = plt.subplots(figsize=(6, 2.5)) 
-    
-    # --- Plotting the Bars ---
-    y_positions = [0, 1] 
-    colors = ['#d52221', '#d52221'] 
-    
-    # Plot horizontal bars
-    bars = ax_dir.barh(y_positions, averages_mirrored, color=colors, edgecolor='black', linewidth=0.5, height=0.6)
 
-    # 3. Add Labels and Styling
-    
-    # Set the y-axis labels. The list ['RIGHT', 'LEFT'] matches y_positions [0, 1]
-    ax_dir.set_yticks(y_positions)
-    ax_dir.set_yticklabels(directions, fontsize=12, color='black') 
+    fig.patches.append(border_rect)
 
-    # Calculate max absolute value for x-axis limit
-    max_abs_avg = summary["Average"].max()
-    x_limit = max_abs_avg * 1.15 if max_abs_avg > 0 else 10 
-    ax_dir.set_xlim(-x_limit, x_limit)
-    
-    # Custom X-Axis: HIDE AXIS AND LABELS
-    ax_dir.set_xticks([]) 
-    ax_dir.set_xticklabels([]) 
-
-    # --- Add Data Labels (Wickets and Average) ---
-    for i, bar in enumerate(bars):
-        avg = averages_abs[i]
-        wkts = wickets[i]
-        label = f"{int(wkts)}W\n{avg:.1f} Ave"
-        
-        # Determine bar properties
-        bar_end_x = bar.get_x() + bar.get_width() # The tip of the bar
-        padding = 0.05 * x_limit 
-
-        if directions[i] == 'LEFT': # LEFT bar (index 1, negative values)
-            # Positioned inside the bar: move right (positive direction) from the tip (negative)
-            text_x = bar_end_x + padding 
-            ha_align = 'left' 
-        else: # RIGHT bar (index 0, positive values)
-            # Positioned inside the bar: move left (negative direction) from the tip (positive)
-            text_x = bar_end_x - padding 
-            ha_align = 'right' 
-
-        # Set text color to white for contrast, and apply black outline for guaranteed visibility
-        text_color = 'black' 
-
-        text_object = ax_dir.text(text_x, 
-                    bar.get_y() + bar.get_height() / 2, 
-                    label,
-                    ha=ha_align, va='center', 
-                    fontsize=14, 
-                    color=text_color, weight='bold') 
-
-    # --- Final Styling and Spines ---
-
-    
-    # Hide all spines
-    ax_dir.spines['top'].set_visible(False)
-    ax_dir.spines['bottom'].set_visible(False) 
-    ax_dir.spines['left'].set_visible(False)
-    ax_dir.spines['right'].set_visible(False)
-    
-    # Add a subtle vertical line at x=0 for the axis center
-    ax_dir.axvline(0, color='gray', linewidth=0.8)
-    
-    # Remove y-ticks
-    ax_dir.tick_params(axis='y', which='both', length=0)
-    
-    plt.tight_layout(pad=1.0)
-    return fig_dir
+    return fig
 
 
 # Set page title (optional, but good practice)
@@ -1348,7 +1440,6 @@ with col1:
         st.markdown("###### SCORING AREAS")    
         # Two charts stacked vertically in the right column
         st.pyplot(create_wagon_wheel(df_seam, "Seam"), use_container_width=True)
-        st.pyplot(create_left_right_split(df_seam, "Seam"), use_container_width=True)
         
     
     # Row 8: Swing/Deviation Direction Analysis (Side-by-Side)
@@ -1399,7 +1490,6 @@ with col2:
     with bottom_col_right:
         st.markdown("###### SCORING AREAS")
         st.pyplot(create_wagon_wheel(df_spin, "Spin"), use_container_width=True)
-        st.pyplot(create_left_right_split(df_spin, "Spin"), use_container_width=True)
             
 
     # Row 8: Swing/Deviation Direction Analysis (Side-by-Side)
