@@ -122,15 +122,21 @@ def create_crease_beehive(df_in, delivery_type):
             else: return "LEG"
             
     df_lateral["LateralZone"] = df_lateral.apply(assign_lateral_zone, axis=1)
-    
-    summary = (
-        df_lateral.groupby("LateralZone").agg(
-            Runs=("Runs", "sum"), Wickets=("Wicket", lambda x: (x == True).sum()), Balls=("Wicket", "count")
-        )
-    )
+    # Determine handedness from the data to control plotting order
+    is_rhb = df_in["IsBatsmanRightHanded"].iloc[0] if not df_in.empty and "IsBatsmanRightHanded" in df_in.columns else True
+
+    # Order the zones from Way Outside Off to Leg for RHB
+    # The standard order used to calculate the summary is: WAY OUTSIDE OFF, OUTSIDE OFF, STUMPS, LEG
     ordered_zones = ["WAY OUTSIDE OFF", "OUTSIDE OFF", "STUMPS", "LEG"]
     summary = summary.reindex(ordered_zones).fillna(0)
     summary["Avg Runs/Wicket"] = summary.apply(lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else 0, axis=1)
+
+    # --- NEW: REVERSE ORDER FOR LEFT-HANDED BATSMAN ---
+    if not is_rhb:
+        # Reverse the order for LHB so the chart displays: LEG, STUMPS, OUTSIDE OFF, WAY OUTSIDE OFF
+        # This aligns the LEG side (for LHB) to the left of the chart.
+        summary = summary.iloc[::-1]
+    
 
     # -----------------------------------------------------------
     # --- 1. SETUP SUBPLOTS (Increased Figure Width) ---
