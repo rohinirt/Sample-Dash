@@ -1009,7 +1009,13 @@ def create_swing_distribution_histogram(df_in, handedness_label):
     return fig
     
 #Chart 9 Deviation Dstribution
-def create_deviation_distribution_histogram(df_in, handedness_label):  
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import pandas as pd
+import numpy as np
+from matplotlib.gridspec import GridSpec
+
+def create_deviation_distribution_histogram(df_in, handedness_label):
     FIG_SIZE = (7, 6) 
 
     # 0. Initial Check and Data Preparation
@@ -1038,39 +1044,43 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
     bar_centers = (bins[:-1] + bins[1:]) / 2
     bar_width = 0.9 
 
-    # --- 2. Directional Split Data Preparation (Bottom Chart) ---
+    # --- 2. Directional Split Data Preparation & Coloring (Bottom Chart) ---
     
-    # Logic: IF [Deviation] < 0 THEN "LEFT" ELSE "RIGHT" END (Zero handled as Right)
-    df_split = df_data[df_data != 0].copy() # Optionally exclude exact zeros for clarity, but standard is <0 is Left, >=0 is Right
-    
+    # Logic: < 0 is LEFT, >= 0 is RIGHT (to match the example image logic)
     left_count = (df_data < 0).sum()
     right_count = (df_data >= 0).sum()
     
     total_split = left_count + right_count
     
-    # Calculate percentages
     if total_split > 0:
         left_pct = (left_count / total_split) * 100
         right_pct = (right_count / total_split) * 100
     else:
         left_pct, right_pct = 0, 0
         
-    # Set colors based on the image provided (Red/Orange hue)
-    LEFT_COLOR = '#e34a33' # Darker Red/Orange
-    RIGHT_COLOR = '#fdcdac' # Lighter Orange
+    # Dynamic Color Assignment: Darker shade for the larger percentage
+    DARK_SHADE = '#D62728'  # Primary, darker red
+    LIGHT_SHADE = '#FDD0A2' # Secondary, lighter orange
+
+    if left_pct >= right_pct:
+        left_bar_color = DARK_SHADE
+        right_bar_color = LIGHT_SHADE
+    else:
+        left_bar_color = LIGHT_SHADE
+        right_bar_color = DARK_SHADE
 
     # --- 3. Matplotlib Setup and GridSpec ---
-    # Adjust height ratios for histogram (top) and the single bar (bottom)
+    # Adjusted height ratio and HSPACE for tighter layout
     fig = plt.figure(figsize=FIG_SIZE, facecolor='white')
-    gs = GridSpec(2, 1, figure=fig, height_ratios=[4.5, 1], hspace=0.1)
+    gs = GridSpec(2, 1, figure=fig, height_ratios=[4.5, 1], hspace=0.05)
     
     ax_hist = fig.add_subplot(gs[0, 0])
     ax_split = fig.add_subplot(gs[1, 0])
 
     # --- 4. Plot Histogram (ax_hist) ---
-    rects = ax_hist.bar(bar_centers, percentages, width=bar_width, color='red', linewidth=1.0, label="Overall %")
+    rects = ax_hist.bar(bar_centers, percentages, width=bar_width, color='red', linewidth=1.0)
     
-    ax_hist.set_title(f"Deviation Distribution vs. {handedness_label}", fontsize=14, fontweight='bold', pad=10)
+    # ax_hist.set_title(...) --- REMOVED TITLE per user request ---
     
     # Annotation (Percentages on top of bars)
     for rect, pct in zip(rects, percentages):
@@ -1095,25 +1105,27 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
     # --- 5. Plot Directional Split (ax_split) ---
     
     # Create the 100% stacked bar chart (ax_split)
-    ax_split.barh([0.5], [left_pct], height=1, color=LEFT_COLOR, left=0)
-    ax_split.barh([0.5], [right_pct], height=1, color=RIGHT_COLOR, left=left_pct)
+    ax_split.barh([0.5], [left_pct], height=1, color=left_bar_color, left=0)
+    ax_split.barh([0.5], [right_pct], height=1, color=right_bar_color, left=left_pct)
 
     # Annotations for percentage labels
-    if left_pct > 5: # Ensure text fits
+    if left_pct > 5: 
         ax_split.text(left_pct / 2, 0.5, f"LEFT\n{left_pct:.0f}%", 
-                      ha='center', va='center', color='white', fontsize=12, fontweight='bold')
+                      ha='center', va='center', color='white', fontsize=14, fontweight='bold')
     if right_pct > 5:
         ax_split.text(left_pct + right_pct / 2, 0.5, f"RIGHT\n{right_pct:.0f}%", 
-                      ha='center', va='center', color='white', fontsize=12, fontweight='bold')
+                      ha='center', va='center', color='white', fontsize=14, fontweight='bold')
 
     # Formatting Split Axis
     ax_split.set_xlim(0, 100)
-    ax_split.set_ylim(0, 1) # Set limits to make space for the bar
-    ax_split.axis('off') # Hide all axis elements
-
-    # --- 6. Add Sharp Border to Figure ---
-    plt.tight_layout(pad=0.2)
+    ax_split.set_ylim(0, 1) 
+    ax_split.axis('off') 
     
+    # --- 6. Add Sharp Border to Figure ---
+    # Reduced padding here for closer border
+    plt.tight_layout(pad=0.05)
+    
+    # Normalized figure coordinates for precise placement
     border_rect = patches.Rectangle(
         (0.005, 0.005), 
         0.99,          
@@ -1267,13 +1279,6 @@ with col_rhb:
     with deviation_dist:
         st.markdown("###### DEVIATION")
         st.pyplot(create_deviation_distribution_histogram(df_rhb, "RHB"))  
-    
-     # Chart 6/7: Lateral Movement
-    swing_col, deviation_col = st.columns([2, 2]) 
-    with swing_col:
-        st.pyplot(create_directional_split(df_rhb, "Swing", "RHB"), use_container_width=True)
-    with deviation_col:
-        st.pyplot(create_directional_split(df_rhb, "Deviation", "RHB"), use_container_width=True)
 
 
 # === RIGHT COLUMN: AGAINST LEFT-HANDED BATSMEN (LHB) ===
@@ -1318,9 +1323,3 @@ with col_lhb:
         st.markdown("###### DEVIATION")
         st.pyplot(create_deviation_distribution_histogram(df_lhb, "LHB"))
         
-    # Chart 6/7: Lateral Movement
-    swing_col, deviation_col = st.columns([2, 2]) 
-    with swing_col:
-        st.pyplot(create_directional_split(df_lhb, "Swing", "RHB"), use_container_width=True)
-    with deviation_col:
-        st.pyplot(create_directional_split(df_lhb, "Deviation", "RHB"), use_container_width=True)
