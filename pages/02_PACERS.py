@@ -610,16 +610,6 @@ def create_pacer_pitch_length_bars(df_in):
     
 # --- CHART 4: RELEASE SPEED DISTRIBUTION ---
 def create_pacer_release_speed_distribution(df_in, handedness_label):
-    """
-    Generates a horizontal histogram of pacer release speed distribution 
-    based on data, using dynamic bins of 5 km/h width.
-    Includes a filter for a minimum of 5 balls per bin and a chart border.
-    
-    Args:
-        df_in (pd.DataFrame): DataFrame containing 'ReleaseSpeed'.
-        handedness_label (str): Label for the title (e.g., "vs Right Hand Bat").
-    """
-    
     FIG_SIZE = (4, 4.4)
 
     if df_in.empty or "ReleaseSpeed" not in df_in.columns or df_in["ReleaseSpeed"].empty:
@@ -700,7 +690,6 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
     # Add percentage labels
     for i, pct in enumerate(plot_percentages):
         count = plot_counts[i]
-        
         # Display percentage (e.g., 25%)
         label_text = f'{pct:.0f}%'
         
@@ -716,14 +705,6 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
             ha=ha, va='center', fontsize=12, color=text_color, fontweight='bold'
         )
         
-        # Add count label just outside the bar label if outside placement is used
-        if pct <= 10:
-             ax.text(
-                pct + 0.5, 
-                i - 0.25, # Move slightly below the percentage
-                f'({count} balls)', 
-                ha='left', va='center', fontsize=8, color='grey'
-            )
 
 
     # 4. Formatting
@@ -745,7 +726,6 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
     ax.spines['left'].set_visible(False)
     ax.spines['right'].set_visible(False)
     
-    ax.set_title(f"Release Speed Distribution vs {handedness_label}", fontsize=11, fontweight='bold', pad=10)
     
     plt.tight_layout()
     return fig
