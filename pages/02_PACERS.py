@@ -729,7 +729,7 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
     
     # Calculate padding based on figure dimensions to ensure a consistent border
     # Use 0.01 for x and y to give a small padding
-    padding_x = 0.9* FIG_SIZE[0] / fig.get_size_inches()[0] # Scale padding based on total figure width
+    padding_x = 0.18* FIG_SIZE[0] / fig.get_size_inches()[0] # Scale padding based on total figure width
     padding_y = 0.01 * FIG_SIZE[1] / fig.get_size_inches()[1] # Scale padding based on total figure height
 
     border_rect = patches.Rectangle(
