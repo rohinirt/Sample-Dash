@@ -905,6 +905,7 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
     
     plt.tight_layout()
 
+# PAGE SETUP LAYOUT
 
 st.set_page_config(
     layout="wide"
@@ -922,35 +923,43 @@ df_seam_base = df_raw[df_raw["DeliveryType"] == "Seam"]
 
 st.title("PACERS")
 
-# 3. FILTERS (Bowling Team, Bowler, and Innings)
-filter_col1, filter_col2, filter_col3 = st.columns(3) 
-
-# --- Prepare Filter Options ---
+# --- Prepare Initial Filter Options ---
 if "BowlingTeam" in df_seam_base.columns:
     team_column = "BowlingTeam"
 else:
     team_column = "BattingTeam" 
     st.warning("The 'BowlingTeam' column was not found. Displaying all Batting Teams as a fallback.")
 
+# 3. FILTERS (Bowling Team, Bowler, and Innings)
+filter_col1, filter_col2, filter_col3 = st.columns(3) 
+
+# --- Render Bowling Team Filter (Col 1) ---
 all_teams = ["All"] + sorted(df_seam_base[team_column].dropna().unique().tolist())
-all_bowlers = ["All"] + sorted(df_seam_base["BowlerName"].dropna().unique().tolist()) 
-
-# Check for Innings column and create list of options
-Innings_options = ["All"]
-if "Innings" in df_seam_base.columns:
-    # Ensure Inningss are treated as integers for sorting
-    valid_Inningss = df_seam_base["Innings"].dropna().astype(int).unique()
-    Innings_options.extend(sorted([str(i) for i in valid_Inningss]))
-else:
-    st.warning("Innings column not found for filtering.")
-
-# --- Render Filters ---
 with filter_col1:
     bowl_team = st.selectbox("Bowling Team", all_teams, index=0)
 
-with filter_col2:
-    bowler = st.selectbox("Bowler Name", all_bowlers, index=0)
+# --- Determine Bowlers based on selected Team ---
+df_for_bowlers = df_seam_base.copy()
 
+if bowl_team != "All":
+    # Filter the DataFrame used for populating the bowler list
+    df_for_bowlers = df_for_bowlers[df_for_bowlers[team_column] == bowl_team]
+
+if "BowlerName" in df_for_bowlers.columns:
+    # Generate the list of bowlers from the team-filtered DataFrame
+    relative_bowlers = ["All"] + sorted(df_for_bowlers["BowlerName"].dropna().unique().tolist())
+else:
+    relative_bowlers = ["All"]
+    
+# --- Render Bowler Name Filter (Col 2) ---
+with filter_col2:
+    bowler = st.selectbox("Bowler Name", relative_bowlers, index=0)
+
+# --- Render Inningss Filter (Col 3) ---
+Innings_options = ["All"]
+if "Innings" in df_seam_base.columns:
+    valid_Inningss = df_seam_base["Innings"].dropna().astype(int).unique()
+    Innings_options.extend(sorted([str(i) for i in valid_Inningss]))
 with filter_col3:
     selected_Innings = st.selectbox("Innings", Innings_options, index=0)
 
@@ -959,18 +968,19 @@ st.header(f"{bowler}")
 # 4. Apply Filters to the Base Seam Data
 df_filtered = df_seam_base.copy()
 
+# Apply Team Filter
 if bowl_team != "All":
     df_filtered = df_filtered[df_filtered[team_column] == bowl_team]
     
+# Apply Bowler Filter (This uses the value selected in the relative dropdown)
 if bowler != "All":
     if "BowlerName" in df_filtered.columns:
         df_filtered = df_filtered[df_filtered["BowlerName"] == bowler]
     else:
         st.warning("BowlerName column not found for filtering.")
 
-# --- Apply Innings Filter ---
+# Apply Innings Filter
 if selected_Innings != "All" and "Innings" in df_filtered.columns:
-    # Convert the selected Innings string back to an integer for filtering
     Innings_int = int(selected_Innings)
     df_filtered = df_filtered[df_filtered["Innings"] == Innings_int]
 # =========================================================
