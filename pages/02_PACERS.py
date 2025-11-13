@@ -362,17 +362,30 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import pandas as pd
 import numpy as np
+from matplotlib.gridspec import GridSpec
 
-# --- CHART 3: PACER PITCH MAP (BOUNCE LOCATION) ---
-def create_pacer_pitch_map(df_in):
+# --- CHART 3: PITCH MAP (BOUNCE LOCATION) ---
+def create_pacer_pitch_map(df_in): 
     """
-    Generates a Matplotlib pitch map showing bounce locations (BounceY vs BounceX) 
-    against standard seam bowling length bins for pacer data.
+    Generates a Matplotlib pitch map for pacers (seam bowlers), showing bounce 
+    location (length and line) relative to wickets vs non-wickets.
+    Delivery Type Bins are fixed for 'Seam'.
     """
+    
+    # Define Pacer Bins (Delivery Type is fixed as Seam)
+    # Bins: 1.2-6: Full, 6-8 Length, 8-10 Short, 10-15 Bouncer
+    PITCH_BINS = {
+        "Full Toss": [-4.0, 1.2], # Added Full Toss based on Seam logic
+        "Full": [1.2, 6.0],
+        "Length": [6.0, 8.0],
+        "Short": [8.0, 10.0],
+        "Bouncer": [10.0, 15.0],
+    }
+
     if df_in.empty:
         # Create an empty figure with a text note if data is missing
-        fig, ax = plt.subplots(figsize=(4, 6))
-        ax.text(0.5, 0.5, "No data for Pacer Pitch Map", ha='center', va='center', fontsize=12)
+        fig, ax = plt.subplots(figsize=(4,6))
+        ax.text(0.5, 0.5, f"No data for Pacer Pitch Map", ha='center', va='center', fontsize=12)
         ax.axis('off')
         return fig
 
@@ -381,19 +394,10 @@ def create_pacer_pitch_map(df_in):
     pitch_non_wickets = df_in[df_in["Wicket"] == False]
     
     # --- Chart Setup ---
-    fig, ax = plt.subplots(figsize=(4, 6))
+    fig, ax = plt.subplots(figsize=(4,6)) # Maintained figsize=(4,6)
     ax.set_facecolor('white')
     fig.patch.set_facecolor('white')
 
-    # --- Pitch Bins & Full Toss Adjustment (Seam only) ---
-    PITCH_BINS = {
-        "Full Toss": [-4.0, 1.2],
-        "Full": [1.2, 6.0],
-        "Length": [6.0, 8.0],
-        "Short": [8.0, 10.0],
-        "Bouncer": [10.0, 15.0],
-    }
-    
     # --- 1. Add Zone Lines & Labels (Horizontal Lines) ---
     
     # Determine boundary Y values to draw lines (excluding the start of the lowest bin)
@@ -402,10 +406,11 @@ def create_pacer_pitch_map(df_in):
     for y_val in boundary_y_values:
         ax.axhline(y=y_val, color="lightgrey", linewidth=1.0, linestyle="--")
 
-    # Add zone labels 
+    # Add zone labels (Annotation)
     for length, bounds in PITCH_BINS.items():
         if length != "Full Toss": 
             mid_y = (bounds[0] + bounds[1]) / 2
+            # Use ax.text for annotation, positioned on the far left (x=-1.45)
             ax.text(
                 x=-1.45, 
                 y=mid_y, 
@@ -417,6 +422,7 @@ def create_pacer_pitch_map(df_in):
                 fontweight='bold'
             )
 
+    
     # --- 3. Plot Data (Scatter Traces) ---
     
     # Non-Wickets (light grey)
@@ -450,15 +456,17 @@ def create_pacer_pitch_map(df_in):
     
     # Set axis limits
     ax.set_xlim([-1.5, 1.5])
-    # Reverse Y-axis so lower values (closer to batter) are at the bottom.
+    # Reverse the axis to match the cricket visual (batter at bottom)
     ax.set_ylim([16.0, -4.0]) 
 
-    # Hide all axis elements 
+    # Hide all axis elements
     ax.set_xticks([])
     ax.set_yticks([])
+    ax.set_xlabel("")
+    ax.set_ylabel("")
     ax.grid(False)
     
-    # Set border visibility and color
+    # Hide axis spines (plot border)
     spine_color = 'black'
     spine_width = 0.5
     for spine_name in ['left', 'top', 'bottom','right']:
