@@ -16,168 +16,202 @@ import matplotlib.colors as mcolors
 # =========================================================
 # Chart 1a: CREASE BEEHIVE
 # =========================================================
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import pandas as pd
+import numpy as np
+import matplotlib.cm as cm
+import matplotlib.colors as mcolors
+from matplotlib.gridspec import GridSpec
 
-def create_pacer_crease_beehive(df_in, handedness_label):
-    # This function is the equivalent of the original create_crease_beehive, 
-    # but renamed and used here to specifically avoid the 'utils' file.
-    
+# =========================================================
+# Chart 2: BOWLER ANALYSIS (CREASE BEEHIVE + LATERAL BOXES)
+# ========================================================
+def create_pacer_crease_beehive(df_in, handedness_label): # Renamed function and parameter
     if df_in.empty:
-        fig = go.Figure().update_layout(
-            title=f"No data for Beehive ({handedness_label})", height=400,
-            xaxis={'visible': False}, yaxis={'visible': False}
-        ) 
+        fig, ax = plt.subplots(figsize=(7, 5)); 
+        ax.text(0.5, 0.5, f"No data for Analysis ({handedness_label})", ha='center', va='center', fontsize=12); 
+        ax.axis('off'); 
         return fig
 
     # --- Data Filtering ---
     wickets = df_in[df_in["Wicket"] == True]
-    regular_balls = df_in[df_in["Wicket"] == False] 
-    fig_cbh = go.Figure()
-
-    # 1. TRACE: Regular Balls (Non-Wicket, Non-Boundary) - Light Grey
-    fig_cbh.add_trace(go.Scatter(
-        x=regular_balls["CreaseY"], y=regular_balls["CreaseZ"], mode='markers', name="Regular Ball",
-        marker=dict(color='lightgrey', size=10, line=dict(width=1, color="white"), opacity=0.95)
-    ))
-
-    # 3. TRACE: Wickets - Red
-    fig_cbh.add_trace(go.Scatter(
-        x=wickets["CreaseY"], y=wickets["CreaseZ"], mode='markers', name="Wicket",
-        marker=dict(color='red', size=12, line=dict(width=1, color="white"), opacity=0.95)
-    ))
-
-    # Stump lines & Crease lines
-    fig_cbh.add_vline(x=-0.18, line=dict(color="grey", dash="dot", width=0.5)) 
-    fig_cbh.add_vline(x=0.18, line=dict(color="grey", dash="dot", width=0.5))
-    fig_cbh.add_vline(x=0, line=dict(color="grey", dash="dot", width=0.5))
-    fig_cbh.add_vline(x=-0.92, line=dict(color="grey", width=0.5)) 
-    fig_cbh.add_vline(x=0.92, line=dict(color="grey", width=0.5))
-    fig_cbh.add_hline(y=0.78, line=dict(color="grey", width=0.5)) 
-    fig_cbh.add_annotation(
-        x=-1.5, y=0.78, text="Stump line", showarrow=False,
-        font=dict(size=8, color="grey"), xanchor='left', yanchor='bottom'
-    )
+    non_wickets_all = df_in[df_in["Wicket"] == False]
+    boundaries = non_wickets_all[(non_wickets_all["Runs"] == 4) | (non_wickets_all["Runs"] == 6)]
+    regular_balls = non_wickets_all[(non_wickets_all["Runs"] != 4) & (non_wickets_all["Runs"] != 6)]
     
-    # Layout update
-    fig_cbh.update_layout(
-        height=300, 
-        margin=dict(l=0, r=0, t=30, b=0),
-        xaxis=dict(range=[-1.5, 1.5], showgrid=False, zeroline=False, visible=False, scaleanchor="y", scaleratio=1),
-        yaxis=dict(range=[0, 2], showgrid=False, zeroline=True, visible=False),
-        plot_bgcolor="white", paper_bgcolor="white", showlegend=False,
-    )
-    
-    return fig_cbh
-
-
-# --- CHART 1b: LATERAL PERFORMANCE BOXES (BOWLING AVERAGE) ---
-def create_pacer_lateral_performance_boxes(df_in, handedness_label):
-    # This function now correctly reverses the lateral zones for LHB for visual consistency.
+    # --- Lateral Zone Data Prep (Chart 2b) ---
     df_lateral = df_in.copy()
     
-    # Check if we are dealing with LHB data (important for zone ordering)
-    is_lhb = handedness_label == "LHB"
+    # DETERMINE HANDEDNESS FOR ZONE REVERSAL
+    # If the function is called with a single handedness filter (RHB or LHB), this will be consistent.
+    is_rhb = handedness_label == "RHB" 
 
-    if df_lateral.empty:
-        fig, ax = plt.subplots(figsize=(7, 1)); ax.text(0.5, 0.5, f"No Data ({handedness_label})", ha='center', va='center'); ax.axis('off'); return fig    
-
-    # 1. Define Zoning Logic (Same as before)
     def assign_lateral_zone(row):
         y = row["CreaseY"]
         if row["IsBatsmanRightHanded"] == True:
-            # RHB: Left side of pitch is Off (negative Y), Right side is Leg (positive Y)
+            # RHB: Off side is negative Y, Leg side is positive Y
             if y > 0.18: return "LEG"
             elif y >= -0.18: return "STUMPS"
             elif y > -0.65: return "OUTSIDE OFF"
             else: return "WAY OUTSIDE OFF"
         else: # Left-Handed
-            # LHB: Left side of pitch is Leg (negative Y), Right side is Off (positive Y)
-            if y > 0.65: return "WAY OUTSIDE OFF" # Off side
+            # LHB: Leg side is negative Y, Off side is positive Y
+            if y > 0.65: return "WAY OUTSIDE OFF"
             elif y > 0.18: return "OUTSIDE OFF"
             elif y >= -0.18: return "STUMPS"
-            else: return "LEG" # Leg side
-    
+            else: return "LEG"
+            
     df_lateral["LateralZone"] = df_lateral.apply(assign_lateral_zone, axis=1)
     
-    # 2. Calculate Summary Metrics
     summary = (
         df_lateral.groupby("LateralZone").agg(
-            Runs=("Runs", "sum"), 
-            Wickets=("Wicket", lambda x: (x == True).sum()), 
-            Balls=("Wicket", "count")
+            Runs=("Runs", "sum"), Wickets=("Wicket", lambda x: (x == True).sum()), Balls=("Wicket", "count")
         )
     )
     
-    # 3. Determine Zone Order based on handedness
-    # Base order (RHB): Off side to Leg side
-    base_ordered_zones = ["WAY OUTSIDE OFF", "OUTSIDE OFF", "STUMPS", "LEG"]
+    # 1. Define standard zone order (WOO to LEG)
+    ordered_zones_base = ["WAY OUTSIDE OFF", "OUTSIDE OFF", "STUMPS", "LEG"]
     
-    if is_lhb:
-        # Reverse order for LHB: Leg side to Off side
-        ordered_zones = base_ordered_zones[::-1]
-    else:
-        ordered_zones = base_ordered_zones
-        
+    # 2. HANDEDNESS AWARE REVERSAL: Reverse order for LHB for visual consistency
+    ordered_zones = ordered_zones_base if is_rhb else ordered_zones_base[::-1]
+    
     summary = summary.reindex(ordered_zones).fillna(0)
-
-    # Calculate Bowling Average (Runs / Wickets)
-    summary["Avg Runs/Wicket"] = summary.apply(lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else 0, axis=1)
     
-    # 4. Chart Setup
-    fig_boxes, ax_boxes = plt.subplots(figsize=(7, 1)) 
+    # BOWLING AVERAGE CALCULATION (Same formula as before, just interpreted differently)
+    summary["Avg Runs/Wicket"] = summary.apply(lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else 0, axis=1)
+
+    # -----------------------------------------------------------
+    # --- 1. SETUP SUBPLOTS ---
+    fig = plt.figure(figsize=(7, 5)) 
+    gs = fig.add_gridspec(2, 1, height_ratios=[4, 1], hspace=0.005) 
+    ax_bh = fig.add_subplot(gs[0, 0])      
+    ax_boxes = fig.add_subplot(gs[1, 0])   
+    fig.patch.set_facecolor('white')
+    
+    # Add handedness label to the figure title
+    fig.suptitle(f"Bowler Analysis vs {handedness_label} Batsmen", fontsize=11, fontweight='bold', y=0.98)
+
+
+    # -----------------------------------------------------------
+    ## --- 2. CHART 2a: CREASE BEEHIVE (ax_bh) ---
+    
+    # --- Traces ---
+    ax_bh.scatter(regular_balls["CreaseY"], regular_balls["CreaseZ"], s=40, c='lightgrey', edgecolor='white', linewidths=1.0, alpha=0.95, label="Regular Ball")
+    ax_bh.scatter(boundaries["CreaseY"], boundaries["CreaseZ"], s=80, c='royalblue', edgecolor='white', linewidths=1.0, alpha=0.95, label="Boundary")
+    ax_bh.scatter(wickets["CreaseY"], wickets["CreaseZ"], s=80, c='red', edgecolor='white', linewidths=1.0, alpha=0.95, label="Wicket")
+
+    # --- Reference Lines ---
+    ax_bh.axvline(x=-0.18, color="grey", linestyle="--", linewidth=0.5) 
+    ax_bh.axvline(x=0.18, color="grey", linestyle="--", linewidth=0.5)
+    ax_bh.axvline(x=0, color="grey", linestyle="--", linewidth=0.5) 
+    ax_bh.axvline(x=-0.92, color="grey", linestyle="-", linewidth=0.5) 
+    ax_bh.axvline(x=0.92, color="grey", linestyle="-", linewidth=0.5)
+    ax_bh.axhline(y=0.78, color="grey", linestyle="-", linewidth=0.5)
+
+    # --- Annotation ---
+    ax_bh.text(-1.5, 0.78, "Stump line", ha='left', va='bottom', fontsize=8, color="grey", transform=ax_bh.transData)
+    
+    # --- Formatting ---
+    ax_bh.set_xlim([-2, 2])
+    ax_bh.set_ylim([0, 2])
+    ax_bh.set_aspect('equal', adjustable='box')
+    ax_bh.set_xticks([]); ax_bh.set_yticks([]); ax_bh.grid(False)
+    for spine in ax_bh.spines.values():
+        spine.set_visible(False)
+    ax_bh.set_facecolor('white')
+    
+    # -----------------------------------------------------------
+    ## --- 3. CHART 2b: LATERAL PERFORMANCE BOXES (ax_boxes) ---
+    
     num_regions = len(ordered_zones)
-    box_width = 1 / num_regions # Fixed width for each box (total width = 1)
+    box_width = 1 / num_regions
+    box_height = 0.4 
     left = 0
     
-    # Color Normalization (based on Average)
+    # Color Normalization
     avg_values = summary["Avg Runs/Wicket"]
-    avg_max_cap = 50 
-    norm = mcolors.Normalize(vmin=0, vmax=avg_max_cap)
+    avg_max = avg_values.max() if avg_values.max() > 0 else 50
+    # Capping max at 50 for consistent coloring/normalization
+    norm = mcolors.Normalize(vmin=0, vmax=avg_max if avg_max > 50 else 50) 
     cmap = cm.get_cmap('Reds') 
-    
-    # 5. Plotting Equal Boxes (Horizontal Heatmap)
+
     for index, row in summary.iterrows():
         avg = row["Avg Runs/Wicket"]
         wkts = int(row["Wickets"])
         
-        # Determine color
         color = cmap(norm(avg)) if row["Balls"] > 0 else 'whitesmoke' 
         
         # Draw the Rectangle
         ax_boxes.add_patch(
-            patches.Rectangle((left, 0), box_width, 1, 
-                              edgecolor="black", facecolor=color, linewidth=1)
+            patches.Rectangle((left, 0), box_width, box_height, 
+                              edgecolor="white", facecolor=color, linewidth=1)
         )
         
-        # Add labels (Zone Name, Wickets, Average)
-        label_wkts_avg = f"{wkts}W - Ave {avg:.1f}"
+        # Label 1: Zone Name (Above the box)
+        ax_boxes.text(left + box_width / 2, box_height + 0.1, 
+                      index, 
+                      ha='center', va='bottom', fontsize=7, color='black')
         
         # Calculate text color for contrast
+        text_color = 'black'
         if row["Balls"] > 0:
             r, g, b, a = color
             luminosity = 0.2126 * r + 0.7152 * g + 0.0722 * b
             text_color = 'white' if luminosity < 0.5 else 'black'
-        else:
-            text_color = 'black' 
-
-        # Label 1: Zone Name (Top of the box)
-        ax_boxes.text(left + box_width / 2, 0.75, 
-                      index,
-                      ha='center', va='center', fontsize=10, color=text_color)
-                      
+        
         # Label 2: Wickets and Average (Middle of the box)
-        ax_boxes.text(left + box_width / 2, 0.4, 
+        label_wkts_avg = f"{wkts}W - Ave {avg:.1f}"
+        ax_boxes.text(left + box_width / 2, box_height * 0.5, 
                       label_wkts_avg,
-                      ha='center', va='center', fontsize= 10, fontweight = 'bold', color=text_color)
+                      ha='center', va='center', fontsize=9, fontweight='bold', color=text_color)
         
         left += box_width
-        
-    # 6. Styling
-    ax_boxes.set_xlim(0, 1); ax_boxes.set_ylim(0, 1)
-    ax_boxes.axis('off') 
 
-    plt.tight_layout(pad=0.5)
-    return fig_boxes
+    # Formatting
+    ax_boxes.set_xlim(0, 1)
+    ax_boxes.set_ylim(0, box_height + 0.3) 
+    ax_boxes.axis('off')
+    for spine in ax_boxes.spines.values():
+        spine.set_visible(False)
+    ax_boxes.set_facecolor('white')
+
+    # -----------------------------------------------------------
+    ## --- 4. DRAW SINGLE COMPACT BORDER AROUND THE ENTIRE FIGURE ---
     
+    plt.tight_layout(pad=0.2)
+    
+    PADDING = 0.008
+
+    bh_bbox = ax_bh.get_position()
+    box_bbox = ax_boxes.get_position()
+    
+    x0_orig = min(bh_bbox.x0, box_bbox.x0)
+    y0_orig = box_bbox.y0
+    x1_orig = max(bh_bbox.x1, box_bbox.x1)
+    y1_orig = bh_bbox.y1
+    
+    x0_pad = x0_orig - PADDING
+    y0_pad = y0_orig - PADDING
+    
+    width_pad = (x1_orig - x0_orig) + (2 * PADDING)
+    height_pad = (y1_orig - y0_orig) + (2 * PADDING)
+
+    border_rect = patches.Rectangle(
+        (x0_pad, y0_pad), 
+        width_pad, 
+        height_pad, 
+        facecolor='none', 
+        edgecolor='black', 
+        linewidth=0.5, 
+        transform=fig.transFigure, 
+        clip_on=False
+    )
+
+    fig.patches.append(border_rect)
+
+    return fig
+
 # --- CHART 2: ZONAL ANALYSIS (CBH Boxes) ---
 def create_pacer_zonal_analysis(df_in, handedness_label):
     if df_in.empty:
@@ -1007,10 +1041,10 @@ with col_rhb:
     st.markdown("###  V RIGHT-HAND BATSMAN")    
     # Chart 1a: Crease Beehive (using the new local function)
     st.markdown("###### CREASE BEEHIVE ")
-    st.plotly_chart(create_pacer_crease_beehive(df_rhb, "RHB"), use_container_width=True)
+    st.pyplot(create_pacer_crease_beehive(df_rhb, "RHB"), use_container_width=True)
 
     # Chart 1b: Lateral Performance Boxes (Bowling Avg)
-    st.pyplot(create_pacer_lateral_performance_boxes(df_rhb, "RHB"), use_container_width=True)
+    # st.pyplot(create_pacer_lateral_performance_boxes(df_rhb, "RHB"), use_container_width=True)
     
     # Chart 2: ZONAL ANALYSIS (CBH Boxes)
     st.markdown("###### CREASE BEEHIVE ZONES")
@@ -1058,10 +1092,10 @@ with col_lhb:
 
     # Chart 1a: Crease Beehive (using the new local function)
     st.markdown("###### CREASE BEEHIVE")
-    st.plotly_chart(create_pacer_crease_beehive(df_lhb, "LHB"), use_container_width=True)
+    st.pyplot(create_pacer_crease_beehive(df_lhb, "LHB"), use_container_width=True)
 
     # Chart 1b: Lateral Performance Boxes (Bowling Avg)
-    st.pyplot(create_pacer_lateral_performance_boxes(df_lhb, "LHB"), use_container_width=True)
+    # st.pyplot(create_pacer_lateral_performance_boxes(df_lhb, "LHB"), use_container_width=True)
 
     # Chart 2: ZONAL ANALYSIS (CBH Boxes)
     st.markdown("###### CREASE BEEHIVE ZONES")
