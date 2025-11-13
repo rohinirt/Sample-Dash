@@ -1128,7 +1128,7 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
     # Normalized figure coordinates for precise placement
     border_rect = patches.Rectangle(
         (0.1, 0.08), 
-        0.89,          
+        0.82,          
         0.8,          
         facecolor='none',
         edgecolor='black',
