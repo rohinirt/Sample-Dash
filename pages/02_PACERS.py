@@ -933,7 +933,7 @@ else:
     st.warning("The 'BowlingTeam' column was not found. Displaying all Batting Teams as a fallback.")
 
 all_teams = ["All"] + sorted(df_seam_base[team_column].dropna().unique().tolist())
-all_bowlers = ["All"] + sorted(df_seam_base["BowlerName"].dropna().unique().unique().tolist()) 
+all_bowlers = ["All"] + sorted(df_seam_base["BowlerName"].dropna().unique().tolist()) 
 
 # Check for Inning column and create list of options
 inning_options = ["All"]
