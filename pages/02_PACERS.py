@@ -1065,72 +1065,161 @@ def create_swing_distribution_histogram(df_in, handedness_label):
     
 #Chart 9 Deviation Dstribution
 def create_deviation_distribution_histogram(df_in, handedness_label):
-    # 0. Initial Check
+    FIG_SIZE = (7, 6) 
+
+    # 0. Initial Check and Data Preparation
     if df_in.empty or "Deviation" not in df_in.columns:
-        fig, ax = plt.subplots(figsize=(20, 6))
+        fig, ax = plt.subplots(figsize=FIG_SIZE)
         ax.text(0.5, 0.5, f"No Deviation data for ({handedness_label})", ha='center', va='center', fontsize=12)
         ax.axis('off')
         return fig
 
-    # Ensure 'Deviation' is not NaN and is numeric
-    Deviation_data = df_in["Deviation"].dropna().astype(float)
-    if Deviation_data.empty:
-        fig, ax = plt.subplots(figsize=(20, 6))
+    df_data = df_in["Deviation"].dropna().astype(float)
+    if df_data.empty:
+        fig, ax = plt.subplots(figsize=FIG_SIZE)
         ax.text(0.5, 0.5, f"No valid Deviation data for ({handedness_label})", ha='center', va='center', fontsize=12)
         ax.axis('off')
         return fig
 
-    # 1. Define Bins of Size 1
-    min_Deviation = np.floor(Deviation_data.min())
-    max_Deviation = np.ceil(Deviation_data.max())
-    bins = np.arange(min_Deviation, max_Deviation + 1.1, 1)
-
-    # 2. Calculate Counts (N) and Bin Edges
-    counts, bin_edges = np.histogram(Deviation_data, bins=bins)
-    total_balls = len(Deviation_data)
+    # --- 1. Define Bins of Size 1 ---
+    min_Deviation = np.floor(df_data.min())
+    max_Deviation = np.ceil(df_data.max())
+    # Ensure the bins cover the max value
+    bins = np.arange(min_Deviation, max_Deviation + 1.1, 1) 
+    
+    # Calculate counts and percentages for the top histogram
+    counts, bin_edges = np.histogram(df_data, bins=bins)
+    total_balls = len(df_data)
     percentages = (counts / total_balls) * 100
 
-    # 3. Prepare for plotting: Bar centers and labels
-    # Use the lower edge of the bin for positioning and labeling
-    lower_bin_edges = bin_edges[:-1] # Exclude the final upper boundary
+    # Prepare for plotting: Bar centers and labels
+    lower_bin_edges = bin_edges[:-1] 
     bar_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
     bar_width = 0.9 
-
-    # Create tick labels: use only the lower limit of the bin
-    # Use floor to ensure clean integer/single decimal labels
     tick_labels = [f"{b:.0f}" for b in lower_bin_edges] 
-
-    # 4. Plotting
-    fig, ax = plt.subplots(figsize=(7, 4))
-
-    # Plot the bars, centered correctly
-    rects = ax.bar(bar_centers, percentages, width=bar_width, 
-                   color='red', linewidth=1.0)
     
-    ax.set_xticks(lower_bin_edges)
-    ax.set_xticklabels(tick_labels, ha='right', fontsize=16)
+    # --- 2. Calculate Directional Split for Stacked Bar ---
     
-    # 5. Annotation (Percentages on top of bars)
+    df_temp = df_in.copy()
+    
+    # Define directional categories
+    def get_deviation_category(deviation):
+        if deviation < 0:
+            return 'Negative (<0)'
+        elif deviation > 0:
+            return 'Positive (>0)'
+        else:
+            return 'Zero (=0)'
+
+    df_temp["DeviationCategory"] = df_temp["Deviation"].apply(get_deviation_category)
+    
+    # Assign balls to the same bins used for the histogram
+    df_temp['Bin'] = pd.cut(df_temp['Deviation'], bins=bins, include_lowest=True, right=False,
+                            labels=lower_bin_edges)
+
+    # Calculate split counts by Category and Bin
+    split_counts = df_temp.groupby(['Bin', 'DeviationCategory']).size().unstack(fill_value=0)
+    split_counts = split_counts.reindex(columns=['Negative (<0)', 'Positive (>0)', 'Zero (=0)'], fill_value=0)
+    
+    # Calculate percentages of the total (to align bar heights with the histogram)
+    split_percentages_of_total = split_counts.div(total_balls, axis=0) * 100
+    
+    # Reindex to ensure all bins are present for plotting
+    split_percentages_of_total = split_percentages_of_total.reindex(lower_bin_edges, fill_value=0)
+
+    # --- 3. Matplotlib Setup and GridSpec ---
+    fig = plt.figure(figsize=FIG_SIZE, facecolor='white')
+    gs = GridSpec(2, 1, figure=fig, height_ratios=[3.5, 1.5], hspace=0.1)
+    
+    ax_hist = fig.add_subplot(gs[0, 0])
+    ax_stacked = fig.add_subplot(gs[1, 0])
+
+    # --- 4. Plot Histogram (ax_hist) ---
+    rects = ax_hist.bar(bar_centers, percentages, width=bar_width, color='red', linewidth=1.0, label="Overall %")
+    
+    ax_hist.set_title(f"Deviation Distribution vs. {handedness_label}", fontsize=14, fontweight='bold', pad=10)
+    
+    # Annotation (Percentages on top of bars)
     for rect, pct in zip(rects, percentages):
-        if pct > 0:
+        if pct > 0.5: # Only label bars greater than 0.5%
             height = rect.get_height()
-            # Ensure text is readable: only show % if > 0.5%
-            ax.text(rect.get_x() + rect.get_width() / 2., height + 0.5,
-                    f'{pct:.0f}%',
-                    ha='center', va='bottom', fontsize=16, weight='bold')
+            ax_hist.text(rect.get_x() + rect.get_width() / 2., height + 0.5,
+                        f'{pct:.0f}%',
+                        ha='center', va='bottom', fontsize=12, weight='bold')
     
-    ax.set_ylim(-0.5, percentages.max() * 1.25 if percentages.max() > 0 else 10)
-    # Hide X and Y ticks and tick labels
-    ax.tick_params(axis='y', which='both', left=False, right=False, labelleft=False)
+    ax_hist.set_ylim(0, percentages.max() * 1.35 if percentages.max() > 0 else 10)
     
-    spine_color = 'black'
-    spine_width = 0.5
-    for spine_name in ['left', 'top', 'bottom','right']:
-        ax.spines[spine_name].set_visible(True)
-        ax.spines[spine_name].set_color(spine_color)
-        ax.spines[spine_name].set_linewidth(spine_width)
-    ax.spines['bottom'].set_visible(False)
-    plt.tight_layout()
+    # Formatting Histogram Axis
+    ax_hist.set_xticks(lower_bin_edges)
+    ax_hist.set_xticklabels([f"{b:.0f}" for b in lower_bin_edges], ha='center', fontsize=10) # Set x-ticks but keep labels
+    ax_hist.tick_params(axis='y', which='both', left=False, right=False, labelleft=False)
+    ax_hist.set_xlabel("Deviation (Units)", fontsize=10, labelpad=10)
+    
+    # Hide all spines for ax_hist
+    for spine_name in ['left', 'top', 'bottom', 'right']:
+        ax_hist.spines[spine_name].set_visible(False)
+    
+    # --- 5. Plot Stacked Bar Chart (ax_stacked) ---
+
+    bottom_bar = np.zeros(len(lower_bin_edges))
+    
+    colors = {
+        'Negative (<0)': '#1f77b4', # Blue
+        'Positive (>0)': '#d62728', # Red
+        'Zero (=0)': '#7f7f7f'      # Grey
+    }
+    
+    # Plot bars stacked
+    for category in ['Negative (<0)', 'Positive (>0)', 'Zero (=0)']:
+        if category in split_percentages_of_total.columns:
+            heights = split_percentages_of_total[category].values
+            ax_stacked.bar(bar_centers, heights, width=bar_width, 
+                           bottom=bottom_bar, color=colors[category], 
+                           linewidth=0, label=category)
+            bottom_bar += heights
+
+    # Formatting Stacked Bar Axis
+    ax_stacked.set_xticks(lower_bin_edges)
+    ax_stacked.set_xticklabels(tick_labels, ha='center', fontsize=10)
+    
+    # Add title for stacked bar
+    ax_stacked.set_title("Directional Split by Bin (% of Total Balls)", fontsize=10, pad=5)
+    
+    # Y-axis will show the total percentage (which should match the top bar height)
+    ax_stacked.set_yticks([0, 25, 50, 75, 100])
+    ax_stacked.set_yticklabels(['0%', '25%', '50%', '75%', '100%'], fontsize=10)
+    ax_stacked.set_ylim(0, percentages.max() * 1.35 if percentages.max() > 0 else 10) # Align Y limits with histogram
+
+    # Add legend to bottom chart
+    ax_stacked.legend(loc='upper left', ncol=3, frameon=False, fontsize=8)
+
+    # Ensure X-axis limits align perfectly
+    max_x = max_Deviation + 0.5 
+    min_x = min_Deviation - 0.5
+    ax_hist.set_xlim(min_x, max_x)
+    ax_stacked.set_xlim(min_x, max_x)
+    
+    # Remove cluttering spines from ax_stacked
+    for spine_name in ['left', 'top', 'right']:
+        ax_stacked.spines[spine_name].set_visible(False)
+    ax_stacked.spines['bottom'].set_linewidth(0.5)
+
+    # --- 6. Add Sharp Border to Figure ---
+    plt.tight_layout(pad=0.2)
+    
+    border_rect = patches.Rectangle(
+        (0.005, 0.005), 
+        0.99,          
+        0.99,          
+        facecolor='none',
+        edgecolor='black',
+        linewidth=1.5,
+        transform=fig.transFigure,
+        clip_on=False,
+        joinstyle='miter' # Ensures sharp corners
+    )
+    fig.add_artist(border_rect)
+
     return fig
 # PAGE SETUP LAYOUT
 
@@ -1210,6 +1299,7 @@ if bowler != "All":
 if selected_Innings != "All" and "Innings" in df_filtered.columns:
     Innings_int = int(selected_Innings)
     df_filtered = df_filtered[df_filtered["Innings"] == Innings_int]
+
 # =========================================================
 # 5. SPLIT AND DISPLAY CHARTS (RHB vs LHB) 🏏
 # =========================================================
