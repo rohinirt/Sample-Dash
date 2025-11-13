@@ -104,7 +104,7 @@ def create_zonal_analysis(df_in, batsman_name, delivery_type):
     
     # Define border parameters
     BORDER_WIDTH = 0.005 # Border offset from plot edge (figure coordinates)
-    LINE_THICKNESS = 2.0
+    LINE_THICKNESS = 0.5
     
     # Create the border rectangle in figure coordinates
     border_rect = patches.Rectangle(
