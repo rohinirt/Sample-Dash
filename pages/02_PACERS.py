@@ -851,8 +851,8 @@ def create_pacer_release_analysis(df_in, handedness_label):
 
     # Titles
     # Metric Labels (Left Alignment for labels)
-    ax_metrics.text(0.05, 0.7, "W:", ha='right', va='center', fontsize=10, fontweight='bold')
-    ax_metrics.text(0.05, 0.35, "Avg:", ha='right', va='center', fontsize=10, fontweight='bold')
+    ax_metrics.text(0.05, 1, "W:", ha='right', va='center', fontsize=10, fontweight='bold')
+    ax_metrics.text(0.05, 0.5, "Avg:", ha='right', va='center', fontsize=10, fontweight='bold')
     ax_metrics.text(0.05, 0, "SR:", ha='right', va='center', fontsize=10, fontweight='bold')
 
     # LEFT Values
