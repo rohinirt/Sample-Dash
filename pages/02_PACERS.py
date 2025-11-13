@@ -1030,7 +1030,7 @@ with col_rhb:
     pace_col, release_col = st.columns([2, 2])
     with pace_col:
         st.markdown("###### RELEASE SPEED")
-        st.pyplot(create_pacer_release_speed_distribution(df_rhb, "RHB"), use_container_width=True)
+        st.plotly_chart(create_pacer_release_speed_distribution(df_rhb, "RHB"), use_container_width=True)
     with release_col:
         st.markdown("###### RELEASE")
         st.plotly_chart(create_pacer_release_zone_map(df_rhb, "RHB"), use_container_width=True)
@@ -1058,7 +1058,7 @@ with col_lhb:
 
     # Chart 1a: Crease Beehive (using the new local function)
     st.markdown("###### CREASE BEEHIVE")
-    st.pyplot(create_pacer_crease_beehive(df_lhb, "LHB"), use_container_width=True)
+    st.plotly_chart(create_pacer_crease_beehive(df_lhb, "LHB"), use_container_width=True)
 
     # Chart 1b: Lateral Performance Boxes (Bowling Avg)
     st.pyplot(create_pacer_lateral_performance_boxes(df_lhb, "LHB"), use_container_width=True)
