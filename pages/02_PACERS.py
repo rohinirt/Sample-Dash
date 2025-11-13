@@ -979,9 +979,9 @@ def create_directional_split(df_in, column_name, handedness_label):
     ax.set_yticks([]) 
     ax.set_yticklabels([])
     border_rect = patches.Rectangle(
-        (0.02, 0.02), 
-        0.9, 
-        0.8, 
+        (0, 0.02), 
+        1, 
+        0.99, 
         facecolor='none',
         edgecolor='black',
         linewidth=0.5,
