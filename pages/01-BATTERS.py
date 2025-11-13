@@ -101,7 +101,7 @@ def create_zonal_analysis(df_in, batsman_name, delivery_type):
     # Adjust these values to shift the border relative to the plot content:
     custom_padding = {
         'left': 0.0002,   # Increase for wider gap on the left
-        'bottom': 0.02, # Decrease for tighter gap on the bottom
+        'bottom': 0.04, # Decrease for tighter gap on the bottom
         'right': 0.0002,  # Increase for wider gap on the right
         'top': 0.00001     # Decrease for tighter gap on the top
     }
