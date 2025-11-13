@@ -978,7 +978,18 @@ def create_directional_split(df_in, column_name, handedness_label):
     ax.set_xticks([]) 
     ax.set_yticks([]) 
     ax.set_yticklabels([])
-    
+    border_rect = patches.Rectangle(
+        (0.05, 0.13), 
+        0.9, 
+        0.8, 
+        facecolor='none',
+        edgecolor='black',
+        linewidth=0.5,
+        transform=fig.transFigure,
+        clip_on=False,
+        joinstyle='miter' # Ensures sharp corners
+    )
+    fig.add_artist(border_rect)
     for spine in ax.spines.values():
         spine.set_visible(False)
     
