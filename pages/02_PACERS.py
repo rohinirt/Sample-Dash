@@ -847,13 +847,13 @@ def create_pacer_release_analysis(df_in, handedness_label):
     # Hide all metrics spines/ticks/labels
     ax_metrics.axis('off')
     ax_metrics.set_xlim(0, 1)
-    ax_metrics.set_ylim(0, 1)
+    ax_metrics.set_ylim(-0.5, 1)
 
     # Titles
     # Metric Labels (Left Alignment for labels)
     ax_metrics.text(0.05, 0.7, "W:", ha='right', va='center', fontsize=10, fontweight='bold')
     ax_metrics.text(0.05, 0.35, "Avg:", ha='right', va='center', fontsize=10, fontweight='bold')
-    ax_metrics.text(0.05, 0.1, "SR:", ha='right', va='center', fontsize=10, fontweight='bold')
+    ax_metrics.text(0.05, 0, "SR:", ha='right', va='center', fontsize=10, fontweight='bold')
 
     # LEFT Values
     ax_metrics.text(0.2, 0.7, format_metric(left["Wickets"], is_wickets=True), ha='center', va='center', fontsize=12, color='red', fontweight='bold')
