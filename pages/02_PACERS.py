@@ -922,7 +922,7 @@ df_seam_base = df_raw[df_raw["DeliveryType"] == "Seam"]
 
 st.title("PACERS")
 
-# 3. FILTERS (Bowling Team, Bowler, and Inning)
+# 3. FILTERS (Bowling Team, Bowler, and Innings)
 filter_col1, filter_col2, filter_col3 = st.columns(3) 
 
 # --- Prepare Filter Options ---
@@ -935,14 +935,14 @@ else:
 all_teams = ["All"] + sorted(df_seam_base[team_column].dropna().unique().tolist())
 all_bowlers = ["All"] + sorted(df_seam_base["BowlerName"].dropna().unique().tolist()) 
 
-# Check for Inning column and create list of options
-inning_options = ["All"]
-if "Inning" in df_seam_base.columns:
-    # Ensure innings are treated as integers for sorting
-    valid_innings = df_seam_base["Inning"].dropna().astype(int).unique()
-    inning_options.extend(sorted([str(i) for i in valid_innings]))
+# Check for Innings column and create list of options
+Innings_options = ["All"]
+if "Innings" in df_seam_base.columns:
+    # Ensure Inningss are treated as integers for sorting
+    valid_Inningss = df_seam_base["Innings"].dropna().astype(int).unique()
+    Innings_options.extend(sorted([str(i) for i in valid_Inningss]))
 else:
-    st.warning("Inning column not found for filtering.")
+    st.warning("Innings column not found for filtering.")
 
 # --- Render Filters ---
 with filter_col1:
@@ -952,7 +952,7 @@ with filter_col2:
     bowler = st.selectbox("Bowler Name", all_bowlers, index=0)
 
 with filter_col3:
-    selected_inning = st.selectbox("Inning", inning_options, index=0)
+    selected_Innings = st.selectbox("Innings", Innings_options, index=0)
 
 st.header(f"{bowler}")
 
@@ -968,11 +968,11 @@ if bowler != "All":
     else:
         st.warning("BowlerName column not found for filtering.")
 
-# --- Apply Inning Filter ---
-if selected_inning != "All" and "Inning" in df_filtered.columns:
-    # Convert the selected inning string back to an integer for filtering
-    inning_int = int(selected_inning)
-    df_filtered = df_filtered[df_filtered["Inning"] == inning_int]
+# --- Apply Innings Filter ---
+if selected_Innings != "All" and "Innings" in df_filtered.columns:
+    # Convert the selected Innings string back to an integer for filtering
+    Innings_int = int(selected_Innings)
+    df_filtered = df_filtered[df_filtered["Innings"] == Innings_int]
 # =========================================================
 # 5. SPLIT AND DISPLAY CHARTS (RHB vs LHB) 🏏
 # =========================================================
