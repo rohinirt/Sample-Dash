@@ -856,14 +856,14 @@ def create_pacer_release_analysis(df_in, handedness_label):
     ax_metrics.text(0.05, 0.2, "SR:", ha='right', va='center', fontsize=10, fontweight='bold')
 
     # LEFT Values
-    ax_metrics.text(0.3, 0.7, format_metric(left["Wickets"], is_wickets=True), ha='center', va='center', fontsize=12, color='red', fontweight='bold')
-    ax_metrics.text(0.3, 0.45, format_metric(left["BA"]), ha='center', va='center', fontsize=12, color='darkred', fontweight='bold')
-    ax_metrics.text(0.3, 0.2, format_metric(left["SR"]), ha='center', va='center', fontsize=12, color='darkred', fontweight='bold')
+    ax_metrics.text(0.2, 0.7, format_metric(left["Wickets"], is_wickets=True), ha='center', va='center', fontsize=12, color='red', fontweight='bold')
+    ax_metrics.text(0.2, 0.45, format_metric(left["BA"]), ha='center', va='center', fontsize=12, color='darkred', fontweight='bold')
+    ax_metrics.text(0.2, 0.2, format_metric(left["SR"]), ha='center', va='center', fontsize=12, color='darkred', fontweight='bold')
 
     # RIGHT Values
-    ax_metrics.text(0.7, 0.7, format_metric(right["Wickets"], is_wickets=True), ha='center', va='center', fontsize=12, color='red', fontweight='bold')
-    ax_metrics.text(0.7, 0.45, format_metric(right["BA"]), ha='center', va='center', fontsize=12, color='darkblue', fontweight='bold')
-    ax_metrics.text(0.7, 0.2, format_metric(right["SR"]), ha='center', va='center', fontsize=12, color='darkblue', fontweight='bold')
+    ax_metrics.text(0.9, 0.7, format_metric(right["Wickets"], is_wickets=True), ha='center', va='center', fontsize=12, color='red', fontweight='bold')
+    ax_metrics.text(0.9, 0.45, format_metric(right["BA"]), ha='center', va='center', fontsize=12, color='darkblue', fontweight='bold')
+    ax_metrics.text(0.9, 0.2, format_metric(right["SR"]), ha='center', va='center', fontsize=12, color='darkblue', fontweight='bold')
     
     # --- 5. Add Sharp Border to Figure ---
     plt.tight_layout(pad=0.1)
@@ -880,7 +880,7 @@ def create_pacer_release_analysis(df_in, handedness_label):
         0.99, 
         facecolor='none',
         edgecolor='black',
-        linewidth=1.5,
+        linewidth=0.5,
         transform=fig.transFigure,
         clip_on=False,
         joinstyle='miter' # Ensures sharp corners
