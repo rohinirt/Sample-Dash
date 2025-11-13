@@ -358,78 +358,117 @@ def get_pitch_bins():
     }
     
 # --- CHART 3a: PITCH MAP (BOUNCE LOCATION) ---
-def create_pacer_pitch_map(df_in):
-    # Imports needed if not at the top of the file
-    import plotly.graph_objects as go
-    
-    if df_in.empty:
-        return go.Figure().update_layout(title=f"No data for Pitch Map (Seam)", height=300)
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import pandas as pd
+import numpy as np
 
-    PITCH_BINS = get_pitch_bins() # Simplified call
+# --- CHART 3: PACER PITCH MAP (BOUNCE LOCATION) ---
+def create_pacer_pitch_map(df_in):
+    """
+    Generates a Matplotlib pitch map showing bounce locations (BounceY vs BounceX) 
+    against standard seam bowling length bins for pacer data.
+    """
+    if df_in.empty:
+        # Create an empty figure with a text note if data is missing
+        fig, ax = plt.subplots(figsize=(4, 6))
+        ax.text(0.5, 0.5, "No data for Pacer Pitch Map", ha='center', va='center', fontsize=12)
+        ax.axis('off')
+        return fig
+
+    # --- Data Filtering ---
+    pitch_wickets = df_in[df_in["Wicket"] == True]
+    pitch_non_wickets = df_in[df_in["Wicket"] == False]
     
-    # Add a catch-all bin for Full Tosses (always Seam logic)
-    PITCH_BINS["Full Toss"] = [-4.0, 1.2]  
-        
-    fig_pitch = go.Figure()
+    # --- Chart Setup ---
+    fig, ax = plt.subplots(figsize=(4, 6))
+    ax.set_facecolor('white')
+    fig.patch.set_facecolor('white')
+
+    # --- Pitch Bins & Full Toss Adjustment (Seam only) ---
+    PITCH_BINS = {
+        "Full Toss": [-4.0, 1.2],
+        "Full": [1.2, 6.0],
+        "Length": [6.0, 8.0],
+        "Short": [8.0, 10.0],
+        "Bouncer": [10.0, 15.0],
+    }
     
-    # 1. Add Zone Lines & Labels
-    boundary_y_values = sorted([v[0] for v in PITCH_BINS.values() if v[0] > -4.0])
+    # --- 1. Add Zone Lines & Labels (Horizontal Lines) ---
+    
+    # Determine boundary Y values to draw lines (excluding the start of the lowest bin)
+    boundary_y_values = sorted([v[0] for v in PITCH_BINS.values() if v[0] > -4.0], reverse=True)
 
     for y_val in boundary_y_values:
-        fig_pitch.add_hline(y=y_val, line=dict(color="lightgrey", width=1.0, dash="dot"))
+        ax.axhline(y=y_val, color="lightgrey", linewidth=1.0, linestyle="--")
 
-    # Add zone labels
+    # Add zone labels 
     for length, bounds in PITCH_BINS.items():
         if length != "Full Toss": 
             mid_y = (bounds[0] + bounds[1]) / 2
-            fig_pitch.add_annotation(x=-1.45, y=mid_y, text=length.upper(), showarrow=False,
-                font=dict(size=8, color="grey", weight='bold'), xanchor='left')
+            ax.text(
+                x=-1.45, 
+                y=mid_y, 
+                s=length.upper(), 
+                ha='left', 
+                va='center', 
+                fontsize=8, 
+                color="grey", 
+                fontweight='bold'
+            )
 
-    # 2. Add Stump lines
-    fig_pitch.add_vline(x=-0.18, line=dict(color="#777777", dash="dot", width=1.2))
-    fig_pitch.add_vline(x=0.18, line=dict(color="#777777", dash="dot", width=1.2))
-    fig_pitch.add_vline(x=0, line=dict(color="#777777", dash="dot", width=0.8))
-
-   # 3. Plot Data (Wickets, Boundaries, and Others)
+    # --- 3. Plot Data (Scatter Traces) ---
     
-    # 1. Wickets (Highest priority, Red)
-    pitch_wickets = df_in[df_in["Wicket"] == True]
+    # Non-Wickets (light grey)
+    ax.scatter(
+        pitch_non_wickets["BounceY"], pitch_non_wickets["BounceX"], 
+        s=60, 
+        c='#D3D3D3', 
+        edgecolor='white', 
+        linewidths=1.0, 
+        alpha=0.9,
+        label="No Wicket"
+    )
 
-    # 2. Boundaries (Non-Wicket, Runs = 4 or 6, Royal Blue)
-    pitch_boundaries = df_in[(df_in["Wicket"] == False) & (df_in["Runs"].isin([4, 6]))]
-
-    # 3. Other Balls (Non-Wicket, Non-Boundary, Light Grey)
-    # This filters for balls that are NOT wickets AND NOT boundaries (i.e., 0, 1, 2, 3 runs)
-    pitch_other = df_in[(df_in["Wicket"] == False) & (~df_in["Runs"].isin([4, 6]))]
-
-    # Plot Other Balls (Bottom Layer - Light Grey)
-    fig_pitch.add_trace(go.Scatter(
-        x=pitch_other["BounceY"], y=pitch_other["BounceX"], mode='markers', name="Other",
-        marker=dict(color='#D3D3D3', size=10, line=dict(width=1, color="white"), opacity=0.9)
-    ))
-    # Plot Boundaries (Middle Layer - Royal Blue)
-    fig_pitch.add_trace(go.Scatter(
-        x=pitch_boundaries["BounceY"], y=pitch_boundaries["BounceX"], mode='markers', name="Boundary",
-        marker=dict(color='royalblue', size=11, line=dict(width=1, color="white")), opacity=0.95)
+    # Wickets (red)
+    ax.scatter(
+        pitch_wickets["BounceY"], pitch_wickets["BounceX"], 
+        s=90, 
+        c='red', 
+        edgecolor='white', 
+        linewidths=1.0, 
+        alpha=0.95,
+        label="Wicket"
     )
     
-    # Plot Wickets (Top Layer - Red)
-    fig_pitch.add_trace(go.Scatter(
-        x=pitch_wickets["BounceY"], y=pitch_wickets["BounceX"], mode='markers', name="Wicket",
-        marker=dict(color='red', size=12, line=dict(width=1, color="white")), opacity=0.95)
-    )
+    # --- 2. Add Stump lines (Vertical Lines) ---
+    ax.axvline(x=-0.18, color="#777777", linestyle="--", linewidth=1)
+    ax.axvline(x=0.18, color="#777777", linestyle="--", linewidth=1)
+    ax.axvline(x=0, color="#777777", linestyle="--", linewidth=0.8)
     
+    # --- 4. Layout (Axis and Spines) ---
+    
+    # Set axis limits
+    ax.set_xlim([-1.5, 1.5])
+    # Reverse Y-axis so lower values (closer to batter) are at the bottom.
+    ax.set_ylim([16.0, -4.0]) 
 
-    # 4. Layout
-    fig_pitch.update_layout(
-        height = 400,
-        margin=dict(l=0, r=100, t=30, b=10),
-        xaxis=dict(range=[-1.5, 1.5], showgrid=False, zeroline=False, visible=False),
-        yaxis=dict(range=[16.0, -4.0], showgrid=False, zeroline=False, visible=False), 
-        plot_bgcolor="white", paper_bgcolor="white", showlegend=False
-    )
+    # Hide all axis elements 
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.grid(False)
     
-    return fig_pitch
+    # Set border visibility and color
+    spine_color = 'black'
+    spine_width = 0.5
+    for spine_name in ['left', 'top', 'bottom','right']:
+        ax.spines[spine_name].set_visible(True)
+        ax.spines[spine_name].set_color(spine_color)
+        ax.spines[spine_name].set_linewidth(spine_width)
+        
+    plt.tight_layout()
+    
+    return fig
 
 # --- CHART 3b: PITCH LENGTH METRICS (BOWLER FOCUS) ---
 def create_pacer_pitch_length_metrics(df_in):
