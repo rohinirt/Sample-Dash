@@ -1016,7 +1016,7 @@ import numpy as np
 from matplotlib.gridspec import GridSpec
 
 def create_deviation_distribution_histogram(df_in, handedness_label):
-    FIG_SIZE = (4, 4.4) 
+    FIG_SIZE = (5, 4) 
 
     # 0. Initial Check and Data Preparation
     if df_in.empty or "Deviation" not in df_in.columns:
@@ -1072,7 +1072,7 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
     # --- 3. Matplotlib Setup and GridSpec ---
     # Adjusted height ratio and HSPACE for tighter layout
     fig = plt.figure(figsize=FIG_SIZE, facecolor='white')
-    gs = GridSpec(2, 1, figure=fig, height_ratios=[4.5, 1], hspace=0.05)
+    gs = GridSpec(2, 1, figure=fig, height_ratios=[4, 1], hspace=0.05)
     
     ax_hist = fig.add_subplot(gs[0, 0])
     ax_split = fig.add_subplot(gs[1, 0])
