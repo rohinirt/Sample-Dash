@@ -533,7 +533,7 @@ def create_pacer_pitch_length_bars(df_in):
 
     # --- Metrics and Titles (Order: Dismissals, Bowling Average, Bowling Strike Rate) ---
     metrics = ["Dismissals", "BowlingAverage", "BowlingStrikeRate"]
-    titles = ["Dismissals (Wickets)", "Bowling Average (Runs/Wkt)", "Bowling Strike Rate (Balls/Wkt)"]
+    titles = ["Dismissals", "Bowling Average", "Bowling Strike Rate"]
 
     # Define limits for each chart to ensure proper scaling
     max_wkts = df_summary["Dismissals"].max() * 1.5 if df_summary["Dismissals"].max() > 0 else 5
