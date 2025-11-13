@@ -749,7 +749,7 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
 
 # Chart 5 Bowler Release Map
 def create_pacer_release_analysis(df_in, handedness_label): 
-    FIG_SIZE = (4, 4.4) # Increased height for both charts
+    FIG_SIZE = (4, 4) # Increased height for both charts
 
     if df_in.empty or "ReleaseY" not in df_in.columns or "ReleaseZ" not in df_in.columns:
         fig, ax = plt.subplots(figsize=FIG_SIZE)
@@ -852,8 +852,8 @@ def create_pacer_release_analysis(df_in, handedness_label):
     # Titles
     # Metric Labels (Left Alignment for labels)
     ax_metrics.text(0.05, 0.7, "W:", ha='right', va='center', fontsize=10, fontweight='bold')
-    ax_metrics.text(0.05, 0.45, "Avg:", ha='right', va='center', fontsize=10, fontweight='bold')
-    ax_metrics.text(0.05, 0.2, "SR:", ha='right', va='center', fontsize=10, fontweight='bold')
+    ax_metrics.text(0.05, 0.35, "Avg:", ha='right', va='center', fontsize=10, fontweight='bold')
+    ax_metrics.text(0.05, 0.1, "SR:", ha='right', va='center', fontsize=10, fontweight='bold')
 
     # LEFT Values
     ax_metrics.text(0.2, 0.7, format_metric(left["Wickets"], is_wickets=True), ha='center', va='center', fontsize=12, color='red', fontweight='bold')
