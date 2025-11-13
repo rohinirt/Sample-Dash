@@ -877,7 +877,7 @@ def create_pacer_release_analysis(df_in, handedness_label):
     border_rect = patches.Rectangle(
         (0, 0), 
         0.9, 
-        0.9, 
+        0.8, 
         facecolor='none',
         edgecolor='black',
         linewidth=0.5,
