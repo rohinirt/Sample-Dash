@@ -830,14 +830,13 @@ def create_pacer_release_analysis(df_in, handedness_label):
         ax_map.axvline(x=y_val, color="#777777", linestyle="--", linewidth=1.0)
     
     # Formatting Map
-    ax_map.set_title(f"Release Zone Map vs. {handedness_label}", fontsize=12, fontweight='bold', pad=10)
     ax_map.set_xlim(-1.5, 1.5)
-    ax_map.set_ylim(0, 2.5)
+    ax_map.set_ylim(1.5, 2.5)
     ax_map.set_xticks([])
     ax_map.set_yticks([])
     ax_map.set_facecolor('white')
-    ax_map.grid(False)
-    ax_map.legend(loc='lower right', fontsize=8, frameon=True, facecolor='white', framealpha=0.7)
+    ax_map.grid(True)
+    ax_map.legend(False)
     
     # Hide all map spines
     for spine in ax_map.spines.values():
@@ -851,13 +850,10 @@ def create_pacer_release_analysis(df_in, handedness_label):
     ax_metrics.set_ylim(0, 1)
 
     # Titles
-    ax_metrics.text(0.35, 0.9, "LEFT (<0)", ha='center', va='center', fontsize=10, color='grey', fontweight='bold')
-    ax_metrics.text(0.65, 0.9, "RIGHT (>0)", ha='center', va='center', fontsize=10, color='grey', fontweight='bold')
-    
     # Metric Labels (Left Alignment for labels)
-    ax_metrics.text(0.1, 0.7, "Wickets:", ha='right', va='center', fontsize=10, fontweight='bold')
+    ax_metrics.text(0.1, 0.7, "W:", ha='right', va='center', fontsize=10, fontweight='bold')
     ax_metrics.text(0.1, 0.45, "Avg:", ha='right', va='center', fontsize=10, fontweight='bold')
-    ax_metrics.text(0.1, 0.2, "SR (Balls/Wkt):", ha='right', va='center', fontsize=10, fontweight='bold')
+    ax_metrics.text(0.1, 0.2, "SR:", ha='right', va='center', fontsize=10, fontweight='bold')
 
     # LEFT Values
     ax_metrics.text(0.35, 0.7, format_metric(left["Wickets"], is_wickets=True), ha='center', va='center', fontsize=12, color='red', fontweight='bold')
