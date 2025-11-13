@@ -360,12 +360,7 @@ def get_pitch_bins():
 # --- CHART 3a: PITCH MAP (BOUNCE LOCATION) ---
 # --- CHART 3: PITCH MAP (BOUNCE LOCATION) ---
 def create_pacer_pitch_map(df_in): 
-    """
-    Generates a Matplotlib pitch map for pacers (seam bowlers), showing bounce 
-    location (length and line) relative to wickets vs non-wickets.
-    Delivery Type Bins are fixed for 'Seam'.
-    """
-    
+ 
     # Define Pacer Bins (Delivery Type is fixed as Seam)
     # Bins: 1.2-6: Full, 6-8 Length, 8-10 Short, 10-15 Bouncer
     PITCH_BINS = {
@@ -378,7 +373,7 @@ def create_pacer_pitch_map(df_in):
 
     if df_in.empty:
         # Create an empty figure with a text note if data is missing
-        fig, ax = plt.subplots(figsize=(2,3))
+        fig, ax = plt.subplots(figsize=(4,5))
         ax.text(0.5, 0.5, f"No data for Pacer Pitch Map", ha='center', va='center', fontsize=12)
         ax.axis('off')
         return fig
@@ -388,7 +383,7 @@ def create_pacer_pitch_map(df_in):
     pitch_non_wickets = df_in[df_in["Wicket"] == False]
     
     # --- Chart Setup ---
-    fig, ax = plt.subplots(figsize=(2,3)) # Maintained figsize=(4,6)
+    fig, ax = plt.subplots(figsize=(4,5)) # Maintained figsize=(4,6)
     ax.set_facecolor('white')
     fig.patch.set_facecolor('white')
 
