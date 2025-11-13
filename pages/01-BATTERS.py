@@ -93,29 +93,38 @@ def create_zonal_analysis(df_in, batsman_name, delivery_type):
             ax.spines[spine_name].set_color(spine_color)
             ax.spines[spine_name].set_linewidth(spine_width)
     ax.set_xlim(-0.75, 0.75); ax.set_ylim(0, 2); ax.axis('off'); 
-    plt.tight_layout(pad=0.5) # Increased pad for more consistent initial spacing
-    
-    # ----------------------------------------------------------------------
-    # --- ADD OUTER BORDER (Rectangle Patch) ---
-    # ----------------------------------------------------------------------
-    
-    # Get the precise position of the axes *after* tight_layout
+    plt.tight_layout(pad=0.1) 
     bbox = ax.get_position()
+    LINE_THICKNESS = 2.0
     
-    # This value determines the thickness of the white space border
-    # A value of 0.02 means 2% of the figure's dimension
-    # It will apply this space on *each* side.
-    OUTER_BORDER_PADDING = 0.02 
-    LINE_THICKNESS = 0.5
+    # 2. DEFINE CUSTOM PADDING FOR EACH SIDE (in figure coordinates, e.g., 0.01 = 1% of figure dimension)
+    # Adjust these values to shift the border relative to the plot content:
+    custom_padding = {
+        'left': 0.010,   # Increase for wider gap on the left
+        'bottom': 0.005, # Decrease for tighter gap on the bottom
+        'right': 0.010,  # Increase for wider gap on the right
+        'top': 0.005     # Decrease for tighter gap on the top
+    }
     
-    # Calculate the rectangle coordinates in figure space
-    # The (x0, y0) for the rectangle needs to be offset by the padding
-    # The width and height need to expand by 2 * padding
+    # 3. CALCULATE NEW RECTANGLE POSITION AND SIZE
     
+    # New X start position (original X start minus left padding)
+    x_start = bbox.x0 - custom_padding['left']
+    
+    # New Y start position (original Y start minus bottom padding)
+    y_start = bbox.y0 - custom_padding['bottom']
+    
+    # New Width (original width + left padding + right padding)
+    new_width = (bbox.x1 - bbox.x0) + custom_padding['left'] + custom_padding['right']
+    
+    # New Height (original height + bottom padding + top padding)
+    new_height = (bbox.y1 - bbox.y0) + custom_padding['bottom'] + custom_padding['top']
+    
+    # Create the border rectangle
     border_rect = patches.Rectangle(
-        (bbox.x0 - OUTER_BORDER_PADDING, bbox.y0 - OUTER_BORDER_PADDING), 
-        (bbox.x1 - bbox.x0) + (2 * OUTER_BORDER_PADDING), 
-        (bbox.y1 - bbox.y0) + (2 * OUTER_BORDER_PADDING), 
+        (x_start, y_start), 
+        new_width, 
+        new_height, 
         facecolor='none', 
         edgecolor='black', 
         linewidth=LINE_THICKNESS, 
@@ -127,7 +136,6 @@ def create_zonal_analysis(df_in, batsman_name, delivery_type):
     fig_boxes.patches.append(border_rect)
     
     return fig_boxes
-
 
 # Chart 2: CREASE BEEHIVE
 def create_crease_beehive(df_in, delivery_type):
