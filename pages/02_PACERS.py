@@ -1129,23 +1129,13 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
     # Hide X and Y ticks and tick labels
     ax.tick_params(axis='y', which='both', left=False, right=False, labelleft=False)
     
-    # Hide axis spines (the border lines)
-    ax.spines['left'].set_visible(False)
+    spine_color = 'black'
+    spine_width = 0.5
+    for spine_name in ['left', 'top', 'bottom','right']:
+        ax.spines[spine_name].set_visible(True)
+        ax.spines[spine_name].set_color(spine_color)
+        ax.spines[spine_name].set_linewidth(spine_width)
     ax.spines['bottom'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['top'].set_visible(False)
-    border_rect = patches.Rectangle(
-        (0.02, 0.02), 
-        0.99, 
-        0.9, 
-        facecolor='none',
-        edgecolor='black',
-        linewidth=0.5,
-        transform=fig.transFigure,
-        clip_on=False,
-        joinstyle='miter' # Ensures sharp corners
-    )
-    fig.add_artist(border_rect)
     plt.tight_layout()
     return fig
 # PAGE SETUP LAYOUT
