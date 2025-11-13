@@ -613,10 +613,17 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
     """
     Generates a horizontal histogram of pacer release speed distribution 
     based on data, using dynamic bins of 5 km/h width.
+    Includes a filter for a minimum of 5 balls per bin and a chart border.
+    
+    Args:
+        df_in (pd.DataFrame): DataFrame containing 'ReleaseSpeed'.
+        handedness_label (str): Label for the title (e.g., "vs Right Hand Bat").
     """
     
+    FIG_SIZE = (4, 4.4)
+
     if df_in.empty or "ReleaseSpeed" not in df_in.columns or df_in["ReleaseSpeed"].empty:
-        fig, ax = plt.subplots(figsize=(4, 4.4))
+        fig, ax = plt.subplots(figsize=FIG_SIZE)
         ax.text(0.5, 0.5, f"No Data or Missing 'ReleaseSpeed' for {handedness_label}", ha='center', va='center', fontsize=12)
         ax.axis('off')
         return fig
@@ -626,7 +633,7 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
     total_balls = len(speeds)
     
     if total_balls == 0:
-        fig, ax = plt.subplots(figsize=(4, 4.4))
+        fig, ax = plt.subplots(figsize=FIG_SIZE)
         ax.text(0.5, 0.5, "No Deliveries Found", ha='center', va='center', fontsize=12)
         ax.axis('off')
         return fig
@@ -642,33 +649,43 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
     # Calculate histogram counts and edges
     counts, bin_edges = np.histogram(speeds, bins=bins)
     
-    # 2. Process Data for Plotting
+    # 2. Process Data for Plotting & Filtering
     
-    # Create bin labels (e.g., 140-145) and calculate percentages
-    bin_labels = []
-    percentages = []
+    # Filter out bins with less than 5 balls
+    MIN_BALLS = 5
+    valid_counts = []
+    valid_bin_labels = []
     
     for i in range(len(counts)):
-        lower = int(bin_edges[i])
-        upper = int(bin_edges[i+1])
-        label = f"{lower}-{upper}"
-        bin_labels.append(label)
-        percentages.append((counts[i] / total_balls) * 100)
+        if counts[i] >= MIN_BALLS:
+            lower = int(bin_edges[i])
+            upper = int(bin_edges[i+1])
+            label = f"{lower}-{upper}"
+            
+            valid_counts.append(counts[i])
+            valid_bin_labels.append(label)
+
+    if not valid_counts:
+        fig, ax = plt.subplots(figsize=FIG_SIZE)
+        ax.text(0.5, 0.5, f"No Bins Meet the {MIN_BALLS}-Ball Minimum Filter", ha='center', va='center', fontsize=10)
+        ax.axis('off')
+        return fig
+        
+    # Calculate percentages for valid bins only
+    valid_percentages = (np.array(valid_counts) / total_balls) * 100
     
     # Reverse order for horizontal bar chart (fastest speeds typically at the top)
-    # We will plot the list in reverse order later for the desired Matplotlib barh visual.
+    plot_percentages = valid_percentages[::-1]
+    plot_labels = valid_bin_labels[::-1]
+    plot_counts = valid_counts[::-1]
     
     # 3. Chart Generation (Horizontal Bar / Histogram)
     
-    fig, ax = plt.subplots(figsize=(4, 4.4))
+    fig, ax = plt.subplots(figsize=FIG_SIZE)
     
-    # Plot the histogram (Horizontal Bar)
-    # The plot indices (y-axis) will be based on the reverse order of the bin_labels
-    
-    # Reverse the data and labels for plotting (to have the fastest speed at the top)
-    plot_percentages = percentages[::-1]
-    plot_labels = bin_labels[::-1]
-    plot_counts = counts[::-1]
+    # Add Chart Border (using fig.patch)
+    fig.patch.set_edgecolor('black')
+    fig.patch.set_linewidth(1.5)
     
     y_pos = np.arange(len(plot_labels))
     
@@ -676,9 +693,7 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
         y_pos,
         plot_percentages,
         color='Red', # Single, uniform color
-        height=0.6,
-        edgecolor='black',
-        linewidth=0.5
+        height=0.6
     )
 
     
@@ -686,30 +701,29 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
     for i, pct in enumerate(plot_percentages):
         count = plot_counts[i]
         
-        if pct > 0:
-            # Display percentage (e.g., 25%)
-            label_text = f'{pct:.0f}%'
-            
-            # Placement logic: Inside if bar is > 10%, otherwise outside
-            x_pos = pct - 1 if pct > 10 else pct + 0.5
-            ha = 'right' if pct > 10 else 'left'
-            text_color = 'white' if pct > 10 else 'black'
-            
-            ax.text(
-                x_pos, 
-                i, 
-                label_text, 
-                ha=ha, va='center', fontsize=12, color=text_color, fontweight='bold'
+        # Display percentage (e.g., 25%)
+        label_text = f'{pct:.0f}%'
+        
+        # Placement logic: Inside if bar is > 10%, otherwise outside
+        x_pos = pct - 1 if pct > 10 else pct + 0.5
+        ha = 'right' if pct > 10 else 'left'
+        text_color = 'white' if pct > 10 else 'black'
+        
+        ax.text(
+            x_pos, 
+            i, 
+            label_text, 
+            ha=ha, va='center', fontsize=12, color=text_color, fontweight='bold'
+        )
+        
+        # Add count label just outside the bar label if outside placement is used
+        if pct <= 10:
+             ax.text(
+                pct + 0.5, 
+                i - 0.25, # Move slightly below the percentage
+                f'({count} balls)', 
+                ha='left', va='center', fontsize=8, color='grey'
             )
-            
-            # Add count label just outside the bar label
-            if pct <= 10:
-                 ax.text(
-                    pct + 0.5, 
-                    i - 0.25, # Move slightly below the percentage
-                    f'({count} balls)', 
-                    ha='left', va='center', fontsize=8, color='grey'
-                )
 
 
     # 4. Formatting
@@ -725,7 +739,7 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
     ax.set_xticklabels([])
     ax.set_xticks([])
     
-    # Remove all spines
+    # Remove all spines 
     ax.spines['top'].set_visible(False)
     ax.spines['bottom'].set_visible(False)
     ax.spines['left'].set_visible(False)
@@ -735,6 +749,7 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
     
     plt.tight_layout()
     return fig
+
 # --- CHART 5: RELEASE ZONE MAP ---
 def create_pacer_release_zone_map(df_in, handedness_label):
     import plotly.graph_objects as go
