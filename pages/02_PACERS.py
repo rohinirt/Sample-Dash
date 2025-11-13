@@ -991,76 +991,124 @@ def create_directional_split(df_in, column_name, handedness_label):
     return fig
 
 # Chart 8: Swing Distribution
-def create_swing_distribution_histogram(df_in, handedness_label):
-    # 0. Initial Check
+def create_swing_analysis_combined(df_in, handedness_label):
+    FIG_SIZE = (7, 6) 
+
+    # 0. Initial Check and Data Preparation
     if df_in.empty or "Swing" not in df_in.columns:
-        fig, ax = plt.subplots(figsize=(20, 6))
+        fig, ax = plt.subplots(figsize=FIG_SIZE)
         ax.text(0.5, 0.5, f"No Swing data for ({handedness_label})", ha='center', va='center', fontsize=12)
         ax.axis('off')
         return fig
 
-    # Ensure 'Swing' is not NaN and is numeric
-    swing_data = df_in["Swing"].dropna().astype(float)
-    if swing_data.empty:
-        fig, ax = plt.subplots(figsize=(20, 6))
+    df_data = df_in["Swing"].dropna().astype(float)
+    if df_data.empty:
+        fig, ax = plt.subplots(figsize=FIG_SIZE)
         ax.text(0.5, 0.5, f"No valid Swing data for ({handedness_label})", ha='center', va='center', fontsize=12)
         ax.axis('off')
         return fig
 
-    # 1. Define Bins of Size 1
-    min_swing = np.floor(swing_data.min())
-    max_swing = np.ceil(swing_data.max())
-    bins = np.arange(min_swing, max_swing + 1.1, 1)
-
-    # 2. Calculate Counts (N) and Bin Edges
-    counts, bin_edges = np.histogram(swing_data, bins=bins)
-    total_balls = len(swing_data)
+    # --- 1. Histogram Data Preparation (Top Chart) ---
+    min_Swing = np.floor(df_data.min())
+    max_Swing = np.ceil(df_data.max())
+    bins = np.arange(min_Swing, max_Swing + 1.1, 1) 
+    
+    counts, _ = np.histogram(df_data, bins=bins)
+    total_balls = len(df_data)
     percentages = (counts / total_balls) * 100
+    lower_bin_edges = bins[:-1] 
+    bar_centers = (bins[:-1] + bins[1:]) / 2
+    bar_width = 0.9 
 
-    # 3. Prepare for plotting: Bar centers and labels
-    # Use the lower edge of the bin for positioning and labeling
-    lower_bin_edges = bin_edges[:-1] # Exclude the final upper boundary
-    bar_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
-    bar_width = 0.9
-
-    # Create tick labels: use only the lower limit of the bin
-    # Use floor to ensure clean integer/single decimal labels
-    tick_labels = [f"{b:.0f}" for b in lower_bin_edges] 
-
-    # 4. Plotting
-    fig, ax = plt.subplots(figsize=(7, 4))
-
-    # Plot the bars, centered correctly
-    rects = ax.bar(bar_centers, percentages, width=bar_width, 
-                   color='red', linewidth=1.0)
-
-    ax.set_xticks(lower_bin_edges)
-    ax.set_xticklabels(tick_labels, ha='right', fontsize=16)
+    # --- 2. Directional Split Data Preparation (Bottom Chart) ---
     
-    # 5. Annotation (Percentages on top of bars)
+    # Logic: IF [Swing] < 0 THEN "LEFT" ELSE "RIGHT" END (Zero handled as Right)
+    df_split = df_data[df_data != 0].copy() # Optionally exclude exact zeros for clarity, but standard is <0 is Left, >=0 is Right
+    
+    left_count = (df_data < 0).sum()
+    right_count = (df_data >= 0).sum()
+    
+    total_split = left_count + right_count
+    
+    # Calculate percentages
+    if total_split > 0:
+        left_pct = (left_count / total_split) * 100
+        right_pct = (right_count / total_split) * 100
+    else:
+        left_pct, right_pct = 0, 0
+        
+    # Set colors based on the image provided (Red/Orange hue)
+    LEFT_COLOR = '#e34a33' # Darker Red/Orange
+    RIGHT_COLOR = '#fdcdac' # Lighter Orange
+
+    # --- 3. Matplotlib Setup and GridSpec ---
+    # Adjust height ratios for histogram (top) and the single bar (bottom)
+    fig = plt.figure(figsize=FIG_SIZE, facecolor='white')
+    gs = GridSpec(2, 1, figure=fig, height_ratios=[4.5, 1], hspace=0.1)
+    
+    ax_hist = fig.add_subplot(gs[0, 0])
+    ax_split = fig.add_subplot(gs[1, 0])
+
+    # --- 4. Plot Histogram (ax_hist) ---
+    rects = ax_hist.bar(bar_centers, percentages, width=bar_width, color='red', linewidth=1.0, label="Overall %")
+    
+    ax_hist.set_title(f"Swing Distribution vs. {handedness_label}", fontsize=14, fontweight='bold', pad=10)
+    
+    # Annotation (Percentages on top of bars)
     for rect, pct in zip(rects, percentages):
-        if pct > 0:
+        if pct > 0.5: 
             height = rect.get_height()
-            # Ensure text is readable: only show % if > 0.5%
-            ax.text(rect.get_x() + rect.get_width() / 2., height + 0.5,
-                    f'{pct:.0f}%',
-                    ha='center', va='bottom', fontsize=16, weight='bold')
+            ax_hist.text(rect.get_x() + rect.get_width() / 2., height + 0.5,
+                        f'{pct:.0f}%',
+                        ha='center', va='bottom', fontsize=12, weight='bold')
     
-    ax.set_ylim(0, percentages.max() * 1.25 if percentages.max() > 0 else 10)
-    # Hide X and Y ticks and tick labels
-    ax.tick_params(axis='y', which='both', left=False, right=False, labelleft=False)
-   
+    ax_hist.set_ylim(0, percentages.max() * 1.35 if percentages.max() > 0 else 10)
     
-    # 1. Set line style for all spines you want visible
-    spine_color = 'black'
-    spine_width = 0.5
-    for spine_name in ['left', 'top', 'bottom','right']:
-        ax.spines[spine_name].set_visible(True)
-        ax.spines[spine_name].set_color(spine_color)
-        ax.spines[spine_name].set_linewidth(spine_width)
-    ax.spines['bottom'].set_visible(False)
-    plt.tight_layout()
+    # Formatting Histogram Axis
+    ax_hist.set_xticks(lower_bin_edges)
+    ax_hist.set_xticklabels([f"{b:.0f}" for b in lower_bin_edges], ha='center', fontsize=10) 
+    ax_hist.tick_params(axis='y', which='both', left=False, right=False, labelleft=False)
+    ax_hist.set_xlabel("Swing (Units)", fontsize=10, labelpad=10)
     
+    # Hide all spines for ax_hist
+    for spine_name in ['left', 'top', 'bottom', 'right']:
+        ax_hist.spines[spine_name].set_visible(False)
+    
+    # --- 5. Plot Directional Split (ax_split) ---
+    
+    # Create the 100% stacked bar chart (ax_split)
+    ax_split.barh([0.5], [left_pct], height=1, color=LEFT_COLOR, left=0)
+    ax_split.barh([0.5], [right_pct], height=1, color=RIGHT_COLOR, left=left_pct)
+
+    # Annotations for percentage labels
+    if left_pct > 5: # Ensure text fits
+        ax_split.text(left_pct / 2, 0.5, f"LEFT\n{left_pct:.0f}%", 
+                      ha='center', va='center', color='white', fontsize=12, fontweight='bold')
+    if right_pct > 5:
+        ax_split.text(left_pct + right_pct / 2, 0.5, f"RIGHT\n{right_pct:.0f}%", 
+                      ha='center', va='center', color='white', fontsize=12, fontweight='bold')
+
+    # Formatting Split Axis
+    ax_split.set_xlim(0, 100)
+    ax_split.set_ylim(0, 1) # Set limits to make space for the bar
+    ax_split.axis('off') # Hide all axis elements
+
+    # --- 6. Add Sharp Border to Figure ---
+    plt.tight_layout(pad=0.2)
+    
+    border_rect = patches.Rectangle(
+        (0.005, 0.005), 
+        0.99,          
+        0.99,          
+        facecolor='none',
+        edgecolor='black',
+        linewidth=1.5,
+        transform=fig.transFigure,
+        clip_on=False,
+        joinstyle='miter' 
+    )
+    fig.add_artist(border_rect)
+
     return fig
     
 #Chart 9 Deviation Dstribution
