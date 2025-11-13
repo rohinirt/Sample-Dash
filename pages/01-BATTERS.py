@@ -100,10 +100,10 @@ def create_zonal_analysis(df_in, batsman_name, delivery_type):
     # 2. DEFINE CUSTOM PADDING FOR EACH SIDE (in figure coordinates, e.g., 0.01 = 1% of figure dimension)
     # Adjust these values to shift the border relative to the plot content:
     custom_padding = {
-        'left': 0.005,   # Increase for wider gap on the left
-        'bottom': 0.005, # Decrease for tighter gap on the bottom
-        'right': 0.005,  # Increase for wider gap on the right
-        'top': 0.005     # Decrease for tighter gap on the top
+        'left': 0.0005,   # Increase for wider gap on the left
+        'bottom': 0.0059, # Decrease for tighter gap on the bottom
+        'right': 0.0005,  # Increase for wider gap on the right
+        'top': 0.0005     # Decrease for tighter gap on the top
     }
     
     # 3. CALCULATE NEW RECTANGLE POSITION AND SIZE
