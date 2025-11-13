@@ -1143,8 +1143,8 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
     ax.spines['top'].set_visible(False)
     border_rect = patches.Rectangle(
         (0.02, 0.02), 
+        0.99, 
         0.9, 
-        0.8, 
         facecolor='none',
         edgecolor='black',
         linewidth=0.5,
