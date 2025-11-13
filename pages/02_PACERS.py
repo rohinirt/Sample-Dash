@@ -1126,7 +1126,7 @@ with col_rhb:
     st.pyplot(create_pacer_zonal_analysis(df_rhb, "RHB"), use_container_width=True)
 
     # Chart 3: PITCHMAP
-    pitch_map_col, run_pct_col = st.columns([3, 1]) 
+    pitch_map_col, run_pct_col = st.columns([1, 1]) 
     with pitch_map_col:
         st.markdown("###### PITCHMAP")
         st.pyplot(create_pacer_pitch_map(df_rhb), use_container_width=True)    
