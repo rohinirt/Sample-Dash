@@ -747,99 +747,150 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
 
     return fig
 
-# --- CHART 5: RELEASE ZONE MAP ---
-def create_pacer_release_zone_map(df_in, handedness_label):
-    import plotly.graph_objects as go
-    
-    if df_in.empty:
-        return go.Figure().update_layout(title=f"No data for Release Zone Map vs. {handedness_label}", height=450)
+# Chart 5 Bowler Release Map
+def create_pacer_release_analysis(df_in, handedness_label): 
+    FIG_SIZE = (4.5, 6) # Increased height for both charts
 
-    # 1. Calculate KPIs
-    runs = df_in["Runs"].sum()
-    wickets = (df_in["Wicket"] == True).sum()
-    balls = len(df_in)
-    
-    average = runs / wickets if wickets > 0 else 0
-    strike_rate = balls / wickets if wickets > 0 else 0
-    
-    # Format KPIs
-    kpi_wickets = str(wickets)
-    kpi_average = f"{average:.1f}" if average > 0 else "-"
-    kpi_sr = f"{strike_rate:.1f}" if strike_rate > 0 else "-"
+    if df_in.empty or "ReleaseY" not in df_in.columns or "ReleaseZ" not in df_in.columns:
+        fig, ax = plt.subplots(figsize=FIG_SIZE)
+        ax.text(0.5, 0.5, f"No data for Release Analysis vs. {handedness_label}", ha='center', va='center', fontsize=12)
+        ax.axis('off')
+        return fig
 
-    # 2. Setup Figure
-    fig = go.Figure()
+    # --- 1. Calculate Lateral Release Performance (LEFT vs RIGHT) ---
+    df_temp = df_in.copy()
     
-    # Filter data for plotting
+    # Categorize based on ReleaseY sign
+    df_temp["ReleaseCategory"] = np.where(
+        df_temp["ReleaseY"] < 0, "LEFT (<0)", 
+        np.where(df_temp["ReleaseY"] > 0, "RIGHT (>0)", "CENTER (=0)")
+    )
+    
+    df_temp = df_temp[df_temp["ReleaseCategory"] != "CENTER (=0)"]
+    
+    # Calculation functions
+    def calculate_ba(row):
+        # Use np.nan as a flag for "N/A"
+        return row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else np.nan
+
+    def calculate_sr(row):
+        # Strike Rate = Balls per Wicket (normalized by 6 for Cricket SR)
+        return (row["Balls"] / row["Wickets"]) * 6 if row["Wickets"] > 0 else np.nan
+        
+    summary = df_temp.groupby("ReleaseCategory").agg(
+        Wickets=("Wicket", lambda x: (x == True).sum()),
+        Runs=("Runs", "sum"),
+        Balls=("Wicket", "count")
+    )
+
+    # Ensure both categories are present for consistent plotting
+    summary = summary.reindex(["LEFT (<0)", "RIGHT (>0)"]).fillna(0)
+    
+    summary["BA"] = summary.apply(calculate_ba, axis=1)
+    summary["SR"] = summary.apply(calculate_sr, axis=1)
+
+    # Formatting helper
+    def format_metric(value, is_wickets=False):
+        if is_wickets:
+            return f"{int(value)}"
+        if np.isnan(value) or value == np.inf:
+            return "N/A"
+        return f"{value:.1f}"
+
+    left = summary.loc["LEFT (<0)"]
+    right = summary.loc["RIGHT (>0)"]
+
+    # --- 2. Setup Figure and GridSpec ---
+    fig = plt.figure(figsize=FIG_SIZE, facecolor='white')
+    gs = GridSpec(2, 1, figure=fig, height_ratios=[4, 1.2], hspace=0.1)
+    
+    ax_map = fig.add_subplot(gs[0, 0])
+    ax_metrics = fig.add_subplot(gs[1, 0])
+
+    # --- 3. Plot Release Zone Map (ax_map) ---
+    
     release_wickets = df_in[df_in["Wicket"] == True]
     release_non_wickets = df_in[df_in["Wicket"] == False]
     
-    # 3. Plot Data
-    
     # Non-Wickets (light grey)
-    fig.add_trace(go.Scatter(
-        x=release_non_wickets["ReleaseY"], y=release_non_wickets["ReleaseZ"], mode='markers', name="No Wicket",
-        marker=dict(color='#D3D3D3', size=7, opacity=0.8,line=dict(width=1, color="white")), hoverinfo='none'
-    ))
+    ax_map.scatter(
+        release_non_wickets["ReleaseY"], release_non_wickets["ReleaseZ"], 
+        s=40, color='#D3D3D3', alpha=0.8, edgecolors='white', linewidths=0.5, label="No Wicket"
+    )
 
     # Wickets (red)
-    fig.add_trace(go.Scatter(
-        x=release_wickets["ReleaseY"], y=release_wickets["ReleaseZ"], mode='markers', name="Wicket",
-        marker=dict(color='red', size=9, line=dict(width=1, color="white")), opacity=1.0, hoverinfo='text',
-        text=[f"Wicket<br>Speed: {s:.1f} km/h" for s in release_wickets["ReleaseSpeed"]]
-    ))
-    
-    # 4. Add Stump Lines (Vertical)
-    # Lines for Off Stump (-0.18), Middle (0), Leg Stump (0.18)
-    stump_lines = [-0.18, 0, 0.18]
-    for y_val in stump_lines:
-        fig.add_vline(x=y_val, line=dict(color="#777777", dash="dot", width=1.0))
-        
-    # 5. Add KPI Annotations (FIXED TO XREF="PAPER")
-    
-    # Map data coordinates (-1.0, 0.0, 1.0) to paper coordinates (0.1, 0.5, 0.9)
-    paper_x_map = {
-        -1.0: 0.1, 
-        0.0: 0.5, 
-        1.0: 0.9
-    }
-    
-    kpi_data = [
-        ("Wickets", kpi_wickets, -1.0),
-        ("Avg", kpi_average, 0.0),
-        ("SR", kpi_sr, 1.0),
-    ]
-    
-    # Add KPI Headers
-    for label, _, x_data_pos in kpi_data:
-        fig.add_annotation(
-            x=paper_x_map[x_data_pos], y=-0.15, xref="paper", yref="paper", 
-            text=f"<b>{label.upper()}</b>", showarrow=False, xanchor='center',
-            font=dict(size=11, color="grey")
-        )
-
-    # Add KPI Values
-    for _, value, x_data_pos in kpi_data:
-        fig.add_annotation(
-            x=paper_x_map[x_data_pos], y=-0.25, xref="paper", yref="paper", 
-            text=f"<b>{value}</b>", showarrow=False, xanchor='center',
-            font=dict(size=16, color="black")
-        )
-    # 6. Layout and Styling
-    fig.update_layout(
-        height = 250,
-        margin=dict(l=0, r=0, t=0, b=0), # Increased bottom margin for KPIs
-        xaxis=dict(
-            range=[-1.5, 1.5], 
-            showgrid=True,showticklabels=False, zeroline=False
-        ),
-        yaxis=dict(
-            range=[0, 2.5], 
-            showgrid=True,showticklabels=False, zeroline=False
-        ), 
-        plot_bgcolor="white", paper_bgcolor="white", showlegend=False
+    ax_map.scatter(
+        release_wickets["ReleaseY"], release_wickets["ReleaseZ"], 
+        s=80, color='red', alpha=1.0, edgecolors='white', linewidths=1.0, label="Wicket", zorder=5
     )
     
+    # Add Stump Lines
+    stump_lines = [-0.18, 0, 0.18]
+    for y_val in stump_lines:
+        ax_map.axvline(x=y_val, color="#777777", linestyle="--", linewidth=1.0)
+    
+    # Formatting Map
+    ax_map.set_title(f"Release Zone Map vs. {handedness_label}", fontsize=12, fontweight='bold', pad=10)
+    ax_map.set_xlim(-1.5, 1.5)
+    ax_map.set_ylim(0, 2.5)
+    ax_map.set_xticks([])
+    ax_map.set_yticks([])
+    ax_map.set_facecolor('white')
+    ax_map.grid(False)
+    ax_map.legend(loc='lower right', fontsize=8, frameon=True, facecolor='white', framealpha=0.7)
+    
+    # Hide all map spines
+    for spine in ax_map.spines.values():
+        spine.set_visible(False)
+        
+    # --- 4. Draw Lateral Metrics Table (ax_metrics) ---
+    
+    # Hide all metrics spines/ticks/labels
+    ax_metrics.axis('off')
+    ax_metrics.set_xlim(0, 1)
+    ax_metrics.set_ylim(0, 1)
+
+    # Titles
+    ax_metrics.text(0.35, 0.9, "LEFT (<0)", ha='center', va='center', fontsize=10, color='grey', fontweight='bold')
+    ax_metrics.text(0.65, 0.9, "RIGHT (>0)", ha='center', va='center', fontsize=10, color='grey', fontweight='bold')
+    
+    # Metric Labels (Left Alignment for labels)
+    ax_metrics.text(0.1, 0.7, "Wickets:", ha='right', va='center', fontsize=10, fontweight='bold')
+    ax_metrics.text(0.1, 0.45, "Avg:", ha='right', va='center', fontsize=10, fontweight='bold')
+    ax_metrics.text(0.1, 0.2, "SR (Balls/Wkt):", ha='right', va='center', fontsize=10, fontweight='bold')
+
+    # LEFT Values
+    ax_metrics.text(0.35, 0.7, format_metric(left["Wickets"], is_wickets=True), ha='center', va='center', fontsize=12, color='red', fontweight='bold')
+    ax_metrics.text(0.35, 0.45, format_metric(left["BA"]), ha='center', va='center', fontsize=12, color='darkred', fontweight='bold')
+    ax_metrics.text(0.35, 0.2, format_metric(left["SR"]), ha='center', va='center', fontsize=12, color='darkred', fontweight='bold')
+
+    # RIGHT Values
+    ax_metrics.text(0.65, 0.7, format_metric(right["Wickets"], is_wickets=True), ha='center', va='center', fontsize=12, color='red', fontweight='bold')
+    ax_metrics.text(0.65, 0.45, format_metric(right["BA"]), ha='center', va='center', fontsize=12, color='darkblue', fontweight='bold')
+    ax_metrics.text(0.65, 0.2, format_metric(right["SR"]), ha='center', va='center', fontsize=12, color='darkblue', fontweight='bold')
+    
+    # --- 5. Add Sharp Border to Figure ---
+    plt.tight_layout(pad=0.2)
+    
+    # Create and add a custom Rectangle patch for sharp border
+    ax_bbox = ax_map.get_position()
+    # Calculate padding relative to figure size
+    padding_x = 0.01 * FIG_SIZE[0] / fig.get_size_inches()[0] 
+    padding_y = 0.005 * FIG_SIZE[1] / fig.get_size_inches()[1] 
+    
+    border_rect = patches.Rectangle(
+        (0.005, 0.005), 
+        0.99, 
+        0.99, 
+        facecolor='none',
+        edgecolor='black',
+        linewidth=1.5,
+        transform=fig.transFigure,
+        clip_on=False,
+        joinstyle='miter' # Ensures sharp corners
+    )
+    fig.add_artist(border_rect)
+
     return fig
 
 # --- CHARTS 6 & 7: SWING/DEVIATION DIRECTIONAL SPLIT (100% Stacked Bar) ---
@@ -1202,7 +1253,7 @@ with col_rhb:
         st.pyplot(create_pacer_release_speed_distribution(df_rhb, "RHB"), use_container_width=True)
     with release_col:
         st.markdown("###### RELEASE")
-        st.plotly_chart(create_pacer_release_zone_map(df_rhb, "RHB"), use_container_width=True)
+        st.pyplot(create_pacer_release_analysis(df_rhb, "RHB"), use_container_width=True)
         
     #Chart 8/9: Swing Deviation Distribution
     swing_dist, deviation_dist = st.columns([2,2])
@@ -1252,7 +1303,7 @@ with col_lhb:
         st.pyplot(create_pacer_release_speed_distribution(df_lhb, "LHB"), use_container_width=True)
     with release_col:
         st.markdown("###### RELEASE")
-        st.plotly_chart(create_pacer_release_zone_map(df_lhb, "LHB"), use_container_width=True)
+        st.pyplot(create_pacer_release_analysis(df_lhb, "LHB"), use_container_width=True)
         
     #Chart 8/9: Swing Deviation Distribution
     swing_dist, deviation_dist = st.columns([2,2])
