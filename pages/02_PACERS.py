@@ -673,9 +673,6 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
     
     fig, ax = plt.subplots(figsize=FIG_SIZE)
     
-    # Add Chart Border (using fig.patch)
-    fig.patch.set_edgecolor('black')
-    fig.patch.set_linewidth(1.5)
     
     y_pos = np.arange(len(plot_labels))
     
@@ -725,9 +722,30 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
     ax.spines['bottom'].set_visible(False)
     ax.spines['left'].set_visible(False)
     ax.spines['right'].set_visible(False)
+    # --- ADDING SHARP BORDER ---
+    # We create a custom Rectangle patch with 'miter' joinstyle and add it to the figure.
+    # Get the bounding box of the axes in figure coordinates
+    ax_bbox = ax.get_position()
     
-    
-    plt.tight_layout()
+    # Calculate padding based on figure dimensions to ensure a consistent border
+    # Use 0.01 for x and y to give a small padding
+    padding_x = 0.01 * FIG_SIZE[0] / fig.get_size_inches()[0] # Scale padding based on total figure width
+    padding_y = 0.01 * FIG_SIZE[1] / fig.get_size_inches()[1] # Scale padding based on total figure height
+
+    border_rect = patches.Rectangle(
+        (ax_bbox.x0 - padding_x, ax_bbox.y0 - padding_y), # Start (x,y)
+        ax_bbox.width + 2 * padding_x,                    # Width
+        ax_bbox.height + 2 * padding_y,                   # Height
+        facecolor='none',
+        edgecolor='black',
+        linewidth=0.5,
+        transform=fig.transFigure, # Use figure coordinates
+        clip_on=False,             # Ensure it's not clipped
+        joinstyle='miter'          # THIS ENSURES SHARP CORNERS
+    )
+    fig.add_artist(border_rect) # Add the custom rectangle to the figure
+
+    return fig
     return fig
 
 # --- CHART 5: RELEASE ZONE MAP ---
