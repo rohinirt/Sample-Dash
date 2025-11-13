@@ -991,7 +991,7 @@ def create_directional_split(df_in, column_name, handedness_label):
     return fig
 
 # Chart 8: Swing Distribution
-def create_swing_analysis_combined(df_in, handedness_label):
+def create_swing_distribution_histogram(df_in, handedness_label):
     FIG_SIZE = (7, 6) 
 
     # 0. Initial Check and Data Preparation
