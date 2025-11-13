@@ -947,7 +947,7 @@ def create_swing_distribution_histogram(df_in, handedness_label):
     # --- 3. Matplotlib Setup and GridSpec ---
     # Adjusted height ratio and HSPACE for tighter layout
     fig = plt.figure(figsize=FIG_SIZE, facecolor='white')
-    gs = GridSpec(2, 1, figure=fig, height_ratios=[4, 1], hspace=0.05)
+    gs = GridSpec(2, 1, figure=fig, height_ratios=[4, 1], hspace=0.1)
     
     ax_hist = fig.add_subplot(gs[0, 0])
     ax_split = fig.add_subplot(gs[1, 0])
@@ -971,7 +971,6 @@ def create_swing_distribution_histogram(df_in, handedness_label):
     ax_hist.set_xticks(lower_bin_edges)
     ax_hist.set_xticklabels([f"{b:.0f}" for b in lower_bin_edges], ha='center', fontsize=10) 
     ax_hist.tick_params(axis='y', which='both', left=False, right=False, labelleft=False)
-    ax_hist.set_xlabel("Swing (Units)", fontsize=10, labelpad=10)
     
     # Hide all spines for ax_hist
     for spine_name in ['left', 'top', 'bottom', 'right']:
@@ -1097,7 +1096,6 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
     ax_hist.set_xticks(lower_bin_edges)
     ax_hist.set_xticklabels([f"{b:.0f}" for b in lower_bin_edges], ha='center', fontsize=10) 
     ax_hist.tick_params(axis='y', which='both', left=False, right=False, labelleft=False)
-    ax_hist.set_xlabel("Deviation (Units)", fontsize=10, labelpad=10)
     
     # Hide all spines for ax_hist
     for spine_name in ['left', 'top', 'bottom', 'right']:
