@@ -1123,13 +1123,13 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
     
     # --- 6. Add Sharp Border to Figure ---
     # Reduced padding here for closer border
-    plt.tight_layout(pad=0.05)
+    plt.tight_layout(pad=0.01)
     
     # Normalized figure coordinates for precise placement
     border_rect = patches.Rectangle(
-        (0.005, 0.005), 
-        0.99,          
-        0.99,          
+        (0.002, 0.002), 
+        0.8,          
+        0.8,          
         facecolor='none',
         edgecolor='black',
         linewidth=1.5,
