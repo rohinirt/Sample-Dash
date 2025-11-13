@@ -468,29 +468,36 @@ def create_pacer_pitch_map(df_in):
     return fig
 
 # --- CHART 3b: PITCH LENGTH METRICS (BOWLER FOCUS) ---
-def create_pacer_pitch_length_metrics(df_in):
-    # Imports needed if not at the top of the file
-    from matplotlib import cm
-    import matplotlib.pyplot as plt
-    import matplotlib.colors as mcolors
-    import pandas as pd
-    
-    FIG_HEIGHT = 5.7
+# --- Helper function for Pitch Bins (Hardcoded for Seam) ---
+def get_pacer_pitch_bins():
+    """Returns fixed pitch bins for Seam bowlers."""
+    # Seam Bins: 1.2-6: Full, 6-8 Length, 8-10 Short, 10-15 Bouncer
+    return {
+        "Full": [1.2, 6.0],
+        "Length": [6.0, 8.0],
+        "Short": [8.0, 10.0],
+        "Bouncer": [10.0, 15.0],
+    }
+
+# --- CHART 3b: PITCH LENGTH BOWLER METRICS (EQUAL SIZED BOXES) ---
+def create_pacer_pitch_length_bars(df_in):
+    # Increased height to accommodate three stacked charts comfortably
+    FIG_SIZE = (4, 6) 
     
     if df_in.empty:
-        fig, ax = plt.subplots(figsize=(2, FIG_HEIGHT)); 
-        ax.text(0.5, 0.5, "No Data", ha='center', va='center', rotation=90); 
-        ax.axis('off'); 
+        fig, ax = plt.subplots(figsize=FIG_SIZE)
+        ax.text(0.5, 0.5, "No Data for Pacer Pitch Length Comparison", ha='center', va='center', fontsize=12)
+        ax.axis('off')
         return fig
 
-    PITCH_BINS_DICT = get_pitch_bins() # Simplified call
-        
-    # Define ordered keys for plotting order (far to near) - Only Seam
-    ordered_keys = ["Bouncer", "Short", "Length", "Full"]
-    COLORMAP = 'Reds' # Red indicates higher runs/run percentage (worse for bowler)
+    # Get the pitch bins and define order (Fixed for Pacer)
+    PITCH_BINS_DICT = get_pacer_pitch_bins()
+    ordered_keys = ["Full", "Length", "Short", "Bouncer"]
     
     # 1. Data Preparation
     def assign_pitch_length(x):
+        # We don't need to consider 'Full Toss' in the assignment logic for this chart 
+        # as it's typically excluded from length comparison analysis.
         for length, bounds in PITCH_BINS_DICT.items():
             if bounds[0] <= x < bounds[1]: return length
         return None
@@ -498,93 +505,108 @@ def create_pacer_pitch_length_metrics(df_in):
     df_pitch = df_in.copy()
     df_pitch["PitchLength"] = df_pitch["BounceX"].apply(assign_pitch_length)
     
-    if df_pitch["PitchLength"].isnull().all() or df_pitch.empty:
-        fig, ax = plt.subplots(figsize=(2, FIG_HEIGHT)); 
-        ax.text(0.5, 0.5, "No Pitches Assigned", ha='center', va='center', rotation=90); 
-        ax.axis('off'); 
-        return fig
-
-    # Aggregate data - ADD RUNS, BALLS, WICKETS
+    # Aggregate data
     df_summary = df_pitch.groupby("PitchLength").agg(
         Runs=("Runs", "sum"), 
         Wickets=("Wicket", lambda x: (x == True).sum()), 
         Balls=("Wicket", "count")
     ).reset_index().set_index("PitchLength").reindex(ordered_keys).fillna(0)
     
-    # --- CALCULATE BOWLER METRICS ---
-    df_summary["Average"] = df_summary.apply(
-        # Bowling Average (Runs / Wickets)
-        lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else (0), axis=1
+    # Calculate Bowling Metrics
+    # Bowling Average = Runs / Wickets
+    df_summary["BowlingAverage"] = df_summary.apply(
+        lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else (100 if row["Balls"] > 0 else 0), axis=1
     )
-    df_summary["StrikeRate"] = df_summary.apply(
-        # Bowling Strike Rate (Balls / Wickets)
-        lambda row: row["Balls"] / row["Wickets"] if row["Wickets"] > 0 else (0), axis=1
+    # Bowling Strike Rate = Balls / Wickets * 100
+    df_summary["BowlingStrikeRate"] = df_summary.apply(
+        lambda row: row["Balls"] / row["Wickets"] if row["Wickets"] > 0 else (row["Balls"] if row["Balls"] > 0 else 0), axis=1
     )
-    # --- Calculate Run Percentage (for color mapping) ---
-    total_runs = df_summary["Runs"].sum()
-    df_summary["RunPercentage"] = (df_summary["Runs"] / total_runs) * 100 if total_runs > 0 else 0
-
-    # 2. Chart Setup
-    fig_stack, ax_stack = plt.subplots(figsize=(2, FIG_HEIGHT)) 
-
-    # Plotting setup variables
-    num_boxes = len(ordered_keys)
-    box_height = 1.0 / num_boxes
-    bottom = 0.0
+    # Use 'Wickets' as the count for Dismissals
+    df_summary["Dismissals"] = df_summary["Wickets"]
     
-    # Colormap and Normalization based on Run Percentage
-    max_pct = df_summary["RunPercentage"].max() if df_summary["RunPercentage"].max() > 0 else 100
-    norm = mcolors.Normalize(vmin=0, vmax=max_pct)
-    cmap = cm.get_cmap(COLORMAP)
+    # Categories for plotting (reversed for barh)
+    categories = df_summary.index.tolist()[::-1]
     
-    # 3. Plotting Equal Boxes (Vertical Heat Map)
-    for index, row in df_summary.iterrows():
-        pct = row["RunPercentage"]
-        wkts = int(row["Wickets"])
-        avg = row["Average"] 
-        sr = row["StrikeRate"] 
-        
-        # Determine box color
-        color = cmap(norm(pct))
-        
-        # Draw the box 
-        ax_stack.bar( 
-            x=0.5,            
-            height=box_height,
-            width=1,          
-            bottom=bottom,    
-            color=color,
-            edgecolor='black', 
-            linewidth=1
-        )
-        
-        # Add labels - UPDATING LABEL TEXT
-        label_text = (
-            f"{index.upper()}\n"
-            f"{pct:.0f}% Runs\n"
-            f"W: {wkts}\n"
-            f"Avg: {avg:.1f}\n"
-            f"SR: {sr:.1f}"
-        )
-        
-        # Calculate text color for contrast
-        r, g, b = color[:3]
-        luminosity = 0.2126 * r + 0.7152 * g + 0.0722 * b
-        text_color = 'white' if luminosity < 0.5 else 'black'
+    # 2. Chart Setup (3 Rows, 1 Column)
+    fig, axes = plt.subplots(3, 1, figsize=FIG_SIZE, sharey=True) 
+    plt.subplots_adjust(hspace=0.4) 
 
-        # Text plotting
-        ax_stack.text(0.5, bottom + box_height / 2, 
-                      label_text,
-                      ha='center', va='center', fontsize=9, color=text_color, weight='bold', linespacing=1.2)
-        
-        bottom += box_height
-        
-    # 4. Styling
-    ax_stack.set_xlim(0, 1); ax_stack.set_ylim(0, 1)
-    ax_stack.axis('off') 
+    # --- Metrics and Titles (Order: Dismissals, Bowling Average, Bowling Strike Rate) ---
+    metrics = ["Dismissals", "BowlingAverage", "BowlingStrikeRate"]
+    titles = ["Dismissals (Wickets)", "Bowling Average (Runs/Wkt)", "Bowling Strike Rate (Balls/Wkt)"]
 
-    plt.tight_layout(pad=0.9)
-    return fig_stack
+    # Define limits for each chart to ensure proper scaling
+    max_wkts = df_summary["Dismissals"].max() * 1.5 if df_summary["Dismissals"].max() > 0 else 5
+    max_avg = df_summary["BowlingAverage"].max() * 1.2 if df_summary["BowlingAverage"].max() > 0 else 60
+    max_sr = df_summary["BowlingStrikeRate"].max() * 1.2 if df_summary["BowlingStrikeRate"].max() > 0 else 100 # SR can be very high if few wickets
+
+    xlim_limits = {
+        "Dismissals": (0, max_wkts),
+        "BowlingAverage": (0, max_avg),
+        "BowlingStrikeRate": (0, max_sr)
+    }
+
+    # --- Plotting Loop ---
+    for i, ax in enumerate(axes):
+        metric = metrics[i]
+        title = titles[i]
+        
+        # Data values (reversed to align with category order)
+        values = df_summary[metric].values[::-1] 
+        
+        # Define x limits
+        ax.set_xlim(xlim_limits[metric])
+        
+        # Horizontal Bar Chart
+        ax.barh(categories, values, height=0.5, color='Red', zorder=3, alpha=0.9)
+        
+        # --- Annotations ---
+        for j, (cat, val) in enumerate(zip(categories, values)):
+            # Format value
+            if metric == "Dismissals":
+                label = f"{int(val)}"
+            else:
+                label = f"{val:.1f}" # Use 1 decimal place for averages/rates
+            
+            # Place label slightly to the right of the bar tip
+            ax.text(val, j, label, 
+                    ha='left', va='center', 
+                    fontsize=10, fontweight = 'bold', color='black',
+                    bbox=dict(facecolor='White', alpha=0.8, edgecolor='none', pad=2),
+                    zorder=4)
+
+        # --- Formatting ---
+        ax.set_title(title, fontsize=10, fontweight='bold', pad=5) # Reduced title size slightly to fit
+        ax.set_facecolor('white')
+
+        # Set Ticks and Spines
+        ax.tick_params(axis='x', labelsize=8)
+        ax.tick_params(axis='y', length=0) # Hide y ticks
+
+        # Set Y-axis labels only on the bottom-most chart (ax[2])
+        if i == 2:
+            ax.set_yticks(np.arange(len(categories)), labels=[c.upper() for c in categories], fontsize=9)
+        else:
+            # Remove y-tick labels for the top two charts
+            ax.set_yticks(np.arange(len(categories)), labels=[''] * len(categories))
+            
+        ax.xaxis.grid(False) 
+        ax.yaxis.grid(False)
+
+        # Hide x labels/ticks and enforce xlim
+        ax.set_xticks([]) 
+        ax.set_xlim(0, xlim_limits[metric][1]) 
+        
+        # --- Custom Spines: Right, Top, Bottom ---
+        spine_color = 'lightgray'
+        spine_width = 1.0 
+        for spine_name in ['left', 'right', 'top', 'bottom']:
+            ax.spines[spine_name].set_visible(False)
+            ax.spines[spine_name].set_color(spine_color)
+            ax.spines[spine_name].set_linewidth(spine_width)
+            
+    plt.tight_layout(pad=0.5)
+    return fig
     
 # --- CHART 4: RELEASE SPEED DISTRIBUTION ---
 def create_pacer_release_speed_distribution(df_in, handedness_label):
@@ -1132,7 +1154,7 @@ with col_rhb:
         st.pyplot(create_pacer_pitch_map(df_rhb), use_container_width=True)    
     with run_pct_col:
         st.markdown("##### ")
-        st.pyplot(create_pacer_pitch_length_metrics(df_rhb), use_container_width=True)
+        st.pyplot(create_pacer_pitch_length_bars(df_rhb), use_container_width=True)
 
 
      # Chart 4/5: RELEASE
@@ -1183,7 +1205,7 @@ with col_lhb:
         st.pyplot(create_pacer_pitch_map(df_lhb), use_container_width=True)    
     with run_pct_col:
         st.markdown("##### ")
-        st.pyplot(create_pacer_pitch_length_metrics(df_lhb), use_container_width=True)
+        st.pyplot(create_pacer_pitch_length_bars(df_lhb), use_container_width=True)
 
     # Chart 4/5: RELEASE
     pace_col, release_col = st.columns([2, 2]) 
