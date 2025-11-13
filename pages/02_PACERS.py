@@ -1119,7 +1119,7 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
                     f'{pct:.0f}%',
                     ha='center', va='bottom', fontsize=16, weight='bold')
     
-    ax.set_ylim(0, percentages.max() * 1.25 if percentages.max() > 0 else 10)
+    ax.set_ylim(-0.5, percentages.max() * 1.25 if percentages.max() > 0 else 10)
     # Hide X and Y ticks and tick labels
     ax.tick_params(axis='y', which='both', left=False, right=False, labelleft=False)
     
