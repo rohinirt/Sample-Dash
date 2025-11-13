@@ -1318,7 +1318,7 @@ with col_lhb:
         st.markdown("###### SWING")
         st.pyplot(create_swing_distribution_histogram(df_lhb, "LHB"))
     with deviation_dist:
-                st.markdown("###### DEVIATION")
+        st.markdown("###### DEVIATION")
         st.pyplot(create_deviation_distribution_histogram(df_lhb, "LHB"))
         
     # Chart 6/7: Lateral Movement
