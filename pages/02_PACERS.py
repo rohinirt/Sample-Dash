@@ -749,7 +749,7 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
 
 # Chart 5 Bowler Release Map
 def create_pacer_release_analysis(df_in, handedness_label): 
-    FIG_SIZE = (4.5, 6) # Increased height for both charts
+    FIG_SIZE = (4, 4.4) # Increased height for both charts
 
     if df_in.empty or "ReleaseY" not in df_in.columns or "ReleaseZ" not in df_in.columns:
         fig, ax = plt.subplots(figsize=FIG_SIZE)
@@ -871,8 +871,8 @@ def create_pacer_release_analysis(df_in, handedness_label):
     # Create and add a custom Rectangle patch for sharp border
     ax_bbox = ax_map.get_position()
     # Calculate padding relative to figure size
-    padding_x = 0.005 * FIG_SIZE[0] / fig.get_size_inches()[0] 
-    padding_y = 0.005 * FIG_SIZE[1] / fig.get_size_inches()[1] 
+    padding_x = 0.001 * FIG_SIZE[0] / fig.get_size_inches()[0] 
+    padding_y = 0.001 * FIG_SIZE[1] / fig.get_size_inches()[1] 
     
     border_rect = patches.Rectangle(
         (0.005, 0.005), 
