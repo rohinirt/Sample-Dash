@@ -775,7 +775,7 @@ def create_pacer_release_analysis(df_in, handedness_label):
 
     def calculate_sr(row):
         # Strike Rate = Balls per Wicket (normalized by 6 for Cricket SR)
-        return (row["Balls"] / row["Wickets"]) * 6 if row["Wickets"] > 0 else np.nan
+        return (row["Balls"] / row["Wickets"]) if row["Wickets"] > 0 else np.nan
         
     summary = df_temp.groupby("ReleaseCategory").agg(
         Wickets=("Wicket", lambda x: (x == True).sum()),
