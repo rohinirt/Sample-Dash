@@ -69,7 +69,7 @@ def create_pacer_crease_beehive(df_in, handedness_label):
     return fig_cbh
 
 
-# --- CHART 2b: LATERAL PERFORMANCE BOXES (BOWLING AVERAGE) ---
+# --- CHART 1b: LATERAL PERFORMANCE BOXES (BOWLING AVERAGE) ---
 def create_pacer_lateral_performance_boxes(df_in, handedness_label):
     # This function now correctly reverses the lateral zones for LHB for visual consistency.
     df_lateral = df_in.copy()
