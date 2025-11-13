@@ -373,7 +373,7 @@ def create_pacer_pitch_map(df_in):
 
     if df_in.empty:
         # Create an empty figure with a text note if data is missing
-        fig, ax = plt.subplots(figsize=(4,5))
+        fig, ax = plt.subplots(figsize=(3,4))
         ax.text(0.5, 0.5, f"No data for Pacer Pitch Map", ha='center', va='center', fontsize=12)
         ax.axis('off')
         return fig
@@ -383,7 +383,7 @@ def create_pacer_pitch_map(df_in):
     pitch_non_wickets = df_in[df_in["Wicket"] == False]
     
     # --- Chart Setup ---
-    fig, ax = plt.subplots(figsize=(4,5)) # Maintained figsize=(4,6)
+    fig, ax = plt.subplots(figsize=(3,4)) # Maintained figsize=(4,6)
     ax.set_facecolor('white')
     fig.patch.set_facecolor('white')
 
