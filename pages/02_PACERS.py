@@ -749,7 +749,7 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
 
 # Chart 5 Bowler Release Map
 def create_pacer_release_analysis(df_in, handedness_label): 
-    FIG_SIZE = (4, 3) # Increased height for both charts
+    FIG_SIZE = (4, 3.5) # Increased height for both charts
 
     if df_in.empty or "ReleaseY" not in df_in.columns or "ReleaseZ" not in df_in.columns:
         fig, ax = plt.subplots(figsize=FIG_SIZE)
