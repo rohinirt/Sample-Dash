@@ -947,7 +947,7 @@ def create_swing_distribution_histogram(df_in, handedness_label):
     # --- 3. Matplotlib Setup and GridSpec ---
     # Adjusted height ratio and HSPACE for tighter layout
     fig = plt.figure(figsize=FIG_SIZE, facecolor='white')
-    gs = GridSpec(2, 1, figure=fig, height_ratios=[4, 1], hspace=0.1)
+    gs = GridSpec(2, 1, figure=fig, height_ratios=[4, 1], hspace=0.3)
     
     ax_hist = fig.add_subplot(gs[0, 0])
     ax_split = fig.add_subplot(gs[1, 0])
@@ -1072,7 +1072,7 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
     # --- 3. Matplotlib Setup and GridSpec ---
     # Adjusted height ratio and HSPACE for tighter layout
     fig = plt.figure(figsize=FIG_SIZE, facecolor='white')
-    gs = GridSpec(2, 1, figure=fig, height_ratios=[4, 1], hspace=0.5)
+    gs = GridSpec(2, 1, figure=fig, height_ratios=[4, 1], hspace=0.3)
     
     ax_hist = fig.add_subplot(gs[0, 0])
     ax_split = fig.add_subplot(gs[1, 0])
