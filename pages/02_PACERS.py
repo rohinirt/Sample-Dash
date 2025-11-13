@@ -831,7 +831,7 @@ def create_pacer_release_analysis(df_in, handedness_label):
     
     # Formatting Map
     ax_map.set_xlim(-1.5, 1.5)
-    ax_map.set_ylim(1.5, 2.5)
+    ax_map.set_ylim(0.5, 2.5)
     ax_map.set_xticks([])
     ax_map.set_yticks([])
     ax_map.set_facecolor('white')
@@ -851,27 +851,27 @@ def create_pacer_release_analysis(df_in, handedness_label):
 
     # Titles
     # Metric Labels (Left Alignment for labels)
-    ax_metrics.text(0.1, 0.7, "W:", ha='right', va='center', fontsize=10, fontweight='bold')
-    ax_metrics.text(0.1, 0.45, "Avg:", ha='right', va='center', fontsize=10, fontweight='bold')
-    ax_metrics.text(0.1, 0.2, "SR:", ha='right', va='center', fontsize=10, fontweight='bold')
+    ax_metrics.text(0.05, 0.7, "W:", ha='right', va='center', fontsize=10, fontweight='bold')
+    ax_metrics.text(0.05, 0.45, "Avg:", ha='right', va='center', fontsize=10, fontweight='bold')
+    ax_metrics.text(0.05, 0.2, "SR:", ha='right', va='center', fontsize=10, fontweight='bold')
 
     # LEFT Values
-    ax_metrics.text(0.35, 0.7, format_metric(left["Wickets"], is_wickets=True), ha='center', va='center', fontsize=12, color='red', fontweight='bold')
-    ax_metrics.text(0.35, 0.45, format_metric(left["BA"]), ha='center', va='center', fontsize=12, color='darkred', fontweight='bold')
-    ax_metrics.text(0.35, 0.2, format_metric(left["SR"]), ha='center', va='center', fontsize=12, color='darkred', fontweight='bold')
+    ax_metrics.text(0.3, 0.7, format_metric(left["Wickets"], is_wickets=True), ha='center', va='center', fontsize=12, color='red', fontweight='bold')
+    ax_metrics.text(0.3, 0.45, format_metric(left["BA"]), ha='center', va='center', fontsize=12, color='darkred', fontweight='bold')
+    ax_metrics.text(0.3, 0.2, format_metric(left["SR"]), ha='center', va='center', fontsize=12, color='darkred', fontweight='bold')
 
     # RIGHT Values
-    ax_metrics.text(0.65, 0.7, format_metric(right["Wickets"], is_wickets=True), ha='center', va='center', fontsize=12, color='red', fontweight='bold')
-    ax_metrics.text(0.65, 0.45, format_metric(right["BA"]), ha='center', va='center', fontsize=12, color='darkblue', fontweight='bold')
-    ax_metrics.text(0.65, 0.2, format_metric(right["SR"]), ha='center', va='center', fontsize=12, color='darkblue', fontweight='bold')
+    ax_metrics.text(0.7, 0.7, format_metric(right["Wickets"], is_wickets=True), ha='center', va='center', fontsize=12, color='red', fontweight='bold')
+    ax_metrics.text(0.7, 0.45, format_metric(right["BA"]), ha='center', va='center', fontsize=12, color='darkblue', fontweight='bold')
+    ax_metrics.text(0.7, 0.2, format_metric(right["SR"]), ha='center', va='center', fontsize=12, color='darkblue', fontweight='bold')
     
     # --- 5. Add Sharp Border to Figure ---
-    plt.tight_layout(pad=0.2)
+    plt.tight_layout(pad=0.1)
     
     # Create and add a custom Rectangle patch for sharp border
     ax_bbox = ax_map.get_position()
     # Calculate padding relative to figure size
-    padding_x = 0.01 * FIG_SIZE[0] / fig.get_size_inches()[0] 
+    padding_x = 0.005 * FIG_SIZE[0] / fig.get_size_inches()[0] 
     padding_y = 0.005 * FIG_SIZE[1] / fig.get_size_inches()[1] 
     
     border_rect = patches.Rectangle(
