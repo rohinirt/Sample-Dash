@@ -906,10 +906,6 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
     plt.tight_layout()
 
 
-# =========================================================
-# PAGE SETUP AND FILTERING
-# =========================================================
-
 st.set_page_config(
     layout="wide"
 )
@@ -926,10 +922,10 @@ df_seam_base = df_raw[df_raw["DeliveryType"] == "Seam"]
 
 st.title("PACERS")
 
-# 3. FILTERS (Bowling Team and Bowler)
-filter_col1, filter_col2 = st.columns(2) 
+# 3. FILTERS (Bowling Team, Bowler, and Inning)
+filter_col1, filter_col2, filter_col3 = st.columns(3) 
 
-# --- Filter Logic ---
+# --- Prepare Filter Options ---
 if "BowlingTeam" in df_seam_base.columns:
     team_column = "BowlingTeam"
 else:
@@ -937,14 +933,29 @@ else:
     st.warning("The 'BowlingTeam' column was not found. Displaying all Batting Teams as a fallback.")
 
 all_teams = ["All"] + sorted(df_seam_base[team_column].dropna().unique().tolist())
-all_bowlers = ["All"] + sorted(df_seam_base["BowlerName"].dropna().unique().tolist()) 
+all_bowlers = ["All"] + sorted(df_seam_base["BowlerName"].dropna().unique().unique().tolist()) 
 
+# Check for Inning column and create list of options
+inning_options = ["All"]
+if "Inning" in df_seam_base.columns:
+    # Ensure innings are treated as integers for sorting
+    valid_innings = df_seam_base["Inning"].dropna().astype(int).unique()
+    inning_options.extend(sorted([str(i) for i in valid_innings]))
+else:
+    st.warning("Inning column not found for filtering.")
+
+# --- Render Filters ---
 with filter_col1:
     bowl_team = st.selectbox("Bowling Team", all_teams, index=0)
 
 with filter_col2:
     bowler = st.selectbox("Bowler Name", all_bowlers, index=0)
+
+with filter_col3:
+    selected_inning = st.selectbox("Inning", inning_options, index=0)
+
 st.header(f"{bowler}")
+
 # 4. Apply Filters to the Base Seam Data
 df_filtered = df_seam_base.copy()
 
@@ -957,6 +968,11 @@ if bowler != "All":
     else:
         st.warning("BowlerName column not found for filtering.")
 
+# --- Apply Inning Filter ---
+if selected_inning != "All" and "Inning" in df_filtered.columns:
+    # Convert the selected inning string back to an integer for filtering
+    inning_int = int(selected_inning)
+    df_filtered = df_filtered[df_filtered["Inning"] == inning_int]
 # =========================================================
 # 5. SPLIT AND DISPLAY CHARTS (RHB vs LHB) 🏏
 # =========================================================
