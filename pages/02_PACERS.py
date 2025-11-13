@@ -875,7 +875,7 @@ def create_pacer_release_analysis(df_in, handedness_label):
     padding_y = 0.001 * FIG_SIZE[1] / fig.get_size_inches()[1] 
     
     border_rect = patches.Rectangle(
-        (0.005, 0.005), 
+        (0, 0.0), 
         0.99, 
         0.99, 
         facecolor='none',
