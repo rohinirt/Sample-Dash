@@ -25,7 +25,7 @@ import matplotlib.colors as mcolors
 from matplotlib.gridspec import GridSpec
 
 # =========================================================
-# Chart 2: BOWLER ANALYSIS (CREASE BEEHIVE + LATERAL BOXES)
+# Chart 2: CREASE BEEHIVE 
 # ========================================================
 def create_pacer_crease_beehive(df_in, handedness_label): # Renamed function and parameter
     if df_in.empty:
@@ -89,9 +89,6 @@ def create_pacer_crease_beehive(df_in, handedness_label): # Renamed function and
     ax_boxes = fig.add_subplot(gs[1, 0])   
     fig.patch.set_facecolor('white')
     
-    # Add handedness label to the figure title
-    fig.suptitle(f"Bowler Analysis vs {handedness_label} Batsmen", fontsize=11, fontweight='bold', y=0.98)
-
 
     # -----------------------------------------------------------
     ## --- 2. CHART 2a: CREASE BEEHIVE (ax_bh) ---
@@ -304,7 +301,49 @@ def create_pacer_zonal_analysis(df_in, handedness_label):
         linespacing=1.2)
         
     ax.set_xlim(-0.75, 0.75); ax.set_ylim(0, 2); ax.axis('off'); 
-    plt.tight_layout(pad=0.5) 
+    plt.tight_layout(pad=0.1)
+    bbox = ax.get_position()
+    LINE_THICKNESS = 0.3
+    
+    # 2. DEFINE CUSTOM PADDING FOR EACH SIDE (in figure coordinates, e.g., 0.01 = 1% of figure dimension)
+    # Adjust these values to shift the border relative to the plot content:
+    custom_padding = {
+        'left': 0.0002,   # Increase for wider gap on the left
+        'bottom': 0.03, # Decrease for tighter gap on the bottom
+        'right': 0.0002,  # Increase for wider gap on the right
+        'top': 0.00001     # Decrease for tighter gap on the top
+    }
+    
+    # 3. CALCULATE NEW RECTANGLE POSITION AND SIZE
+    
+    # New X start position (original X start minus left padding)
+    x_start = bbox.x0 - custom_padding['left']
+    
+    # New Y start position (original Y start minus bottom padding)
+    y_start = bbox.y0 - custom_padding['bottom']
+    
+    # New Width (original width + left padding + right padding)
+    new_width = (bbox.x1 - bbox.x0) + custom_padding['left'] + custom_padding['right']
+    
+    # New Height (original height + bottom padding + top padding)
+    new_height = (bbox.y1 - bbox.y0) + custom_padding['bottom'] + custom_padding['top']
+    
+    # Create the border rectangle
+    border_rect = patches.Rectangle(
+        (x_start, y_start), 
+        new_width, 
+        new_height, 
+        facecolor='none', 
+        edgecolor='black', 
+        linewidth=LINE_THICKNESS, 
+        transform=fig_boxes.transFigure, 
+        clip_on=False
+    )
+    
+    # Add the border to the figure
+    fig_boxes.patches.append(border_rect)
+    
+    return fig_boxes
     return fig_boxes
 
 # --- Helper function for Pitch Bins (Centralized) ---
