@@ -1017,7 +1017,7 @@ def create_swing_distribution_histogram(df_in, handedness_label):
     
 #Chart 9 Deviation Dstribution Histogram
 def create_deviation_distribution_histogram(df_in, handedness_label):
-    FIG_SIZE = (5, 4) 
+    FIG_SIZE = (5, 5) 
 
     # 0. Initial Check and Data Preparation
     if df_in.empty or "Deviation" not in df_in.columns:
