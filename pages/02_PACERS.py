@@ -979,7 +979,7 @@ def create_directional_split(df_in, column_name, handedness_label):
     ax.set_yticks([]) 
     ax.set_yticklabels([])
     border_rect = patches.Rectangle(
-        (0.05, 0.13), 
+        (0.02, 0.02), 
         0.9, 
         0.8, 
         facecolor='none',
@@ -1061,9 +1061,9 @@ def create_swing_distribution_histogram(df_in, handedness_label):
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
     border_rect = patches.Rectangle(
-        (0.05, 0.05), 
+        (0.02, 0.02), 
+        0.99, 
         0.9, 
-        0.8, 
         facecolor='none',
         edgecolor='black',
         linewidth=0.5,
