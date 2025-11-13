@@ -978,20 +978,14 @@ def create_directional_split(df_in, column_name, handedness_label):
     ax.set_xticks([]) 
     ax.set_yticks([]) 
     ax.set_yticklabels([])
-    border_rect = patches.Rectangle(
-        (0, 0.02), 
-        1, 
-        0.99, 
-        facecolor='none',
-        edgecolor='black',
-        linewidth=0.5,
-        transform=fig.transFigure,
-        clip_on=False,
-        joinstyle='miter' # Ensures sharp corners
-    )
-    fig.add_artist(border_rect)
-    for spine in ax.spines.values():
-        spine.set_visible(False)
+
+    spine_color = 'black'
+    spine_width = 0.5
+    for spine_name in ['left', 'top', 'bottom','right']:
+        ax.spines[spine_name].set_visible(True)
+        ax.spines[spine_name].set_color(spine_color)
+        ax.spines[spine_name].set_linewidth(spine_width)
+    ax.spines['top'].set_visible(False)
     
     plt.tight_layout()
     return fig
@@ -1271,17 +1265,17 @@ with col_rhb:
     #Chart 8/9: Swing Deviation Distribution
     swing_dist, deviation_dist = st.columns([2,2])
     with swing_dist:
+        st.markdown("###### SWING")
         st.pyplot(create_swing_distribution_histogram(df_rhb, "RHB"))
     with deviation_dist:
+        st.markdown("###### DEVIATION")
         st.pyplot(create_deviation_distribution_histogram(df_rhb, "RHB"))  
     
      # Chart 6/7: Lateral Movement
     swing_col, deviation_col = st.columns([2, 2]) 
     with swing_col:
-        st.markdown("###### SWING")
         st.pyplot(create_directional_split(df_rhb, "Swing", "RHB"), use_container_width=True)
     with deviation_col:
-        st.markdown("###### DEVIATION")
         st.pyplot(create_directional_split(df_rhb, "Deviation", "RHB"), use_container_width=True)
 
 
@@ -1321,15 +1315,15 @@ with col_lhb:
     #Chart 8/9: Swing Deviation Distribution
     swing_dist, deviation_dist = st.columns([2,2])
     with swing_dist:
+        st.markdown("###### SWING")
         st.pyplot(create_swing_distribution_histogram(df_lhb, "LHB"))
     with deviation_dist:
+                st.markdown("###### DEVIATION")
         st.pyplot(create_deviation_distribution_histogram(df_lhb, "LHB"))
         
     # Chart 6/7: Lateral Movement
     swing_col, deviation_col = st.columns([2, 2]) 
     with swing_col:
-        st.markdown("###### SWING")
         st.pyplot(create_directional_split(df_lhb, "Swing", "RHB"), use_container_width=True)
     with deviation_col:
-        st.markdown("###### DEVIATION")
         st.pyplot(create_directional_split(df_lhb, "Deviation", "RHB"), use_container_width=True)
