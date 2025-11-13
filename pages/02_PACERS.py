@@ -1056,7 +1056,7 @@ def create_swing_distribution_histogram(df_in, handedness_label):
     # Hide X and Y ticks and tick labels
     ax.tick_params(axis='y', which='both', left=False, right=False, labelleft=False)
    
-    fig.add_artist(border_rect)
+    
     # 1. Set line style for all spines you want visible
     spine_color = 'black'
     spine_width = 0.5
