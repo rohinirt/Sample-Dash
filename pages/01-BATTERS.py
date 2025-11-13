@@ -103,7 +103,7 @@ def create_zonal_analysis(df_in, batsman_name, delivery_type):
         'left': 0.0002,   # Increase for wider gap on the left
         'bottom': 0.02, # Decrease for tighter gap on the bottom
         'right': 0.0002,  # Increase for wider gap on the right
-        'top': 0.0002     # Decrease for tighter gap on the top
+        'top': 0.0001     # Decrease for tighter gap on the top
     }
     
     # 3. CALCULATE NEW RECTANGLE POSITION AND SIZE
