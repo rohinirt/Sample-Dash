@@ -836,7 +836,7 @@ def create_pacer_release_analysis(df_in, handedness_label):
     ax_map.set_yticks([])
     ax_map.set_facecolor('white')
     ax_map.grid(True)
-    ax_map.legend(False)
+
     
     # Hide all map spines
     for spine in ax_map.spines.values():
