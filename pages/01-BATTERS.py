@@ -95,14 +95,14 @@ def create_zonal_analysis(df_in, batsman_name, delivery_type):
     ax.set_xlim(-0.75, 0.75); ax.set_ylim(0, 2); ax.axis('off'); 
     plt.tight_layout(pad=0.1) 
     bbox = ax.get_position()
-    LINE_THICKNESS = 2.0
+    LINE_THICKNESS = 0.3
     
     # 2. DEFINE CUSTOM PADDING FOR EACH SIDE (in figure coordinates, e.g., 0.01 = 1% of figure dimension)
     # Adjust these values to shift the border relative to the plot content:
     custom_padding = {
-        'left': 0.010,   # Increase for wider gap on the left
+        'left': 0.005,   # Increase for wider gap on the left
         'bottom': 0.005, # Decrease for tighter gap on the bottom
-        'right': 0.010,  # Increase for wider gap on the right
+        'right': 0.005,  # Increase for wider gap on the right
         'top': 0.005     # Decrease for tighter gap on the top
     }
     
