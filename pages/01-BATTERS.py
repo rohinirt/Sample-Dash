@@ -94,6 +94,33 @@ def create_zonal_analysis(df_in, batsman_name, delivery_type):
             ax.spines[spine_name].set_linewidth(spine_width)
     ax.set_xlim(-0.75, 0.75); ax.set_ylim(0, 2); ax.axis('off'); 
     plt.tight_layout(pad=0) 
+    
+    # ----------------------------------------------------------------------
+    # --- ADD OUTER BORDER (Rectangle Patch) ---
+    # ----------------------------------------------------------------------
+    
+    # Get the position of the axis relative to the figure
+    bbox = ax.get_position()
+    
+    # Define border parameters
+    BORDER_WIDTH = 0.005 # Border offset from plot edge (figure coordinates)
+    LINE_THICKNESS = 2.0
+    
+    # Create the border rectangle in figure coordinates
+    border_rect = patches.Rectangle(
+        (bbox.x0 - BORDER_WIDTH, bbox.y0 - BORDER_WIDTH), 
+        (bbox.x1 - bbox.x0) + (2 * BORDER_WIDTH), 
+        (bbox.y1 - bbox.y0) + (2 * BORDER_WIDTH), 
+        facecolor='none', 
+        edgecolor='black', 
+        linewidth=LINE_THICKNESS, 
+        transform=fig_boxes.transFigure, # Essential: Use figure coordinates
+        clip_on=False
+    )
+    
+    # Add the border to the figure
+    fig_boxes.patches.append(border_rect)
+    
     return fig_boxes
 
 
