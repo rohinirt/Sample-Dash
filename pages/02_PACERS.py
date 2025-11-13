@@ -255,14 +255,14 @@ def create_pacer_zonal_analysis(df_in, handedness_label):
     summary["BowlingSR"] = summary.apply(lambda row: row["Balls"] / row["Wickets"] if row["Wickets"] > 0 else 0, axis=1)
 
     # 3. Color Scaling (Based on Bowling Average)
-    avg_values = summary["Avg Runs/Wicket"]
+    avg_values = summary["Wickets"]
     avg_max = avg_values.max() if avg_values.max() > 0 else 100 
     avg_max_cap = 50 # Cap max at 50 for visualization consistency
     
     # Assuming mcolors is imported
     norm = mcolors.Normalize(vmin=0, vmax=avg_max if avg_max > avg_max_cap else avg_max_cap)
     # Assuming cm is imported
-    cmap = cm.get_cmap('Reds_r') # Higher Average (worse bowling) is darker red
+    cmap = cm.get_cmap('Reds') # Higher Average (worse bowling) is darker red
 
     # Assuming plt and patches are imported
     fig_boxes, ax = plt.subplots(figsize=(3,2), subplot_kw={'xticks': [], 'yticks': []}) 
