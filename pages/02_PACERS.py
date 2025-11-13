@@ -1140,7 +1140,7 @@ with col_rhb:
     pitch_map_col, run_pct_col = st.columns([3, 1]) 
     with pitch_map_col:
         st.markdown("###### PITCHMAP")
-        st.plotly_chart(create_pacer_pitch_map(df_rhb), use_container_width=True)    
+        st.pyplot(create_pacer_pitch_map(df_rhb), use_container_width=True)    
     with run_pct_col:
         st.markdown("##### ")
         st.pyplot(create_pacer_pitch_length_metrics(df_rhb), use_container_width=True)
@@ -1191,7 +1191,7 @@ with col_lhb:
     pitch_map_col, run_pct_col = st.columns([3, 1]) 
     with pitch_map_col:
         st.markdown("###### PITCHMAP")
-        st.plotly_chart(create_pacer_pitch_map(df_lhb), use_container_width=True)    
+        st.pyplot(create_pacer_pitch_map(df_lhb), use_container_width=True)    
     with run_pct_col:
         st.markdown("##### ")
         st.pyplot(create_pacer_pitch_length_metrics(df_lhb), use_container_width=True)
