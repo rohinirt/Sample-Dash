@@ -1147,7 +1147,7 @@ def create_spinner_hitting_missing(df_in, handedness_label):
         else:
             ax.yaxis.set_visible(False) 
             
-        # Add labels on the bars
+       # Add labels on the bars
         for bar, value in zip(bars, values["data"]):
             if metric == "Wickets":
                 text = f"{int(value)}"
@@ -1157,11 +1157,12 @@ def create_spinner_hitting_missing(df_in, handedness_label):
                 else:
                     text = f"{value:.1f}"
             
-            # Place the text inside the bar
-            ax.text(bar.get_width() - 0.5, bar.get_y() + bar.get_height()/2, 
+            # Place the text OUTSIDE the bar (Updated logic here)
+            ax.text(bar.get_width() + 0.5, bar.get_y() + bar.get_height()/2, # Adjusted X-position
                     text, 
-                    ha='right', va='center', fontsize=9, color='white', 
+                    ha='left', va='center', fontsize=9, color='black', # Changed alignment to 'left'
                     weight='bold', zorder=10)
+
 
         # Hide axis spines (borders) and gridlines
         ax.spines['right'].set_visible(False)
