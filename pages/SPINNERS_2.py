@@ -990,7 +990,12 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
 
 # Chart Spinners Hitting Missing
 def create_spinner_hitting_missing(df_in, handedness_label):
-    FIG_SIZE = (4, 7) # Adjusted for height to accommodate both charts
+    """
+    Combines the Hitting/Missing Stumps Map and Hitting/Missing Performance Bars 
+    into a single Matplotlib figure with a common border.
+    """
+    
+    FIG_SIZE = (7, 7.5) 
 
     # 0. Early exit if data is empty
     if df_in.empty:
@@ -1020,19 +1025,20 @@ def create_spinner_hitting_missing(df_in, handedness_label):
         hitting_pct = 0.0
         missing_pct = 0.0
 
-    # --- 3. Setup Figure and GridSpec ---
-    # Rows: 1 for map, 1 for performance bars (which has 3 sub-columns)
+    # --- 3. Setup Figure and Unified GridSpec ---
+    # Create a 2x3 grid: 
+    # Row 0: Map (spans all 3 columns)
+    # Row 1: Wickets, BA, SR (one per column)
     fig = plt.figure(figsize=FIG_SIZE, facecolor='white')
-    gs = GridSpec(2, 1, figure=fig, height_ratios=[3, 1], hspace=0.15) # Adjusted hspace
+    gs = GridSpec(2, 3, figure=fig, height_ratios=[3.5, 1], wspace=0.3, hspace=0.15) 
 
-    # Map subplot
-    ax_map = fig.add_subplot(gs[0, 0])
+    # Map subplot (spans 3 columns in the first row)
+    ax_map = fig.add_subplot(gs[0, :]) 
     
-    # Performance bars subplots (using another GridSpec inside the second main grid cell)
-    gs_bars = GridSpec(1, 3, figure=fig, width_ratios=[1, 1, 1], hspace=0, wspace=0.3)
-    ax_wickets = fig.add_subplot(gs_bars[0, 0])
-    ax_ba = fig.add_subplot(gs_bars[0, 1])
-    ax_sr = fig.add_subplot(gs_bars[0, 2])
+    # Performance bars subplots (one per column in the second row)
+    ax_wickets = fig.add_subplot(gs[1, 0])
+    ax_ba = fig.add_subplot(gs[1, 1])
+    ax_sr = fig.add_subplot(gs[1, 2])
     
     # --- 4. Plot Hitting/Missing Stumps Map (ax_map) ---
     
@@ -1044,7 +1050,7 @@ def create_spinner_hitting_missing(df_in, handedness_label):
     ax_map.axvline(x=0, color='grey', linestyle=':', linewidth=1, zorder=20)
     ax_map.axvline(x=0.18, color='grey', linestyle='--', linewidth=1, zorder=20)
     ax_map.axhline(y=0.78, color='grey', linestyle='--', linewidth=1, zorder=20)
-    ax_map.axhline(y=0, color='grey', linestyle='-', linewidth=1, zorder=20) # Bottom of stumps
+    ax_map.axhline(y=0, color='grey', linestyle='-', linewidth=1, zorder=20) 
 
     # Plot MISSING (Grey)
     ax_map.scatter(
@@ -1053,7 +1059,7 @@ def create_spinner_hitting_missing(df_in, handedness_label):
         linewidth=0.4, alpha=0.8, label='_nolegend_'
     )
 
-    # Plot HITTING (Red) - Wickets will be Royalblue
+    # Plot HITTING (Red) 
     df_hitting_wicket = df_hitting[df_hitting["Wicket"] == True]
     df_hitting_no_wicket = df_hitting[df_hitting["Wicket"] == False]
 
@@ -1066,7 +1072,7 @@ def create_spinner_hitting_missing(df_in, handedness_label):
     # Plot Wickets as Royalblue
     ax_map.scatter(
         df_hitting_wicket["StumpsY"], df_hitting_wicket["StumpsZ"],
-        color='royalblue', s=65, edgecolor='white', # Slightly larger for emphasis
+        color='royalblue', s=65, edgecolor='white', 
         linewidth=0.6, alpha=1.0, label='_nolegend_', zorder=25
     )
 
@@ -1100,9 +1106,9 @@ def create_spinner_hitting_missing(df_in, handedness_label):
     # Ensure both categories are present and order them HITTING, MISSING
     if "HITTING" not in summary.index: summary.loc["HITTING"] = [0, 0, 0]
     if "MISSING" not in summary.index: summary.loc["MISSING"] = [0, 0, 0]
-    summary = summary.reindex(["HITTING", "MISSING"]) # Explicitly order
+    summary = summary.reindex(["HITTING", "MISSING"]) # Explicitly order HITTING above MISSING
 
-    # Calculate BA and SR (using np.nan for "N/A" equivalent)
+    # Calculate BA and SR 
     summary["BA"] = summary.apply(
         lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else np.nan
     , axis=1)
@@ -1118,7 +1124,7 @@ def create_spinner_hitting_missing(df_in, handedness_label):
     
     # Determine maximum value for setting consistent x-limits for each bar chart
     max_wickets = summary["Wickets"].max() 
-    max_ba = summary["BA"].replace([np.inf, -np.inf], np.nan).max() # Handle inf from division by zero
+    max_ba = summary["BA"].replace([np.inf, -np.inf], np.nan).max()
     max_sr = summary["SR"].replace([np.inf, -np.inf], np.nan).max() 
 
     max_values = {
@@ -1127,7 +1133,6 @@ def create_spinner_hitting_missing(df_in, handedness_label):
         "SR": max_sr * 1.2 if max_sr > 0 else 100,
     }
 
-    # HITTING (Red), MISSING (Light Grey)
     bar_colors = ['red', '#D3D3D3'] 
     y_labels = ["HITTING", "MISSING"]
 
@@ -1158,10 +1163,10 @@ def create_spinner_hitting_missing(df_in, handedness_label):
             if metric == "Wickets":
                 text = f"{int(value)}"
             else:
-                if np.isnan(value) or value == np.inf: # Check for NaN or Inf
+                if np.isnan(value) or value == np.inf: 
                     text = "N/A"
                 else:
-                    text = f"{value:.1f}" # Changed to .1f for consistency
+                    text = f"{value:.1f}"
             
             # Place the text inside the bar
             ax.text(bar.get_width() - 0.5, bar.get_y() + bar.get_height()/2, 
@@ -1177,7 +1182,7 @@ def create_spinner_hitting_missing(df_in, handedness_label):
         ax.grid(False) 
     
     # --- 6. Add Sharp Border to Figure ---
-    plt.tight_layout(pad=0.01) # Reduced padding further
+    plt.tight_layout(pad=0.01)
 
     border_rect = patches.Rectangle(
         (0.005, 0.005), 
@@ -1193,7 +1198,7 @@ def create_spinner_hitting_missing(df_in, handedness_label):
     fig.add_artist(border_rect)
 
     return fig
-
+    
 # PAGE SETUP LAYOUT
 st.set_page_config(
     layout="wide"
