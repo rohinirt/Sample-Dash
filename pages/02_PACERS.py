@@ -1239,7 +1239,7 @@ col_rhb, col_lhb = st.columns(2)
 
 # === LEFT COLUMN: AGAINST RIGHT-HANDED BATSMEN (RHB) ===
 with col_rhb:
-    st.markdown("###  V RIGHT-HAND BATSMAN")    
+    st.markdown("###  v RIGHT-HAND BAT")    
     # Chart 1a: Crease Beehive (using the new local function)
     st.markdown("###### CREASE BEEHIVE ")
     st.pyplot(create_pacer_crease_beehive(df_rhb, "RHB"), use_container_width=True)
@@ -1282,7 +1282,7 @@ with col_rhb:
 
 # === RIGHT COLUMN: AGAINST LEFT-HANDED BATSMEN (LHB) ===
 with col_lhb:
-    st.markdown("###  V LEFT-HAND BATSMAN)")
+    st.markdown("###  v LEFT-HAND BAT")
 
     # Chart 1a: Crease Beehive (using the new local function)
     st.markdown("###### CREASE BEEHIVE")
