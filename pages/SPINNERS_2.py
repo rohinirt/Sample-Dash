@@ -1088,7 +1088,7 @@ def create_spinner_hitting_missing(df_in, handedness_label):
     for i, (metric, meta) in enumerate(metrics_data.items()):
         ax = axes[i]
         bars = ax.barh(y_labels, meta["data"], color=bar_colors, height=0.5)
-
+        ax.invert_yaxis()
         ax.set_title(meta["title"], fontsize=10, pad=5)
         ax.set_xlim(0, max_values[metric])
         ax.xaxis.set_visible(False)
