@@ -982,7 +982,7 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
     return fig
 
 # Chart Spinners Hitting Missing
-def create_spinner_hitting_missing(df_in, handedness_label)
+def create_spinner_hitting_missing(df_in, handedness_label):
     FIG_SIZE = (7, 5) 
 
     # 0. Early exit if data is empty
