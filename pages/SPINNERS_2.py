@@ -1083,92 +1083,95 @@ def create_spinner_hitting_missing(df_in, handedness_label):
 
     # --- 5. Plot Hitting Missing Performance Bars ---
     
-    # Calculate Metrics for Hitting/Missing
+    # ----- CALCULATE SUMMARY -----
     summary = df_map.groupby("HittingCategory").agg(
-        Wickets=("Wicket", lambda x: (x == True).sum()),
-        Runs=("Runs", "sum"),
-        Balls=("Wicket", "count")
-    )
-    
-    # Ensure both categories are present and ORDER THEM HITTING THEN MISSING
-    if "MISSING" not in summary.index: summary.loc["MISSING"] = [0, 0, 0]
-    if "HITTING" not in summary.index: summary.loc["HITTING"] = [0, 0, 0]
-    # Reindex here ensures HITTING is the first row of data
+    Wickets=("Wicket", lambda x: (x == True).sum()),
+    Runs=("Runs", "sum"),
+    Balls=("Wicket", "count")
+)
 
-    # Calculate BA and SR 
-    summary["BA"] = summary.apply(
-        lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else np.nan
-    , axis=1)
-    summary["SR"] = summary.apply(
-        lambda row: row["Balls"] / row["Wickets"] if row["Wickets"] > 0 else np.nan
-    , axis=1)
-    
-    metrics_data = {
-        "Wickets": {"data": summary["Wickets"].tolist(), "title": "Wickets"},
-        "BA": {"data": summary["BA"].tolist(), "title": "Average"},
-        "SR": {"data": summary["SR"].tolist(), "title": "Strike Rate"},
-    }
-    
-    max_wickets = summary["Wickets"].max() 
-    max_ba = summary["BA"].replace([np.inf, -np.inf], np.nan).max()
-    max_sr = summary["SR"].replace([np.inf, -np.inf], np.nan).max() 
+# Ensure both rows exist + force order
+for cat in ["HITTING", "MISSING"]:
+    if cat not in summary.index:
+        summary.loc[cat] = [0, 0, 0]
 
-    max_values = {
-        "Wickets": max_wickets * 1.2 if max_wickets > 0 else 5,
-        "BA": max_ba * 1.2 if max_ba > 0 else 100,
-        "SR": max_sr * 1.2 if max_sr > 0 else 100,
-    }
+summary = summary.reindex(["HITTING", "MISSING"])  # <-- THIS fixes bar order
 
-    bar_colors = ['red', '#D3D3D3'] 
-    # Y-labels match the summary index order: HITTING is index 0, MISSING is index 1
-    y_labels = ["HITTING", "MISSING"] 
 
-    # Loop through each metric subplot
-    for i, (metric, values) in enumerate(metrics_data.items()):
-        ax = [ax_wickets, ax_ba, ax_sr][i]
-        
-        # Bar plotting - using barh for horizontal bars
-        bars = ax.barh(y_labels, values["data"], color=bar_colors, height=0.5)
-        
-        # Titles
-        ax.set_title(values["title"], fontsize=10, pad=5)
-        
-        # X-axis limits (Hiding ticks and labels)
-        ax.set_xlim(0, max_values[metric])
-        ax.xaxis.set_visible(False) 
-        
-        # Y-axis Labels (Only show on the first chart)
-        if i == 0:
-            ax.tick_params(axis='y', length=0)
-            ax.set_yticks([0, 1])
-            # Set labels in the correct order (HITTING at the top)
-            ax.set_yticklabels(y_labels, fontsize=10, weight='bold', color='black') 
+# ----- CALCULATE BA & SR -----
+summary["BA"] = summary.apply(
+    lambda r: r["Runs"] / r["Wickets"] if r["Wickets"] > 0 else np.nan, axis=1
+)
+summary["SR"] = summary.apply(
+    lambda r: r["Balls"] / r["Wickets"] if r["Wickets"] > 0 else np.nan, axis=1
+)
+
+
+# ----- DATA FOR PLOTTING -----
+metrics_data = {
+    "Wickets": {"data": summary["Wickets"].tolist(), "title": "Wickets"},
+    "BA": {"data": summary["BA"].tolist(), "title": "Average"},
+    "SR": {"data": summary["SR"].tolist(), "title": "Strike Rate"},
+}
+
+max_values = {
+    "Wickets": max(summary["Wickets"]) * 1.2 if summary["Wickets"].max() > 0 else 5,
+    "BA": summary["BA"].replace([np.inf], np.nan).max() * 1.2 
+          if summary["BA"].max() > 0 else 100,
+    "SR": summary["SR"].replace([np.inf], np.nan).max() * 1.2 
+          if summary["SR"].max() > 0 else 100
+}
+
+# Color order must match your row order: HITTING (red), MISSING (grey)
+bar_colors = ["red", "#D3D3D3"]  
+
+# Y-axis labels in the correct order
+y_labels = ["HITTING", "MISSING"]
+
+
+# ----- PLOTTING -----
+axes = [ax_wickets, ax_ba, ax_sr]
+
+for i, (metric, meta) in enumerate(metrics_data.items()):
+    ax = axes[i]
+
+    # Horizontal bars
+    bars = ax.barh(y_labels, meta["data"], color=bar_colors, height=0.5)
+
+    ax.set_title(meta["title"], fontsize=10, pad=5)
+    ax.set_xlim(0, max_values[metric])
+    ax.xaxis.set_visible(False)
+
+    # Show y-labels only on first subplot
+    if i == 0:
+        ax.tick_params(axis='y', length=0)
+        ax.set_yticks([0, 1])
+        ax.set_yticklabels(y_labels, fontsize=10, weight='bold', color='black')
+    else:
+        ax.yaxis.set_visible(False)
+
+    # Add value labels outside the bar
+    for bar, value in zip(bars, meta["data"]):
+        if metric == "Wickets":
+            text = f"{int(value)}"
         else:
-            ax.yaxis.set_visible(False) 
-            
-       # Add labels on the bars
-        for bar, value in zip(bars, values["data"]):
-            if metric == "Wickets":
-                text = f"{int(value)}"
-            else:
-                if np.isnan(value) or value == np.inf: 
-                    text = "N/A"
-                else:
-                    text = f"{value:.1f}"
-            
-            # Place the text OUTSIDE the bar (Updated logic here)
-            ax.text(bar.get_width() + 0.5, bar.get_y() + bar.get_height()/2, # Adjusted X-position
-                    text, 
-                    ha='left', va='center', fontsize=9, color='black', # Changed alignment to 'left'
-                    weight='bold', zorder=10)
+            text = "N/A" if np.isnan(value) else f"{value:.1f}"
 
+        ax.text(
+            bar.get_width() + 0.5,
+            bar.get_y() + bar.get_height() / 2,
+            text,
+            ha='left',
+            va='center',
+            fontsize=9,
+            weight='bold'
+        )
 
-        # Hide axis spines (borders) and gridlines
-        ax.spines['right'].set_visible(False)
-        ax.spines['top'].set_visible(False)
-        ax.spines['bottom'].set_visible(False)
-        ax.spines['left'].set_visible(False)
-        ax.grid(False) 
+    # Remove spines + grid
+    for spine in ["right", "top", "bottom", "left"]:
+        ax.spines[spine].set_visible(False)
+    ax.grid(False)
+ 
     
     # --- 6. Add Sharp Border to Figure ---
     plt.tight_layout(pad=0.01)
