@@ -691,9 +691,9 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
         label_text = f'{pct:.0f}%'
         
         # Placement logic: Inside if bar is > 10%, otherwise outside
-        x_pos = pct - 1 if pct > 10 else pct + 0.5
+        x_pos = pct - 1 
         ha = 'right' if pct > 10 else 'left'
-        text_color = 'white' if pct > 10 else 'black'
+        text_color = 'black'
         
         ax.text(
             x_pos, 
