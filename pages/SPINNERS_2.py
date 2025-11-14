@@ -983,9 +983,10 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
 
 # Chart Spinners Hitting Missing
 def create_spinner_hitting_missing(df_in, handedness_label):
-    FIG_SIZE = (7, 5.5) 
 
-    # 0. Early exit if data is empty
+    FIG_SIZE = (7, 5.5)
+
+    # Early exit if empty
     if df_in.empty:
         fig, ax = plt.subplots(figsize=FIG_SIZE)
         ax.text(0.5, 0.5, f"No data for Hitting/Missing Analysis ({handedness_label})",
@@ -995,7 +996,7 @@ def create_spinner_hitting_missing(df_in, handedness_label):
 
     df_map = df_in.copy()
 
-    # 1. Define Hitting/Missing Category (Target box: Y=[-0.18, 0.18], Z=[0, 0.78])
+    # 1. Define HITTING / MISSING
     is_hitting_target = (
         (df_map["StumpsY"] >= -0.18) &
         (df_map["StumpsY"] <= 0.18) &
@@ -1004,193 +1005,127 @@ def create_spinner_hitting_missing(df_in, handedness_label):
     )
     df_map["HittingCategory"] = np.where(is_hitting_target, "HITTING", "MISSING")
 
-    # 2. Calculate Percentages for Map Labels
-    if not df_map.empty:
-        counts = df_map["HittingCategory"].value_counts(normalize=True).mul(100).round(1)
-        hitting_pct = counts.get("HITTING", 0.0)
-        missing_pct = counts.get("MISSING", 0.0)
-    else:
-        hitting_pct = 0.0
-        missing_pct = 0.0
+    # 2. Percentages
+    counts = df_map["HittingCategory"].value_counts(normalize=True).mul(100).round(1)
+    hitting_pct = counts.get("HITTING", 0.0)
+    missing_pct = counts.get("MISSING", 0.0)
 
-    # --- 3. Setup Figure and Unified GridSpec ---
-    # Create a 2x3 grid: 
-    # Row 0: Map (spans all 3 columns)
-    # Row 1: Wickets, BA, SR (one per column)
+    # 3. Figure + Grid
     fig = plt.figure(figsize=FIG_SIZE, facecolor='white')
-    # Increased hspace slightly to ensure no overlap between map and bars
-    gs = GridSpec(2, 3, figure=fig, height_ratios=[4, 1], wspace=0.3, hspace=0.25) 
+    gs = GridSpec(2, 3, figure=fig, height_ratios=[4, 1], wspace=0.3, hspace=0.25)
 
-    # Map subplot (spans 3 columns in the first row)
-    ax_map = fig.add_subplot(gs[0, :]) 
-    
-    # Performance bars subplots (one per column in the second row)
+    ax_map = fig.add_subplot(gs[0, :])
     ax_wickets = fig.add_subplot(gs[1, 0])
     ax_ba = fig.add_subplot(gs[1, 1])
     ax_sr = fig.add_subplot(gs[1, 2])
-    
-    # --- 4. Plot Hitting/Missing Stumps Map (ax_map) ---
-    
-    # Prepare data based on category and wicket status
+
+    # 4. MAP
     df_missing_no_wicket = df_map[(df_map["HittingCategory"] == "MISSING") & (df_map["Wicket"] == False)]
     df_hitting_no_wicket = df_map[(df_map["HittingCategory"] == "HITTING") & (df_map["Wicket"] == False)]
-    df_wicket = df_map[df_map["Wicket"] == True] # All wickets, regardless of category
-    
-    # Target Box Lines (Stumps)
-    ax_map.axvline(x=-0.18, color='grey', linestyle='--', linewidth=1, zorder=20)
-    ax_map.axvline(x=0, color='grey', linestyle=':', linewidth=1, zorder=20)
-    ax_map.axvline(x=0.18, color='grey', linestyle='--', linewidth=1, zorder=20)
-    ax_map.axhline(y=0.78, color='grey', linestyle='--', linewidth=1, zorder=20)
-    ax_map.axhline(y=0, color='grey', linestyle='-', linewidth=1, zorder=20) 
+    df_wicket = df_map[df_map["Wicket"] == True]
 
-    # Plot MISSING (Grey) - Non-Wickets
-    ax_map.scatter(
-        df_missing_no_wicket["StumpsY"], df_missing_no_wicket["StumpsZ"],
-        color='#D3D3D3', s=45, edgecolor='white',
-        linewidth=0.4, alpha=0.8, label='_nolegend_'
-    )
+    # Box lines
+    ax_map.axvline(x=-0.18, color='grey', linestyle='--', linewidth=1)
+    ax_map.axvline(x=0, color='grey', linestyle=':', linewidth=1)
+    ax_map.axvline(x=0.18, color='grey', linestyle='--', linewidth=1)
+    ax_map.axhline(y=0.78, color='grey', linestyle='--', linewidth=1)
+    ax_map.axhline(y=0, color='grey', linestyle='-', linewidth=1)
 
-    # Plot HITTING (Red) - Non-Wickets
-    ax_map.scatter(
-        df_hitting_no_wicket["StumpsY"], df_hitting_no_wicket["StumpsZ"],
-        color='red', s=55, edgecolor='white',
-        linewidth=0.4, alpha=0.9, label='_nolegend_'
-    )
-    
-    # Plot ALL Wickets as Royalblue (This corrects the logic)
-    ax_map.scatter(
-        df_wicket["StumpsY"], df_wicket["StumpsZ"],
-        color='royalblue', s=65, edgecolor='white', 
-        linewidth=0.6, alpha=1.0, label='_nolegend_', zorder=25
-    )
+    # Points
+    ax_map.scatter(df_missing_no_wicket["StumpsY"], df_missing_no_wicket["StumpsZ"],
+                   color='#D3D3D3', s=45, edgecolor='white', linewidth=0.4, alpha=0.8)
+    ax_map.scatter(df_hitting_no_wicket["StumpsY"], df_hitting_no_wicket["StumpsZ"],
+                   color='red', s=55, edgecolor='white', linewidth=0.4, alpha=0.9)
+    ax_map.scatter(df_wicket["StumpsY"], df_wicket["StumpsZ"],
+                   color='royalblue', s=65, edgecolor='white', linewidth=0.6, zorder=25)
 
-    # Format Map Plot
     ax_map.set_xlim(-1.1, 1.1)
     ax_map.set_ylim(0, 1.4)
-    ax_map.axis('off')  
+    ax_map.axis('off')
 
-    # Add Hitting and Missing Text Labels for the Map
-    ax_map.text(
-        0.98, 1.3, f"Hitting: {hitting_pct:.0f}%",
-        transform=ax_map.transData, ha='right', va='top',
-        fontsize=14, color='red', weight='bold'
-    )
-    ax_map.text(
-        0.98, 1.18, f"Missing: {missing_pct:.0f}%",
-        transform=ax_map.transData, ha='right', va='top',
-        fontsize=14, color='#D3D3D3', weight='bold'
-    )
+    # Labels
+    ax_map.text(0.98, 1.3, f"Hitting: {hitting_pct:.0f}%",
+                transform=ax_map.transData, ha='right', va='top',
+                fontsize=14, color='red', weight='bold')
+    ax_map.text(0.98, 1.18, f"Missing: {missing_pct:.0f}%",
+                transform=ax_map.transData, ha='right', va='top',
+                fontsize=14, color='#D3D3D3', weight='bold')
 
-    # --- 5. Plot Hitting Missing Performance Bars ---
-    
-    # ----- CALCULATE SUMMARY -----
+    # 5. SUMMARY TABLE
     summary = df_map.groupby("HittingCategory").agg(
-    Wickets=("Wicket", lambda x: (x == True).sum()),
-    Runs=("Runs", "sum"),
-    Balls=("Wicket", "count")
-)
+        Wickets=("Wicket", lambda x: (x == True).sum()),
+        Runs=("Runs", "sum"),
+        Balls=("Wicket", "count")
+    )
 
-# Ensure both rows exist + force order
-for cat in ["HITTING", "MISSING"]:
-    if cat not in summary.index:
-        summary.loc[cat] = [0, 0, 0]
+    # Ensure both, correct order
+    for cat in ["HITTING", "MISSING"]:
+        if cat not in summary.index:
+            summary.loc[cat] = [0, 0, 0]
 
-summary = summary.reindex(["HITTING", "MISSING"])  # <-- THIS fixes bar order
+    summary = summary.reindex(["HITTING", "MISSING"])
 
+    summary["BA"] = summary.apply(lambda r: r["Runs"] / r["Wickets"] if r["Wickets"] > 0 else np.nan, axis=1)
+    summary["SR"] = summary.apply(lambda r: r["Balls"] / r["Wickets"] if r["Wickets"] > 0 else np.nan, axis=1)
 
-# ----- CALCULATE BA & SR -----
-summary["BA"] = summary.apply(
-    lambda r: r["Runs"] / r["Wickets"] if r["Wickets"] > 0 else np.nan, axis=1
-)
-summary["SR"] = summary.apply(
-    lambda r: r["Balls"] / r["Wickets"] if r["Wickets"] > 0 else np.nan, axis=1
-)
+    metrics_data = {
+        "Wickets": {"data": summary["Wickets"].tolist(), "title": "Wickets"},
+        "BA": {"data": summary["BA"].tolist(), "title": "Average"},
+        "SR": {"data": summary["SR"].tolist(), "title": "Strike Rate"},
+    }
 
+    max_values = {
+        "Wickets": summary["Wickets"].max() * 1.2 if summary["Wickets"].max() > 0 else 5,
+        "BA": summary["BA"].replace([np.inf], np.nan).max() * 1.2 if summary["BA"].max() > 0 else 100,
+        "SR": summary["SR"].replace([np.inf], np.nan).max() * 1.2 if summary["SR"].max() > 0 else 100,
+    }
 
-# ----- DATA FOR PLOTTING -----
-metrics_data = {
-    "Wickets": {"data": summary["Wickets"].tolist(), "title": "Wickets"},
-    "BA": {"data": summary["BA"].tolist(), "title": "Average"},
-    "SR": {"data": summary["SR"].tolist(), "title": "Strike Rate"},
-}
+    bar_colors = ["red", "#D3D3D3"]
+    y_labels = ["HITTING", "MISSING"]
+    axes = [ax_wickets, ax_ba, ax_sr]
 
-max_values = {
-    "Wickets": max(summary["Wickets"]) * 1.2 if summary["Wickets"].max() > 0 else 5,
-    "BA": summary["BA"].replace([np.inf], np.nan).max() * 1.2 
-          if summary["BA"].max() > 0 else 100,
-    "SR": summary["SR"].replace([np.inf], np.nan).max() * 1.2 
-          if summary["SR"].max() > 0 else 100
-}
+    # 6. PLOTTING METRICS
+    for i, (metric, meta) in enumerate(metrics_data.items()):
+        ax = axes[i]
+        bars = ax.barh(y_labels, meta["data"], color=bar_colors, height=0.5)
 
-# Color order must match your row order: HITTING (red), MISSING (grey)
-bar_colors = ["red", "#D3D3D3"]  
+        ax.set_title(meta["title"], fontsize=10, pad=5)
+        ax.set_xlim(0, max_values[metric])
+        ax.xaxis.set_visible(False)
 
-# Y-axis labels in the correct order
-y_labels = ["HITTING", "MISSING"]
-
-
-# ----- PLOTTING -----
-axes = [ax_wickets, ax_ba, ax_sr]
-
-for i, (metric, meta) in enumerate(metrics_data.items()):
-    ax = axes[i]
-
-    # Horizontal bars
-    bars = ax.barh(y_labels, meta["data"], color=bar_colors, height=0.5)
-
-    ax.set_title(meta["title"], fontsize=10, pad=5)
-    ax.set_xlim(0, max_values[metric])
-    ax.xaxis.set_visible(False)
-
-    # Show y-labels only on first subplot
-    if i == 0:
-        ax.tick_params(axis='y', length=0)
-        ax.set_yticks([0, 1])
-        ax.set_yticklabels(y_labels, fontsize=10, weight='bold', color='black')
-    else:
-        ax.yaxis.set_visible(False)
-
-    # Add value labels outside the bar
-    for bar, value in zip(bars, meta["data"]):
-        if metric == "Wickets":
-            text = f"{int(value)}"
+        if i == 0:
+            ax.tick_params(axis='y', length=0)
+            ax.set_yticks([0, 1])
+            ax.set_yticklabels(y_labels, fontsize=10, weight='bold')
         else:
-            text = "N/A" if np.isnan(value) else f"{value:.1f}"
+            ax.yaxis.set_visible(False)
 
-        ax.text(
-            bar.get_width() + 0.5,
-            bar.get_y() + bar.get_height() / 2,
-            text,
-            ha='left',
-            va='center',
-            fontsize=9,
-            weight='bold'
-        )
+        for bar, value in zip(bars, meta["data"]):
+            text = "N/A" if np.isnan(value) else f"{value:.1f}" if metric != "Wickets" else f"{int(value)}"
+            ax.text(bar.get_width() + 0.5,
+                    bar.get_y() + bar.get_height() / 2,
+                    text, ha='left', va='center', fontsize=9, weight='bold')
 
-    # Remove spines + grid
-    for spine in ["right", "top", "bottom", "left"]:
-        ax.spines[spine].set_visible(False)
-    ax.grid(False)
- 
-    
-    # --- 6. Add Sharp Border to Figure ---
+        for spine in ["right", "top", "bottom", "left"]:
+            ax.spines[spine].set_visible(False)
+
+        ax.grid(False)
+
+    # 7. BORDER (outside loop)
     plt.tight_layout(pad=0.01)
-
-    # Use coordinates relative to the figure size for the border
     border_rect = patches.Rectangle(
-        (0.005, 0.09), 
-        0.99,          
-        0.85,          
+        (0.005, 0.09),
+        0.99,
+        0.85,
         facecolor='none',
         edgecolor='black',
         linewidth=1.5,
-        transform=fig.transFigure,
-        clip_on=False,
-        joinstyle='miter' 
+        transform=fig.transFigure
     )
     fig.add_artist(border_rect)
 
-return fig
+    return fig
+
     
 # PAGE SETUP LAYOUT
 st.set_page_config(
