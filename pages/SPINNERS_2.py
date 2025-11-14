@@ -1018,7 +1018,8 @@ def create_spinner_hitting_missing(df_in, handedness_label):
     # Row 0: Map (spans all 3 columns)
     # Row 1: Wickets, BA, SR (one per column)
     fig = plt.figure(figsize=FIG_SIZE, facecolor='white')
-    gs = GridSpec(2, 3, figure=fig, height_ratios=[4, 1], wspace=0.3, hspace=0.2) 
+    # Increased hspace slightly to ensure no overlap between map and bars
+    gs = GridSpec(2, 3, figure=fig, height_ratios=[4, 1], wspace=0.3, hspace=0.25) 
 
     # Map subplot (spans 3 columns in the first row)
     ax_map = fig.add_subplot(gs[0, :]) 
@@ -1030,9 +1031,11 @@ def create_spinner_hitting_missing(df_in, handedness_label):
     
     # --- 4. Plot Hitting/Missing Stumps Map (ax_map) ---
     
-    df_missing = df_map[df_map["HittingCategory"] == "MISSING"]
-    df_hitting = df_map[df_map["HittingCategory"] == "HITTING"]
-
+    # Prepare data based on category and wicket status
+    df_missing_no_wicket = df_map[(df_map["HittingCategory"] == "MISSING") & (df_map["Wicket"] == False)]
+    df_hitting_no_wicket = df_map[(df_map["HittingCategory"] == "HITTING") & (df_map["Wicket"] == False)]
+    df_wicket = df_map[df_map["Wicket"] == True] # All wickets, regardless of category
+    
     # Target Box Lines (Stumps)
     ax_map.axvline(x=-0.18, color='grey', linestyle='--', linewidth=1, zorder=20)
     ax_map.axvline(x=0, color='grey', linestyle=':', linewidth=1, zorder=20)
@@ -1040,26 +1043,23 @@ def create_spinner_hitting_missing(df_in, handedness_label):
     ax_map.axhline(y=0.78, color='grey', linestyle='--', linewidth=1, zorder=20)
     ax_map.axhline(y=0, color='grey', linestyle='-', linewidth=1, zorder=20) 
 
-    # Plot MISSING (Grey)
+    # Plot MISSING (Grey) - Non-Wickets
     ax_map.scatter(
-        df_missing["StumpsY"], df_missing["StumpsZ"],
+        df_missing_no_wicket["StumpsY"], df_missing_no_wicket["StumpsZ"],
         color='#D3D3D3', s=45, edgecolor='white',
         linewidth=0.4, alpha=0.8, label='_nolegend_'
     )
 
-    # Plot HITTING (Red) 
-    df_hitting_wicket = df_hitting[df_hitting["Wicket"] == True]
-    df_hitting_no_wicket = df_hitting[df_hitting["Wicket"] == False]
-
+    # Plot HITTING (Red) - Non-Wickets
     ax_map.scatter(
         df_hitting_no_wicket["StumpsY"], df_hitting_no_wicket["StumpsZ"],
         color='red', s=55, edgecolor='white',
         linewidth=0.4, alpha=0.9, label='_nolegend_'
     )
     
-    # Plot Wickets as Royalblue
+    # Plot ALL Wickets as Royalblue (This corrects the logic)
     ax_map.scatter(
-        df_hitting_wicket["StumpsY"], df_hitting_wicket["StumpsZ"],
+        df_wicket["StumpsY"], df_wicket["StumpsZ"],
         color='royalblue', s=65, edgecolor='white', 
         linewidth=0.6, alpha=1.0, label='_nolegend_', zorder=25
     )
@@ -1090,10 +1090,11 @@ def create_spinner_hitting_missing(df_in, handedness_label):
         Balls=("Wicket", "count")
     )
     
-    # Ensure both categories are present and order them HITTING, MISSING
+    # Ensure both categories are present and ORDER THEM HITTING THEN MISSING
     if "HITTING" not in summary.index: summary.loc["HITTING"] = [0, 0, 0]
     if "MISSING" not in summary.index: summary.loc["MISSING"] = [0, 0, 0]
-    summary = summary.reindex([ "MISSING","HITTING"]) # Explicitly order HITTING above MISSING
+    # Reindex here ensures HITTING is the first row of data
+    summary = summary.reindex(["HITTING", "MISSING"]) 
 
     # Calculate BA and SR 
     summary["BA"] = summary.apply(
@@ -1109,7 +1110,6 @@ def create_spinner_hitting_missing(df_in, handedness_label):
         "SR": {"data": summary["SR"].tolist(), "title": "Strike Rate"},
     }
     
-    # Determine maximum value for setting consistent x-limits for each bar chart
     max_wickets = summary["Wickets"].max() 
     max_ba = summary["BA"].replace([np.inf, -np.inf], np.nan).max()
     max_sr = summary["SR"].replace([np.inf, -np.inf], np.nan).max() 
@@ -1121,7 +1121,8 @@ def create_spinner_hitting_missing(df_in, handedness_label):
     }
 
     bar_colors = ['red', '#D3D3D3'] 
-    y_labels = ["HITTING", "MISSING"]
+    # Y-labels match the summary index order: HITTING is index 0, MISSING is index 1
+    y_labels = ["HITTING", "MISSING"] 
 
     # Loop through each metric subplot
     for i, (metric, values) in enumerate(metrics_data.items()):
@@ -1141,7 +1142,8 @@ def create_spinner_hitting_missing(df_in, handedness_label):
         if i == 0:
             ax.tick_params(axis='y', length=0)
             ax.set_yticks([0, 1])
-            ax.set_yticklabels(y_labels, fontsize=10, weight='bold', color='black')
+            # Set labels in the correct order (HITTING at the top)
+            ax.set_yticklabels(y_labels, fontsize=10, weight='bold', color='black') 
         else:
             ax.yaxis.set_visible(False) 
             
@@ -1171,13 +1173,14 @@ def create_spinner_hitting_missing(df_in, handedness_label):
     # --- 6. Add Sharp Border to Figure ---
     plt.tight_layout(pad=0.01)
 
+    # Use coordinates relative to the figure size for the border
     border_rect = patches.Rectangle(
         (0.005, 0.09), 
         0.99,          
-        0.89,          
+        0.85,          
         facecolor='none',
         edgecolor='black',
-        linewidth=0.5,
+        linewidth=1.5,
         transform=fig.transFigure,
         clip_on=False,
         joinstyle='miter' 
