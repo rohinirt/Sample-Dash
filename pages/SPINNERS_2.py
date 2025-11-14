@@ -11,18 +11,11 @@ import base64
 import matplotlib.patheffects as pe
 from matplotlib import cm, colors, patches
 import matplotlib.colors as mcolors
-
+from matplotlib.gridspec import GridSpec
 
 # =========================================================
 # Chart 1a: CREASE BEEHIVE
 # =========================================================
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-import pandas as pd
-import numpy as np
-import matplotlib.cm as cm
-import matplotlib.colors as mcolors
-from matplotlib.gridspec import GridSpec
 
 # =========================================================
 # Chart 2: CREASE BEEHIVE 
@@ -989,12 +982,7 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
     return fig
 
 # Chart Spinners Hitting Missing
-def create_spinner_hitting_missing(df_in, handedness_label):
-    """
-    Combines the Hitting/Missing Stumps Map and Hitting/Missing Performance Bars 
-    into a single Matplotlib figure with a common border.
-    """
-    
+def create_spinner_hitting_missing(df_in, handedness_label)
     FIG_SIZE = (7, 5) 
 
     # 0. Early exit if data is empty
@@ -1030,7 +1018,7 @@ def create_spinner_hitting_missing(df_in, handedness_label):
     # Row 0: Map (spans all 3 columns)
     # Row 1: Wickets, BA, SR (one per column)
     fig = plt.figure(figsize=FIG_SIZE, facecolor='white')
-    gs = GridSpec(2, 3, figure=fig, height_ratios=[3.5, 1], wspace=0.3, hspace=0.15) 
+    gs = GridSpec(2, 3, figure=fig, height_ratios=[4, 1], wspace=0.3, hspace=0.2) 
 
     # Map subplot (spans 3 columns in the first row)
     ax_map = fig.add_subplot(gs[0, :]) 
@@ -1080,7 +1068,6 @@ def create_spinner_hitting_missing(df_in, handedness_label):
     ax_map.set_xlim(-1.1, 1.1)
     ax_map.set_ylim(0, 1.4)
     ax_map.axis('off')  
-    ax_map.set_title(f"Hitting vs Missing Stumps Map vs. {handedness_label}", fontsize=14, fontweight='bold', pad=10)
 
     # Add Hitting and Missing Text Labels for the Map
     ax_map.text(
@@ -1106,7 +1093,7 @@ def create_spinner_hitting_missing(df_in, handedness_label):
     # Ensure both categories are present and order them HITTING, MISSING
     if "HITTING" not in summary.index: summary.loc["HITTING"] = [0, 0, 0]
     if "MISSING" not in summary.index: summary.loc["MISSING"] = [0, 0, 0]
-    summary = summary.reindex(["HITTING", "MISSING"]) # Explicitly order HITTING above MISSING
+    summary = summary.reindex([ "MISSING","HITTING"]) # Explicitly order HITTING above MISSING
 
     # Calculate BA and SR 
     summary["BA"] = summary.apply(
@@ -1185,12 +1172,12 @@ def create_spinner_hitting_missing(df_in, handedness_label):
     plt.tight_layout(pad=0.01)
 
     border_rect = patches.Rectangle(
-        (0.005, 0.005), 
+        (0.005, 0.009), 
         0.99,          
-        0.99,          
+        0.8,          
         facecolor='none',
         edgecolor='black',
-        linewidth=1.5,
+        linewidth=0.5,
         transform=fig.transFigure,
         clip_on=False,
         joinstyle='miter' 
