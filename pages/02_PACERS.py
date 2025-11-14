@@ -684,23 +684,25 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
     )
 
     
-    # Add percentage labels
+            # Add percentage labels
     for i, pct in enumerate(plot_percentages):
         count = plot_counts[i]
         # Display percentage (e.g., 25%)
         label_text = f'{pct:.0f}%'
-        
-        # Placement logic: Inside if bar is > 10%, otherwise outside
+    
+        # Placement logic: Always outside the bar
+        # 1. x_pos: Start the text slightly after the end of the bar (pct)
         x_pos = pct + 0.5 
-        ha = 'right' if pct > 10 else 'left'
+        # 2. ha: Align the start of the text to x_pos
+        ha = 'left' 
         text_color = 'black'
-        
+    
         ax.text(
-            x_pos, 
-            i, 
-            label_text, 
-            ha=ha, va='center', fontsize=12, color=text_color, fontweight='bold'
-        )
+        x_pos, 
+        i, 
+        label_text, 
+        ha=ha, va='center', fontsize=12, color=text_color, fontweight='bold'
+    )
         
 
 
