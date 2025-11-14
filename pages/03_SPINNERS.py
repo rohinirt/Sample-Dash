@@ -313,8 +313,7 @@ def get_Spinner_pitch_bins():
         "Good": [4.0, 6.0],
         "Short": [6.0, 15.0]
     }
-
-# --- CHART 3b: PITCH LENGTH BOWLER METRICS (EQUAL SIZED BOXES) ---
+    
 def create_Spinner_pitch_length_bars(df_in):
     # Increased height to accommodate three stacked charts comfortably
     FIG_SIZE = (4, 6) 
@@ -582,7 +581,7 @@ def create_Spinner_release_speed_distribution(df_in, handedness_label):
 
     return fig
 
-# Chart 5 Bowler Release Map
+# Chart 4 Bowler Release Map
 def create_Spinner_release_analysis(df_in, handedness_label): 
     FIG_SIZE = (4, 3.4) # Increased height for both charts
 
@@ -724,7 +723,7 @@ def create_Spinner_release_analysis(df_in, handedness_label):
 
     return fig
 
-# Chart 8: Swing Distribution
+# Chart 5: Drift Distribution
 def create_swing_distribution_histogram(df_in, handedness_label):
     FIG_SIZE = (5, 4) 
 
@@ -849,7 +848,7 @@ def create_swing_distribution_histogram(df_in, handedness_label):
     fig.add_artist(border_rect)
     return fig
     
-#Chart 9 Deviation Dstribution Histogram
+#Chart 6 Deviation Dstribution Histogram
 def create_deviation_distribution_histogram(df_in, handedness_label):
     FIG_SIZE = (5, 4) 
 
@@ -974,7 +973,7 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
     fig.add_artist(border_rect)
     return fig
 
-# Chart Spinners Hitting Missing
+# Chart 7 Spinners Hitting Missing
 def create_spinner_hitting_missing(df_in, handedness_label):
 
     FIG_SIZE = (7, 5.5)
@@ -1220,11 +1219,11 @@ col_rhb, col_lhb = st.columns(2)
 # === LEFT COLUMN: AGAINST RIGHT-HANDED BATSMEN (RHB) ===
 with col_rhb:
     st.markdown("###  v RIGHT-HAND BAT")    
-    # Chart 1a: Crease Beehive (using the new local function)
+    # Chart 1: Crease Beehive
     st.markdown("###### CREASE BEEHIVE ")
     st.pyplot(create_Spinner_crease_beehive(df_rhb, "RHB"), use_container_width=True)
 
-    # Chart 3: PITCHMAP
+    # Chart 2: PITCHMAP
     pitch_map_col, run_pct_col = st.columns([1, 1]) 
     with pitch_map_col:
         st.markdown("###### PITCHMAP")
@@ -1234,7 +1233,7 @@ with col_rhb:
         st.pyplot(create_Spinner_pitch_length_bars(df_rhb), use_container_width=True)
 
 
-     # Chart 4/5: RELEASE
+     # Chart 3/4: RELEASE
     pace_col, release_col = st.columns([2, 2])
     with pace_col:
         st.markdown("###### RELEASE SPEED")
@@ -1243,7 +1242,7 @@ with col_rhb:
         st.markdown("###### RELEASE")
         st.pyplot(create_Spinner_release_analysis(df_rhb, "RHB"), use_container_width=True)
         
-    #Chart 8/9: Swing Deviation Distribution
+    #Chart 5/6: Swing Deviation Distribution
     swing_dist, deviation_dist = st.columns([2,2])
     with swing_dist:
         st.markdown("###### DRIFT")
@@ -1252,20 +1251,20 @@ with col_rhb:
         st.markdown("###### TURN")
         st.pyplot(create_deviation_distribution_histogram(df_rhb, "RHB")) 
 
-    # Chart Spinner Hitting Missing
+    # Chart 7 Spinner Hitting Missing
     st.markdown("###### STUMP BEEHIVE")
     st.pyplot(create_spinner_hitting_missing(df_rhb,"RHB"),use_container_width = True)
 
 
 # === RIGHT COLUMN: AGAINST LEFT-HANDED BATSMEN (LHB) ===
 with col_lhb:
-    st.markdown("###  v LEFT-HAND BAT)")
+    st.markdown("###  v LEFT-HAND BAT")
 
-    # Chart 1a: Crease Beehive (using the new local function)
+    # Chart 1: Crease Beehive (using the new local function)
     st.markdown("###### CREASE BEEHIVE")
     st.pyplot(create_Spinner_crease_beehive(df_lhb, "LHB"), use_container_width=True)
 
-    # Chart 3: PITCHMAP
+    # Chart 2: PITCHMAP
     pitch_map_col, run_pct_col = st.columns([1, 1]) 
     with pitch_map_col:
         st.markdown("###### PITCHMAP")
@@ -1274,7 +1273,7 @@ with col_lhb:
         st.markdown("##### ")
         st.pyplot(create_Spinner_pitch_length_bars(df_lhb), use_container_width=True)
 
-    # Chart 4/5: RELEASE
+    # Chart 3/4: RELEASE
     pace_col, release_col = st.columns([2, 2]) 
     with pace_col:
         st.markdown("###### RELEASE SPEED")
@@ -1283,7 +1282,7 @@ with col_lhb:
         st.markdown("###### RELEASE")
         st.pyplot(create_Spinner_release_analysis(df_lhb, "LHB"), use_container_width=True)
         
-    #Chart 8/9: Swing Deviation Distribution
+    #Chart 5/6: Swing Deviation Distribution
     swing_dist, deviation_dist = st.columns([2,2])
     with swing_dist:
         st.markdown("###### DRIFT")
@@ -1292,7 +1291,7 @@ with col_lhb:
         st.markdown("###### TURN")
         st.pyplot(create_deviation_distribution_histogram(df_lhb, "LHB"))
 
-    # Chart Spinner Hitting Missing
+    # Chart 7 Spinner Hitting Missing
     st.markdown("###### STUMP BEEHIVE")
     st.pyplot(create_spinner_hitting_missing(df_lhb,"LHB"),use_container_width = True)
         
