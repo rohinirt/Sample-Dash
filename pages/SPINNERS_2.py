@@ -1172,9 +1172,9 @@ def create_spinner_hitting_missing(df_in, handedness_label):
     plt.tight_layout(pad=0.01)
 
     border_rect = patches.Rectangle(
-        (0.005, 0.009), 
+        (0.005, 0.09), 
         0.99,          
-        0.8,          
+        0.89,          
         facecolor='none',
         edgecolor='black',
         linewidth=0.5,
