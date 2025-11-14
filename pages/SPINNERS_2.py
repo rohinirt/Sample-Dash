@@ -1091,10 +1091,9 @@ def create_spinner_hitting_missing(df_in, handedness_label):
     )
     
     # Ensure both categories are present and ORDER THEM HITTING THEN MISSING
-    if "HITTING" not in summary.index: summary.loc["HITTING"] = [0, 0, 0]
     if "MISSING" not in summary.index: summary.loc["MISSING"] = [0, 0, 0]
+    if "HITTING" not in summary.index: summary.loc["HITTING"] = [0, 0, 0]
     # Reindex here ensures HITTING is the first row of data
-    summary = summary.reindex(["HITTING", "MISSING"]) 
 
     # Calculate BA and SR 
     summary["BA"] = summary.apply(
