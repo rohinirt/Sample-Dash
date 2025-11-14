@@ -19,7 +19,8 @@ st.set_page_config(
 
 # --- Check for uploaded data and display uploader ---
 if 'data_df' not in st.session_state:
-    st.title("🏏 Cricket Dashboard Data Upload")
+    st.title("🏏HAWK-EYE CRICKET DASHBOARD")
+    st.header("Upload Data")
 
     uploaded_file = st.file_uploader("Upload your CSV file here", type=["csv"])
 
@@ -42,7 +43,7 @@ if 'data_df' not in st.session_state:
             
 else:
     st.title("📊 Global Dashboard")
-    st.info("Data is loaded. Use the navigation on the left to switch between dashboards.")
+    st.info("Data is loaded. Use the navigation on the left to switch between pages.")
     
     # You could add some simple summary stats here if needed
     st.write(f"Total Deliveries Loaded: {len(st.session_state['data_df'])}")
