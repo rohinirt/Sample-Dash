@@ -341,7 +341,7 @@ def create_Spinner_pitch_length_bars(df_in):
 
     # Get the pitch bins and define order (Fixed for Spinner)
     PITCH_BINS_DICT = get_Spinner_pitch_bins()
-    ordered_keys = ["Full", "Length", "Short", "Bouncer"]
+    ordered_keys = ["Over Pitched", "Full", "Good", "Shorter"]
     
     # 1. Data Preparation
     def assign_pitch_length(x):
@@ -987,9 +987,220 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
     )
     fig.add_artist(border_rect)
     return fig
-    
-# PAGE SETUP LAYOUT
 
+# Chart Spinners Hitting Missing
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import pandas as pd
+import numpy as np
+from matplotlib.gridspec import GridSpec
+
+def create_spinner_hitting_missing(df_in, handedness_label):
+    FIG_SIZE = (7, 7.5) # Adjusted for height to accommodate both charts
+
+    # 0. Early exit if data is empty
+    if df_in.empty:
+        fig, ax = plt.subplots(figsize=FIG_SIZE)
+        ax.text(0.5, 0.5, f"No data for Hitting/Missing Analysis ({handedness_label})",
+                ha='center', va='center', fontsize=12)
+        ax.axis('off')
+        return fig
+
+    df_map = df_in.copy()
+
+    # 1. Define Hitting/Missing Category (Target box: Y=[-0.18, 0.18], Z=[0, 0.78])
+    is_hitting_target = (
+        (df_map["StumpsY"] >= -0.18) &
+        (df_map["StumpsY"] <= 0.18) &
+        (df_map["StumpsZ"] >= 0) &
+        (df_map["StumpsZ"] <= 0.78)
+    )
+    df_map["HittingCategory"] = np.where(is_hitting_target, "HITTING", "MISSING")
+
+    # 2. Calculate Percentages for Map Labels
+    if not df_map.empty:
+        counts = df_map["HittingCategory"].value_counts(normalize=True).mul(100).round(1)
+        hitting_pct = counts.get("HITTING", 0.0)
+        missing_pct = counts.get("MISSING", 0.0)
+    else:
+        hitting_pct = 0.0
+        missing_pct = 0.0
+
+    # --- 3. Setup Figure and GridSpec ---
+    # Rows: 1 for map, 1 for performance bars (which has 3 sub-columns)
+    fig = plt.figure(figsize=FIG_SIZE, facecolor='white')
+    gs = GridSpec(2, 1, figure=fig, height_ratios=[3.5, 1], hspace=0.15) # Adjusted hspace
+
+    # Map subplot
+    ax_map = fig.add_subplot(gs[0, 0])
+    
+    # Performance bars subplots (using another GridSpec inside the second main grid cell)
+    gs_bars = GridSpec(1, 3, figure=fig, width_ratios=[1, 1, 1], hspace=0, wspace=0.3)
+    ax_wickets = fig.add_subplot(gs_bars[0, 0])
+    ax_ba = fig.add_subplot(gs_bars[0, 1])
+    ax_sr = fig.add_subplot(gs_bars[0, 2])
+    
+    # --- 4. Plot Hitting/Missing Stumps Map (ax_map) ---
+    
+    df_missing = df_map[df_map["HittingCategory"] == "MISSING"]
+    df_hitting = df_map[df_map["HittingCategory"] == "HITTING"]
+
+    # Target Box Lines (Stumps)
+    ax_map.axvline(x=-0.18, color='grey', linestyle='--', linewidth=1, zorder=20)
+    ax_map.axvline(x=0, color='grey', linestyle=':', linewidth=1, zorder=20)
+    ax_map.axvline(x=0.18, color='grey', linestyle='--', linewidth=1, zorder=20)
+    ax_map.axhline(y=0.78, color='grey', linestyle='--', linewidth=1, zorder=20)
+    ax_map.axhline(y=0, color='grey', linestyle='-', linewidth=1, zorder=20) # Bottom of stumps
+
+    # Plot MISSING (Grey)
+    ax_map.scatter(
+        df_missing["StumpsY"], df_missing["StumpsZ"],
+        color='#D3D3D3', s=45, edgecolor='white',
+        linewidth=0.4, alpha=0.8, label='_nolegend_'
+    )
+
+    # Plot HITTING (Red) - Wickets will be Royalblue
+    df_hitting_wicket = df_hitting[df_hitting["Wicket"] == True]
+    df_hitting_no_wicket = df_hitting[df_hitting["Wicket"] == False]
+
+    ax_map.scatter(
+        df_hitting_no_wicket["StumpsY"], df_hitting_no_wicket["StumpsZ"],
+        color='red', s=55, edgecolor='white',
+        linewidth=0.4, alpha=0.9, label='_nolegend_'
+    )
+    
+    # Plot Wickets as Royalblue
+    ax_map.scatter(
+        df_hitting_wicket["StumpsY"], df_hitting_wicket["StumpsZ"],
+        color='royalblue', s=65, edgecolor='white', # Slightly larger for emphasis
+        linewidth=0.6, alpha=1.0, label='_nolegend_', zorder=25
+    )
+
+    # Format Map Plot
+    ax_map.set_xlim(-1.1, 1.1)
+    ax_map.set_ylim(0, 1.4)
+    ax_map.axis('off')  
+    ax_map.set_title(f"Hitting vs Missing Stumps Map vs. {handedness_label}", fontsize=14, fontweight='bold', pad=10)
+
+    # Add Hitting and Missing Text Labels for the Map
+    ax_map.text(
+        0.98, 1.3, f"Hitting: {hitting_pct:.0f}%",
+        transform=ax_map.transData, ha='right', va='top',
+        fontsize=14, color='red', weight='bold'
+    )
+    ax_map.text(
+        0.98, 1.18, f"Missing: {missing_pct:.0f}%",
+        transform=ax_map.transData, ha='right', va='top',
+        fontsize=14, color='#D3D3D3', weight='bold'
+    )
+
+    # --- 5. Plot Hitting Missing Performance Bars ---
+    
+    # Calculate Metrics for Hitting/Missing
+    summary = df_map.groupby("HittingCategory").agg(
+        Wickets=("Wicket", lambda x: (x == True).sum()),
+        Runs=("Runs", "sum"),
+        Balls=("Wicket", "count")
+    )
+    
+    # Ensure both categories are present and order them HITTING, MISSING
+    if "HITTING" not in summary.index: summary.loc["HITTING"] = [0, 0, 0]
+    if "MISSING" not in summary.index: summary.loc["MISSING"] = [0, 0, 0]
+    summary = summary.reindex(["HITTING", "MISSING"]) # Explicitly order
+
+    # Calculate BA and SR (using np.nan for "N/A" equivalent)
+    summary["BA"] = summary.apply(
+        lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else np.nan
+    , axis=1)
+    summary["SR"] = summary.apply(
+        lambda row: row["Balls"] / row["Wickets"] if row["Wickets"] > 0 else np.nan
+    , axis=1)
+    
+    metrics_data = {
+        "Wickets": {"data": summary["Wickets"].tolist(), "title": "Wickets"},
+        "BA": {"data": summary["BA"].tolist(), "title": "Average"},
+        "SR": {"data": summary["SR"].tolist(), "title": "Strike Rate"},
+    }
+    
+    # Determine maximum value for setting consistent x-limits for each bar chart
+    max_wickets = summary["Wickets"].max() 
+    max_ba = summary["BA"].replace([np.inf, -np.inf], np.nan).max() # Handle inf from division by zero
+    max_sr = summary["SR"].replace([np.inf, -np.inf], np.nan).max() 
+
+    max_values = {
+        "Wickets": max_wickets * 1.2 if max_wickets > 0 else 5,
+        "BA": max_ba * 1.2 if max_ba > 0 else 100,
+        "SR": max_sr * 1.2 if max_sr > 0 else 100,
+    }
+
+    # HITTING (Red), MISSING (Light Grey)
+    bar_colors = ['red', '#D3D3D3'] 
+    y_labels = ["HITTING", "MISSING"]
+
+    # Loop through each metric subplot
+    for i, (metric, values) in enumerate(metrics_data.items()):
+        ax = [ax_wickets, ax_ba, ax_sr][i]
+        
+        # Bar plotting - using barh for horizontal bars
+        bars = ax.barh(y_labels, values["data"], color=bar_colors, height=0.5)
+        
+        # Titles
+        ax.set_title(values["title"], fontsize=10, pad=5)
+        
+        # X-axis limits (Hiding ticks and labels)
+        ax.set_xlim(0, max_values[metric])
+        ax.xaxis.set_visible(False) 
+        
+        # Y-axis Labels (Only show on the first chart)
+        if i == 0:
+            ax.tick_params(axis='y', length=0)
+            ax.set_yticks([0, 1])
+            ax.set_yticklabels(y_labels, fontsize=10, weight='bold', color='black')
+        else:
+            ax.yaxis.set_visible(False) 
+            
+        # Add labels on the bars
+        for bar, value in zip(bars, values["data"]):
+            if metric == "Wickets":
+                text = f"{int(value)}"
+            else:
+                if np.isnan(value) or value == np.inf: # Check for NaN or Inf
+                    text = "N/A"
+                else:
+                    text = f"{value:.1f}" # Changed to .1f for consistency
+            
+            # Place the text inside the bar
+            ax.text(bar.get_width() - 0.5, bar.get_y() + bar.get_height()/2, 
+                    text, 
+                    ha='right', va='center', fontsize=9, color='white', 
+                    weight='bold', zorder=10)
+
+        # Hide axis spines (borders) and gridlines
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+        ax.spines['bottom'].set_visible(False)
+        ax.spines['left'].set_visible(False)
+        ax.grid(False) 
+    
+    # --- 6. Add Sharp Border to Figure ---
+    plt.tight_layout(pad=0.01) # Reduced padding further
+
+    border_rect = patches.Rectangle(
+        (0.005, 0.005), 
+        0.99,          
+        0.99,          
+        facecolor='none',
+        edgecolor='black',
+        linewidth=1.5,
+        transform=fig.transFigure,
+        clip_on=False,
+        joinstyle='miter' 
+    )
+    fig.add_artist(border_rect)
+
+    return fig
+
+# PAGE SETUP LAYOUT
 st.set_page_config(
     layout="wide"
 )
@@ -1119,7 +1330,11 @@ with col_rhb:
         st.pyplot(create_swing_distribution_histogram(df_rhb, "RHB"))
     with deviation_dist:
         st.markdown("###### TURN")
-        st.pyplot(create_deviation_distribution_histogram(df_rhb, "RHB"))  
+        st.pyplot(create_deviation_distribution_histogram(df_rhb, "RHB")) 
+
+    # Chart Spinner Hitting Missing
+    st.markdown("###### STUMP BEEHIVE")
+    st.pyplot(create_spinner_hitting_missing(df_rhb,"RHB"),use_container_width = True)
 
 
 # === RIGHT COLUMN: AGAINST LEFT-HANDED BATSMEN (LHB) ===
@@ -1156,4 +1371,8 @@ with col_lhb:
     with deviation_dist:
         st.markdown("###### TURN")
         st.pyplot(create_deviation_distribution_histogram(df_lhb, "LHB"))
+
+    # Chart Spinner Hitting Missing
+    st.markdown("###### STUMP BEEHIVE")
+    st.pyplot(create_spinner_hitting_missing(df_lhb,"LHB"),use_container_width = True)
         
