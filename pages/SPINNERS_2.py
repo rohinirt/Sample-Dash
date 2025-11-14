@@ -989,14 +989,8 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
     return fig
 
 # Chart Spinners Hitting Missing
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-import pandas as pd
-import numpy as np
-from matplotlib.gridspec import GridSpec
-
 def create_spinner_hitting_missing(df_in, handedness_label):
-    FIG_SIZE = (7, 7.5) # Adjusted for height to accommodate both charts
+    FIG_SIZE = (4, 7) # Adjusted for height to accommodate both charts
 
     # 0. Early exit if data is empty
     if df_in.empty:
@@ -1029,7 +1023,7 @@ def create_spinner_hitting_missing(df_in, handedness_label):
     # --- 3. Setup Figure and GridSpec ---
     # Rows: 1 for map, 1 for performance bars (which has 3 sub-columns)
     fig = plt.figure(figsize=FIG_SIZE, facecolor='white')
-    gs = GridSpec(2, 1, figure=fig, height_ratios=[3.5, 1], hspace=0.15) # Adjusted hspace
+    gs = GridSpec(2, 1, figure=fig, height_ratios=[3, 1], hspace=0.15) # Adjusted hspace
 
     # Map subplot
     ax_map = fig.add_subplot(gs[0, 0])
