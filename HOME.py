@@ -20,7 +20,6 @@ st.set_page_config(
 # --- Check for uploaded data and display uploader ---
 if 'data_df' not in st.session_state:
     st.title("🏏HAWK-EYE CRICKET DASHBOARD")
-    st.header("Upload Data")
 
     uploaded_file = st.file_uploader("Upload your CSV file here", type=["csv"])
 
