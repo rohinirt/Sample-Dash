@@ -13,12 +13,10 @@ from matplotlib import cm, colors, patches
 import matplotlib.colors as mcolors
 from matplotlib.gridspec import GridSpec
 
-# =========================================================
-# Chart 1a: CREASE BEEHIVE
-# =========================================================
+
 
 # =========================================================
-# Chart 2: CREASE BEEHIVE 
+# Chart 1: CREASE BEEHIVE 
 # ========================================================
 def create_Spinner_crease_beehive(df_in, handedness_label): # Renamed function and parameter
     if df_in.empty:
@@ -81,10 +79,7 @@ def create_Spinner_crease_beehive(df_in, handedness_label): # Renamed function a
     ax_bh = fig.add_subplot(gs[0, 0])      
     ax_boxes = fig.add_subplot(gs[1, 0])   
     fig.patch.set_facecolor('white')
-    
 
-    # -----------------------------------------------------------
-    ## --- 2. CHART 2a: CREASE BEEHIVE (ax_bh) ---
     
     # --- Traces ---
     ax_bh.scatter(regular_balls["CreaseY"], regular_balls["CreaseZ"], s=40, c='lightgrey', edgecolor='white', linewidths=1.0, alpha=0.95, label="Regular Ball")
@@ -112,7 +107,7 @@ def create_Spinner_crease_beehive(df_in, handedness_label): # Renamed function a
     ax_bh.set_facecolor('white')
     
     # -----------------------------------------------------------
-    ## --- 3. CHART 2b: LATERAL PERFORMANCE BOXES (ax_boxes) ---
+    ## --- 3. CHART 1b: LATERAL PERFORMANCE BOXES (ax_boxes) ---
     
     num_regions = len(ordered_zones)
     box_width = 1 / num_regions
@@ -202,9 +197,7 @@ def create_Spinner_crease_beehive(df_in, handedness_label): # Renamed function a
 
     return fig
 
-# --- CHART 3a: PITCH MAP (BOUNCE LOCATION) ---
-
-# --- CHART 3: PITCH MAP (BOUNCE LOCATION) ---
+# --- CHART 2: PITCH MAP (BOUNCE LOCATION) ---
 def create_Spinner_pitch_map(df_in): 
     # Define Spinner Bins (Delivery Type is fixed as spin)
     # Bins: 1.2-6: Full, 6-8 Length, 8-10 Short, 10-15 Bouncer
@@ -311,7 +304,7 @@ def create_Spinner_pitch_map(df_in):
     
     return fig
 
-# --- CHART 3b: PITCH LENGTH METRICS (BOWLER FOCUS) ---
+# --- CHART 2b: PITCH LENGTH METRICS
 # --- Helper function for Pitch Bins (Hardcoded for spin) ---
 def get_Spinner_pitch_bins():
     return  {
@@ -450,7 +443,7 @@ def create_Spinner_pitch_length_bars(df_in):
     plt.tight_layout(pad=0.5)
     return fig
     
-# --- CHART 4: RELEASE SPEED DISTRIBUTION ---
+# --- CHART 3: RELEASE SPEED DISTRIBUTION ---
 def create_Spinner_release_speed_distribution(df_in, handedness_label):
     FIG_SIZE = (4, 4.4)
 
