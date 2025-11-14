@@ -995,7 +995,7 @@ def create_spinner_hitting_missing(df_in, handedness_label):
     into a single Matplotlib figure with a common border.
     """
     
-    FIG_SIZE = (7, 7.5) 
+    FIG_SIZE = (7, 5) 
 
     # 0. Early exit if data is empty
     if df_in.empty:
