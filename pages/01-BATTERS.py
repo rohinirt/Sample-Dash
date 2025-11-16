@@ -815,8 +815,8 @@ def create_interception_side_on(df_in, delivery_type):
 
     # Draw the custom Rectangle 
     border_rect = patches.Rectangle(
-        (x0_pad-0.009, y0_pad+0.02), 
-        width_pad+0.025, 
+        (x0_pad-0.008, y0_pad+0.02), 
+        width_pad+0.02, 
         height_pad,  
         facecolor='none', 
         edgecolor='black', 
