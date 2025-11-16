@@ -1124,7 +1124,7 @@ def create_wagon_wheel(df_in, delivery_type):
     ## --- PART 3: DRAW SINGLE COMPACT BORDER ---
     # ----------------------------------------------------------------------
     
-    plt.tight_layout(pad=0.1) 
+    plt.tight_layout() 
     
     PADDING = 0.005 
 
