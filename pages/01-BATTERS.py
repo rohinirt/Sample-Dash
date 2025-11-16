@@ -1108,7 +1108,7 @@ def create_wagon_wheel(df_in, delivery_type):
         if left_pct > 0:
             text_color_left = get_text_color(left_color)
             ax_split.text(left_pct / 2, 0, f"LEFT\n{left_pct:.0f}%", 
-                          ha='center', va='center', color=text_color_left, weight='bold', fontsize=12)
+                          ha='center', va='center', color=text_color_left, weight='bold', fontsize=20)
             
         if right_pct > 0:
             text_color_right = get_text_color(right_color)
@@ -1147,7 +1147,7 @@ def create_wagon_wheel(df_in, delivery_type):
 
     # Draw the custom Rectangle 
     border_rect = patches.Rectangle(
-        (x0_pad-0.02, y0_pad), 
+        (x0_pad-0.02, y0_pad-0.02), 
         width_pad+0.04, 
         height_pad,  
         facecolor='none', 
