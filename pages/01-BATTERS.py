@@ -1147,9 +1147,9 @@ def create_wagon_wheel(df_in, delivery_type):
 
     # Draw the custom Rectangle 
     border_rect = patches.Rectangle(
-        (x0_pad-0.02, y0_pad-0.02), 
+        (x0_pad-0.04, y0_pad-0.04), 
         width_pad+0.04, 
-        height_pad,  
+        height_pad+0.01,  
         facecolor='none', 
         edgecolor='black', 
         linewidth=0.5, 
