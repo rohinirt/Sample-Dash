@@ -211,10 +211,10 @@ def create_Spinner_pitch_map(df_in):
     # Define Spinner Bins (Delivery Type is fixed as spin)
     # Bins: 1.2-6: Full, 6-8 Length, 8-10 Short, 10-15 Bouncer
     PITCH_BINS = {
-         "Over Pitched": [1.22, 2.22],
-        "Full": [2.22, 4.0],
-        "Good": [4.0, 6.0],
-        "Short": [6.0, 15.0]
+         "Over Pitched": [0, 2.8],
+        "Full": [2.8, 4.4],
+        "Good": [4.4, 6.2],
+        "Short": [6.2, 15.0]
     }
 
     if df_in.empty:
@@ -317,10 +317,10 @@ def create_Spinner_pitch_map(df_in):
 # --- Helper function for Pitch Bins (Hardcoded for spin) ---
 def get_Spinner_pitch_bins():
     return  {
-         "Over Pitched": [1.22, 2.22],
-        "Full": [2.22, 4.0],
-        "Good": [4.0, 6.0],
-        "Short": [6.0, 15.0]
+         "Over Pitched": [0, 2.8],
+        "Full": [2.8, 4.4],
+        "Good": [4.4, 6.2],
+        "Short": [6.2, 15.0]
     }
     
 def create_Spinner_pitch_length_bars(df_in):
