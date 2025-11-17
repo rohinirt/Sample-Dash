@@ -356,11 +356,10 @@ def create_pacer_pitch_map(df_in):
     # Define Pacer Bins (Delivery Type is fixed as Seam)
     # Bins: 1.2-6: Full, 6-8 Length, 8-10 Short, 10-15 Bouncer
     PITCH_BINS = {
-        "Full Toss": [-4.0, 1.2], # Added Full Toss based on Seam logic
-        "Full": [1.2, 6.0],
-        "Length": [6.0, 8.0],
-        "Short": [8.0, 10.0],
-        "Bouncer": [10.0, 15.0],
+             "Full": [0, 5.8],
+            "Length": [5.8, 8.0],
+            "Short": [8.0, 10.0],
+            "Bouncer": [10.0, 15.0],
     }
 
     if df_in.empty:
