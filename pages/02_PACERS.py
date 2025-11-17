@@ -506,7 +506,7 @@ def create_pacer_pitch_length_bars(df_in):
     # Calculate Bowling Metrics
     # Bowling Average = Runs / Wickets
     df_summary["BowlingAverage"] = df_summary.apply(
-        lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else (100 if row["Balls"] > 0 else 0), axis=1
+        lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else np.nan, axis=1
     )
     # Bowling Strike Rate = Balls / Wickets * 100
     df_summary["BowlingStrikeRate"] = df_summary.apply(
