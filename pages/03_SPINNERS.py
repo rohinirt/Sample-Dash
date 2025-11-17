@@ -1130,6 +1130,22 @@ def create_spinner_hitting_missing(df_in, handedness_label):
 st.set_page_config(
     layout="wide"
 )
+# Use columns to manage the horizontal space under the main title.
+# [1, 3] gives 1/4 of the width to the title side and 3/4 to the legend side.
+col_title_space, col_legend = st.columns([1, 3]) 
+
+# We place the title directly using st.title, and use the columns for placement.
+st.title("BATTERS")
+
+with col_legend:
+    # Use st.markdown with HTML to define the colored circles (using &#9679;), 
+    # ensuring they are vertically aligned and spaced correctly.
+    legend_markdown = """
+    <p style='font-size: 16px; margin-top: -30px;'>
+        <span style='color: #FF0000; font-size: 20px;'>&#9679;</span> Wickets &nbsp;&nbsp;&nbsp; 
+        <span style='color: royalblue; font-size: 20px;'>&#9679;</span> Boundreis &nbsp;&nbsp;&nbsp; 
+        <span style='color: #808080; font-size: 20px;'>&#9679;</span> Others
+    </p
 
 # 1. CRITICAL: GET DATA AND CHECK FOR AVAILABILITY
 if 'data_df' not in st.session_state:
