@@ -1202,7 +1202,7 @@ def create_directional_split(df_in, direction_col, chart_title, delivery_type):
     ).reset_index().set_index("Direction").reindex(["LEFT", "RIGHT"]).fillna(0)
     
     summary["Average"] = summary.apply(
-        lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else (row["Runs"] if row["Balls"] > 0 else 0), axis=1
+        lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else np.nan, axis=1
     )
     
     # --- Prepare for Butterfly Effect & Order (LEFT on top, RIGHT on bottom) ---
