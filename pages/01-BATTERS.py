@@ -1299,10 +1299,7 @@ st.set_page_config(
     layout="wide"
 )
 st.title("BATTERS")
-col_title, col_legend = st.columns([1, 3]) 
 
-
-    st.markdown(legend_markdown, unsafe_allow_html=True) 
 # =========================================================
 # 💥 1. CRITICAL: GET DATA FROM SESSION STATE
 # This check ensures the page cannot run without data uploaded via Home.py
