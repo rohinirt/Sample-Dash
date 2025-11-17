@@ -181,7 +181,7 @@ def create_crease_beehive(df_in, delivery_type):
     # 2. Define standard zone order (RHB: Left to Right == WOO to LEG)
     ordered_zones = ["WAY OUTSIDE OFF", "OUTSIDE OFF", "STUMPS", "LEG"]
     summary = summary.reindex(ordered_zones).fillna(0)
-    summary["Avg Runs/Wicket"] = summary.apply(lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else 0, axis=1)
+    summary["Avg Runs/Wicket"] = summary.apply(lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else np.nan, axis=1)
 
     # 3. HANDEDNESS AWARE REVERSAL: Reverse order for LHB
     if not is_rhb:
