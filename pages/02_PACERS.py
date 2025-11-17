@@ -144,7 +144,7 @@ def create_pacer_crease_beehive(df_in, handedness_label): # Renamed function and
         # Draw the Rectangle
         ax_boxes.add_patch(
             patches.Rectangle((left, 0), box_width, box_height, 
-                              edgecolor="white", facecolor=color, linewidth=1)
+                              edgecolor="black", facecolor=color, linewidth=0.4)
         )
         
         # Label 1: Zone Name (Above the box)
