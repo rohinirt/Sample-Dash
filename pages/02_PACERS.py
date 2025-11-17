@@ -79,7 +79,7 @@ def create_pacer_crease_beehive(df_in, handedness_label): # Renamed function and
     summary = summary.reindex(ordered_zones).fillna(0)
     
     # BOWLING AVERAGE CALCULATION (Same formula as before, just interpreted differently)
-    summary["Avg Runs/Wicket"] = summary.apply(lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else 0, axis=1)
+    summary["Avg Runs/Wicket"] = summary.apply(lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else np.nan, axis=1)
 
     # -----------------------------------------------------------
     # --- 1. SETUP SUBPLOTS ---
@@ -119,8 +119,7 @@ def create_pacer_crease_beehive(df_in, handedness_label): # Renamed function and
     ax_bh.set_facecolor('white')
     
     # -----------------------------------------------------------
-    ## --- 3. CHART 2b: LATERAL PERFORMANCE BOXES (ax_boxes) ---
-    
+    ## --- 3. CHART 2b: LATERAL PERFORMANCE BOXES (ax_boxes) --
     num_regions = len(ordered_zones)
     box_width = 1 / num_regions
     box_height = 0.4 
