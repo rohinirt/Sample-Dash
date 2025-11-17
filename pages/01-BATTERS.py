@@ -727,8 +727,8 @@ def create_interception_side_on(df_in, delivery_type):
     ).reset_index().set_index("CreaseWidth").reindex(ordered_keys).fillna(0)
     
     df_summary["Average"] = df_summary.apply(
-        lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else (row["Runs"] if row["Balls"] > 0 else 0), axis=1
-    )
+    lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else np.nan, axis=1
+)
     
     # 2. Plotting Equal Boxes
     num_boxes = len(ordered_keys)
