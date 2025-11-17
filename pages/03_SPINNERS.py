@@ -483,20 +483,17 @@ def create_Spinner_release_speed_distribution(df_in, handedness_label):
     counts, bin_edges = np.histogram(speeds, bins=bins)
     
     # 2. Process Data for Plotting & Filtering
-    
-    # Filter out bins with less than 5 balls
-    MIN_BALLS = 5
+
     valid_counts = []
     valid_bin_labels = []
     
     for i in range(len(counts)):
-        if counts[i] >= MIN_BALLS:
-            lower = int(bin_edges[i])
-            upper = int(bin_edges[i+1])
-            label = f"{lower}-{upper}"
+        lower = int(bin_edges[i])
+        upper = int(bin_edges[i+1])
+        label = f"{lower}-{upper}"
             
-            valid_counts.append(counts[i])
-            valid_bin_labels.append(label)
+        valid_counts.append(counts[i])
+        valid_bin_labels.append(label)
 
     if not valid_counts:
         fig, ax = plt.subplots(figsize=FIG_SIZE)
