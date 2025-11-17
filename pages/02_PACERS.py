@@ -11,18 +11,8 @@ import base64
 import matplotlib.patheffects as pe
 from matplotlib import cm, colors, patches
 import matplotlib.colors as mcolors
-
-
-# =========================================================
-# Chart 1a: CREASE BEEHIVE
-# =========================================================
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-import pandas as pd
-import numpy as np
-import matplotlib.cm as cm
-import matplotlib.colors as mcolors
 from matplotlib.gridspec import GridSpec
+
 
 # =========================================================
 # Chart 2: CREASE BEEHIVE 
@@ -79,7 +69,7 @@ def create_pacer_crease_beehive(df_in, handedness_label): # Renamed function and
     summary = summary.reindex(ordered_zones).fillna(0)
     
     # BOWLING AVERAGE CALCULATION (Same formula as before, just interpreted differently)
-    summary["Avg Runs/Wicket"] = summary.apply(lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else np.nan, axis=1)
+    summary["Avg Runs/Wicket"] = summary.apply(lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else np.NAN, axis=1)
 
     # -----------------------------------------------------------
     # --- 1. SETUP SUBPLOTS ---
@@ -256,15 +246,15 @@ def create_pacer_zonal_analysis(df_in, handedness_label):
     # Bowling Strike Rate (Balls / Wickets)
     summary["BowlingSR"] = summary.apply(lambda row: row["Balls"] / row["Wickets"] if row["Wickets"] > 0 else 0, axis=1)
 
-    # 3. Color Scaling (Based on Bowling Average)
-    avg_values = summary["Wickets"]
-    avg_max = avg_values.max() if avg_values.max() > 0 else 100 
-    avg_max_cap = 50 # Cap max at 50 for visualization consistency
-    
-    # Assuming mcolors is imported
-    norm = mcolors.Normalize(vmin=0, vmax=avg_max if avg_max > avg_max_cap else avg_max_cap)
-    # Assuming cm is imported
-    cmap = cm.get_cmap('Reds') # Higher Average (worse bowling) is darker red
+    # 3. Color Scaling (Based on Wickets Count)
+    wkt_values = summary["Wickets"] # Correctly using Wickets column
+    wkt_max = wkt_values.max() if wkt_values.max() > 0 else 5 # Use a lower default max for counts
+    wkt_max_cap = 10 # Cap max at a lower value, like 10, for visualization consistency on counts
+ 
+    # Assuming mcolors and cm are imported
+    norm = mcolors.Normalize(vmin=0, vmax=wkt_max if wkt_max > wkt_max_cap else wkt_max_cap)
+    # Use a color map suitable for increasing counts (Reds is fine)
+    cmap = cm.get_cmap('Reds')
 
     # Assuming plt and patches are imported
     fig_boxes, ax = plt.subplots(figsize=(3,2), subplot_kw={'xticks': [], 'yticks': []}) 
