@@ -1132,7 +1132,7 @@ st.set_page_config(
 )
 # Use columns to manage the horizontal space under the main title.
 # [2, 3] gives 1/4 of the width to the title side and 3/4 to the legend side.
-col_title_space, col_legend = st.columns([1, 3]) 
+col_title_space, col_legend = st.columns([0.8, 3]) 
 
 # We place the title directly using st.title, and use the columns for placement.
 with col_title_space:
