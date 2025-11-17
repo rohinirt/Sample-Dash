@@ -1147,6 +1147,8 @@ with col_legend:
         <span style='color: #808080; font-size: 20px;'>&#9679;</span> Others
     </p
     """
+    st.markdown(legend_markdown, unsafe_allow_html=True)
+    
 # 1. CRITICAL: GET DATA AND CHECK FOR AVAILABILITY
 if 'data_df' not in st.session_state:
     st.error("Please go back to the **Home** page and upload the data first to begin the analysis.")
