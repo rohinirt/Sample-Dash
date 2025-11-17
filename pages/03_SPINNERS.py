@@ -1064,8 +1064,8 @@ def create_spinner_hitting_missing(df_in, handedness_label):
 
     summary = summary.reindex(["HITTING", "MISSING"])
 
-    summary["BA"] = summary.apply(lambda r: r["Runs"] / r["Wickets"] if r["Wickets"] > 0 else np.nan, axis=1)
-    summary["SR"] = summary.apply(lambda r: r["Balls"] / r["Wickets"] if r["Wickets"] > 0 else np.nan, axis=1)
+    summary["BA"] = summary.apply(lambda r: r["Runs"] / r["Wickets"] if r["Wickets"] > 0 else 0, axis=1)
+    summary["SR"] = summary.apply(lambda r: r["Balls"] / r["Wickets"] if r["Wickets"] > 0 else 0, axis=1)
 
     metrics_data = {
         "Wickets": {"data": summary["Wickets"].tolist(), "title": "Wickets"},
