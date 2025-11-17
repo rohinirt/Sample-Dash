@@ -126,11 +126,14 @@ def create_pacer_crease_beehive(df_in, handedness_label): # Renamed function and
     left = 0
     
     # Color Normalization
-    avg_values = summary["Avg Runs/Wicket"]
-    avg_max = avg_values.max() if avg_values.max() > 0 else 50
-    # Capping max at 50 for consistent coloring/normalization
-    norm = mcolors.Normalize(vmin=0, vmax=avg_max if avg_max > 50 else 50) 
-    cmap = cm.get_cmap('Reds') 
+    wkt_values = summary["Wickets"]
+    wkt_max = wkt_values.max() if wkt_values.max() > 0 else 5 # Use a suitable default max
+    
+    # Capping max at 10 for consistent coloring/normalization (Adjust cap as needed)
+    wkt_cap = 10
+    norm = mcolors.Normalize(vmin=0, vmax=wkt_max if wkt_max > wkt_cap else wkt_cap) 
+    # Change colormap to suit a count/frequency metric
+    cmap = cm.get_cmap('Reds')
 
     for index, row in summary.iterrows():
         avg = row["Avg Runs/Wicket"]
