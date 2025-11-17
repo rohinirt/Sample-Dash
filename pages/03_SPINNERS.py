@@ -1141,7 +1141,7 @@ with col_legend:
     # Use st.markdown with HTML to define the colored circles (using &#9679;), 
     # ensuring they are vertically aligned and spaced correctly.
     legend_markdown = """
-    <p style='font-size: 16px; margin-top: -20px;'>
+    <p style='font-size: 16px; margin-top: 0px;'>
         <span style='color: #FF0000; font-size: 20px;'>&#9679;</span> Wickets &nbsp;&nbsp;&nbsp; 
         <span style='color: royalblue; font-size: 20px;'>&#9679;</span> Boundries &nbsp;&nbsp;&nbsp; 
         <span style='color: #808080; font-size: 20px;'>&#9679;</span> Others
