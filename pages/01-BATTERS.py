@@ -771,7 +771,7 @@ def create_interception_side_on(df_in, delivery_type):
             left=left,         
             color=color,
             edgecolor='black',
-            linewidth=0.7
+            linewidth=0.4
         )
         
         # --- Text Label (Wickets and Average) ---
