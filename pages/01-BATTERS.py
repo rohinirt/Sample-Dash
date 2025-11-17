@@ -1413,7 +1413,7 @@ df_spin_base = df_raw[df_raw["DeliveryType"] == "Spin"]
 df_seam = apply_filters(df_seam_base)
 df_spin = apply_filters(df_spin_base)
     
-heading_text = batsman.upper() if batsman != "All" else "GLOBAL ANALYSIS"
+heading_text = batsman.upper() if batsman != "All" else "ALL"
 st.header(f"**{heading_text}**")
 
 # --- 4. DISPLAY CHARTS IN TWO COLUMNS (SEAM vs. SPIN) ---
