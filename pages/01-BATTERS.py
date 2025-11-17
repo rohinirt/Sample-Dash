@@ -241,7 +241,7 @@ def create_crease_beehive(df_in, delivery_type):
     avg_max_val = avg_values.max() if avg_values.max() > 0 else 50
     avg_max = avg_max_val if avg_max_val > 50 else 50
     norm = mcolors.Normalize(vmin=0, vmax=avg_max)
-    cmap = cm.get_cmap('Reds') 
+    cmap = cm.get_cmap('Reds')
 
 
     for index, row in summary.iterrows():
@@ -343,19 +343,19 @@ def get_pitch_bins(delivery_type):
     if delivery_type == "Seam":
         # Seam Bins: 1.2-6: Full, 6-8 Length, 8-10 Short, 10-15 Bouncer
         return {
-            "Full": [1.2, 6.0],
-            "Length": [6.0, 8.0],
+            "Full": [0, 5.8],
+            "Length": [5.8, 8.0],
             "Short": [8.0, 10.0],
             "Bouncer": [10.0, 15.0],
         }
     elif delivery_type == "Spin":
         # Spin Bins: 1.22-2.22: OP, 2.22-4: full, 4-6: Good, 6-15: short
-        return {
-            "Over Pitched": [1.22, 2.22],
-            "Full": [2.22, 4.0],
-            "Good": [4.0, 6.0],
-            "Short": [6.0, 15.0],
-        }
+        return  {
+         "Over Pitched": [0, 2.8],
+        "Full": [2.8, 4.4],
+        "Good": [4.4, 6.2],
+        "Short": [6.2, 15.0]
+    }
     return {} # Default
 
 # --- CHART 3: PITCH MAP (BOUNCE LOCATION) ---
