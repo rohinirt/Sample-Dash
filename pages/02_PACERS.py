@@ -244,7 +244,7 @@ def create_pacer_zonal_analysis(df_in, handedness_label):
     summary["Avg Runs/Wicket"] = summary.apply(lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else np.nan, axis=1)
     
     # Bowling Strike Rate (Balls / Wickets)
-    summary["BowlingSR"] = summary.apply(lambda row: row["Balls"] / row["Wickets"] if row["Wickets"] > 0 else 0, axis=1)
+    summary["BowlingSR"] = summary.apply(lambda row: row["Balls"] / row["Wickets"] if row["Wickets"] > 0 else np.nan, axis=1)
 
     # 3. Color Scaling (Based on Wickets Count)
     wkt_values = summary["Wickets"] # Correctly using Wickets column
@@ -510,7 +510,7 @@ def create_pacer_pitch_length_bars(df_in):
     )
     # Bowling Strike Rate = Balls / Wickets * 100
     df_summary["BowlingStrikeRate"] = df_summary.apply(
-        lambda row: row["Balls"] / row["Wickets"] if row["Wickets"] > 0 else (row["Balls"] if row["Balls"] > 0 else 0), axis=1
+        lambda row: row["Balls"] / row["Wickets"] if row["Wickets"] > 0 else np.nan, axis=1
     )
     # Use 'Wickets' as the count for Dismissals
     df_summary["Dismissals"] = df_summary["Wickets"]
