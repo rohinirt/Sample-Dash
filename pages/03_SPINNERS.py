@@ -1135,15 +1135,15 @@ st.set_page_config(
 col_title_space, col_legend = st.columns([1, 3]) 
 
 # We place the title directly using st.title, and use the columns for placement.
-st.title("BATTERS")
+st.title("SPINNERS")
 
 with col_legend:
     # Use st.markdown with HTML to define the colored circles (using &#9679;), 
     # ensuring they are vertically aligned and spaced correctly.
     legend_markdown = """
-    <p style='font-size: 16px; margin-top: -30px;'>
+    <p style='font-size: 16px; margin-top: -20px;'>
         <span style='color: #FF0000; font-size: 20px;'>&#9679;</span> Wickets &nbsp;&nbsp;&nbsp; 
-        <span style='color: royalblue; font-size: 20px;'>&#9679;</span> Boundreis &nbsp;&nbsp;&nbsp; 
+        <span style='color: royalblue; font-size: 20px;'>&#9679;</span> Boundries &nbsp;&nbsp;&nbsp; 
         <span style='color: #808080; font-size: 20px;'>&#9679;</span> Others
     </p
     """
@@ -1162,8 +1162,6 @@ if "BowlerName" in df_raw.columns:
     
 # 2. BASE FILTER: ONLY spin DELIVERIES
 df_spin_base = df_raw[df_raw["DeliveryType"] == "Spin"]
-
-st.title("SPINNERS")
 
 # --- Prepare Initial Filter Options ---
 if "BowlingTeam" in df_spin_base.columns:
