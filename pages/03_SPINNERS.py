@@ -1146,7 +1146,7 @@ with col_legend:
         <span style='color: royalblue; font-size: 20px;'>&#9679;</span> Boundreis &nbsp;&nbsp;&nbsp; 
         <span style='color: #808080; font-size: 20px;'>&#9679;</span> Others
     </p
-
+    """
 # 1. CRITICAL: GET DATA AND CHECK FOR AVAILABILITY
 if 'data_df' not in st.session_state:
     st.error("Please go back to the **Home** page and upload the data first to begin the analysis.")
