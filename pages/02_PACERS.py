@@ -1136,7 +1136,23 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
 st.set_page_config(
     layout="wide"
 )
+col_title_space, col_legend = st.columns([0.85, 3]) 
+# We place the title directly using st.title, and use the columns for placement.
+with col_title_space:
+    st.title("PACERS")
 
+with col_legend:
+    # Use st.markdown with HTML to define the colored circles (using &#9679;), 
+    # ensuring they are vertically aligned and spaced correctly.
+    legend_markdown = """
+    <p style='font-size: 16px; margin-top: 30px;'>
+        <span style='color: red; font-size: 20px;'>&#9679;</span> Wickets &nbsp;&nbsp;&nbsp; 
+        <span style='color: royalblue; font-size: 20px;'>&#9679;</span> Boundries &nbsp;&nbsp;&nbsp; 
+        <span style='color: lightgrey; font-size: 20px;'>&#9679;</span> Others
+    </p
+    """
+    st.markdown(legend_markdown, unsafe_allow_html=True)
+    
 # 1. CRITICAL: GET DATA AND CHECK FOR AVAILABILITY
 if 'data_df' not in st.session_state:
     st.error("Please go back to the **Home** page and upload the data first to begin the analysis.")
@@ -1152,7 +1168,6 @@ if "BowlerName" in df_raw.columns:
 # 2. BASE FILTER: ONLY SEAM DELIVERIES
 df_seam_base = df_raw[df_raw["DeliveryType"] == "Seam"]
 
-st.title("PACERS")
 
 # --- Prepare Initial Filter Options ---
 if "BowlingTeam" in df_seam_base.columns:
