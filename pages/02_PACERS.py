@@ -69,7 +69,7 @@ def create_pacer_crease_beehive(df_in, handedness_label): # Renamed function and
     summary = summary.reindex(ordered_zones).fillna(0)
     
     # BOWLING AVERAGE CALCULATION (Same formula as before, just interpreted differently)
-    summary["Avg Runs/Wicket"] = summary.apply(lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else np.NAN, axis=1)
+    summary["Avg Runs/Wicket"] = summary.apply(lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else np.nan, axis=1)
 
     # -----------------------------------------------------------
     # --- 1. SETUP SUBPLOTS ---
@@ -241,7 +241,7 @@ def create_pacer_zonal_analysis(df_in, handedness_label):
     )
     
     # Bowling Average (Runs / Wickets)
-    summary["Avg Runs/Wicket"] = summary.apply(lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else 0, axis=1)
+    summary["Avg Runs/Wicket"] = summary.apply(lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else np.nan, axis=1)
     
     # Bowling Strike Rate (Balls / Wickets)
     summary["BowlingSR"] = summary.apply(lambda row: row["Balls"] / row["Wickets"] if row["Wickets"] > 0 else 0, axis=1)
