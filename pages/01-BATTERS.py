@@ -297,7 +297,7 @@ ax_boxes.set_facecolor('white')
     ## --- 4. DRAW SINGLE COMPACT BORDER WITH PADDING ---
     
     # 1. Ensure plots are drawn tight
-    plt.tight_layout(pad=0.2)
+plt.tight_layout(pad=0.2)
     
     # Define Padding Value (in figure coordinates)
     PADDING = 0.008
