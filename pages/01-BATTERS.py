@@ -734,8 +734,12 @@ def create_interception_side_on(df_in, delivery_type):
     num_boxes = len(ordered_keys)
     box_width = 1.0 / num_boxes 
     left = 0.0
+
+    # Normalization for the heatmap colors
+    # Use only non-NaN values for max for accurate normalization
+    max_avg_val = df_summary["Average"].replace([np.inf, -np.inf], np.nan).max()
+    max_avg = max_avg_val if max_avg_val > 0 else 100
     
-    max_avg = df_summary["Average"].max() if df_summary["Average"].max() > 0 else 100
     norm = mcolors.Normalize(vmin=0, vmax=max_avg)
     cmap = cm.get_cmap(COLORMAP)
     
@@ -743,25 +747,35 @@ def create_interception_side_on(df_in, delivery_type):
         wickets = row["Wickets"]
         avg = row["Average"] 
         
-        color = cmap(norm(avg)) 
-        
-        # Draw the box 
+        # --- CONDITIONAL STYLING LOGIC (The Fix) ---
+        if np.isnan(avg) or avg == np.inf:
+            # If average is N/A (Wickets=0)
+            avg_display = 'N/A'
+            color = 'white'  # Rule: Bar should be white
+            text_color = 'black' # Rule: Label should be black
+        else:
+            # If average is valid
+            avg_display = f"{avg:.1f}"
+            color = cmap(norm(avg)) 
+            
+            # Luminosity Check for Text Color
+            r, g, b, a = color
+            luminosity = 0.2126 * r + 0.7152 * g + 0.0722 * b
+            text_color = 'white' if luminosity < 0.5 else 'black'
+            
+        # Draw the box  
         ax_bar.barh(
-            y=0.5,           
+            y=0.5,             
             width=box_width,
-            height=0.6,        
-            left=left,       
+            height=0.6,          
+            left=left,         
             color=color,
-            edgecolor='black', # Use black edge for consistency with image
+            edgecolor='black',
             linewidth=0.7
         )
         
-        # --- Text Label (6W - Ave 22.5) ---
-        label_text = f"{int(wickets)}W - Ave {avg:.1f}"
-        
-        r, g, b, a = color
-        luminosity = 0.2126 * r + 0.7152 * g + 0.0722 * b
-        text_color = 'white' if luminosity < 0.5 else 'black'
+        # --- Text Label (Wickets and Average) ---
+        label_text = f"{int(wickets)}W - Ave {avg_display}"
         
         center_x = left + box_width / 2
         center_y = 0.5
@@ -778,7 +792,7 @@ def create_interception_side_on(df_in, delivery_type):
         # --- Crease Width Label (Top of the box) ---
         ax_bar.text(
             center_x, 0.8, 
-            index,          
+            index,           
             ha='center', va='bottom', 
             fontsize=9, 
             color='black',
@@ -788,7 +802,7 @@ def create_interception_side_on(df_in, delivery_type):
 
     # 3. Styling for Bar Chart
     ax_bar.set_xlim(0, 1)
-    ax_bar.set_ylim(0, 1) # Set Y limits to ensure the top label is visible
+    ax_bar.set_ylim(0, 1) 
     ax_bar.axis('off')
 
 
