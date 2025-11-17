@@ -70,7 +70,7 @@ def create_Spinner_crease_beehive(df_in, handedness_label): # Renamed function a
     summary = summary.reindex(ordered_zones).fillna(0)
     
     # BOWLING AVERAGE CALCULATION (Same formula as before, just interpreted differently)
-    summary["Avg Runs/Wicket"] = summary.apply(lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else 0, axis=1)
+    summary["Avg Runs/Wicket"] = summary.apply(lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else np.nan, axis=1)
 
     # -----------------------------------------------------------
     # --- 1. SETUP SUBPLOTS ---
@@ -114,23 +114,32 @@ def create_Spinner_crease_beehive(df_in, handedness_label): # Renamed function a
     box_height = 0.4 
     left = 0
     
+   ## --- 3. CHART 2b: LATERAL PERFORMANCE BOXES (ax_boxes) --
+    num_regions = len(ordered_zones)
+    box_width = 1 / num_regions
+    box_height = 0.4 
+    left = 0
+    
     # Color Normalization
-    avg_values = summary["Avg Runs/Wicket"]
-    avg_max = avg_values.max() if avg_values.max() > 0 else 50
-    # Capping max at 50 for consistent coloring/normalization
-    norm = mcolors.Normalize(vmin=0, vmax=avg_max if avg_max > 50 else 50) 
-    cmap = cm.get_cmap('Reds') 
+    wkt_values = summary["Wickets"]
+    wkt_max = wkt_values.max() if wkt_values.max() > 0 else 5 # Use a suitable default max
+    
+    # Capping max at 10 for consistent coloring/normalization (Adjust cap as needed)
+    wkt_cap = 10
+    norm = mcolors.Normalize(vmin=0, vmax=wkt_max if wkt_max > wkt_cap else wkt_cap) 
+    # Change colormap to suit a count/frequency metric
+    cmap = cm.get_cmap('Reds')
 
     for index, row in summary.iterrows():
         avg = row["Avg Runs/Wicket"]
         wkts = int(row["Wickets"])
         
-        color = cmap(norm(avg)) if row["Balls"] > 0 else 'whitesmoke' 
+        color = cmap(norm(wkts))
         
         # Draw the Rectangle
         ax_boxes.add_patch(
             patches.Rectangle((left, 0), box_width, box_height, 
-                              edgecolor="white", facecolor=color, linewidth=1)
+                              edgecolor="black", facecolor=color, linewidth=0.4)
         )
         
         # Label 1: Zone Name (Above the box)
