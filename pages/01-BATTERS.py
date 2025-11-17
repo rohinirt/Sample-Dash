@@ -231,64 +231,64 @@ def create_crease_beehive(df_in, delivery_type):
     ## --- 3. CHART 2b: LATERAL PERFORMANCE BOXES (ax_boxes) ---
     
     num_regions = len(ordered_zones)
-box_width = 1 / num_regions
-box_height = 0.4 
-left = 0
+    box_width = 1 / num_regions
+    box_height = 0.4 
+    left = 0
     
-# Color Normalization
-avg_values = summary["Avg Runs/Wicket"].replace([np.inf, -np.inf], np.nan)
-avg_max_val = avg_values.max() if avg_values.max() > 0 else 50
-avg_max = avg_max_val if avg_max_val > 50 else 50
-norm = mcolors.Normalize(vmin=0, vmax=avg_max)
-cmap = cm.get_cmap('Reds') # Using a different cmap for contrast on the boxe
+    # Color Normalization
+    avg_values = summary["Avg Runs/Wicket"].replace([np.inf, -np.inf], np.nan)
+    avg_max_val = avg_values.max() if avg_values.max() > 0 else 50
+    avg_max = avg_max_val if avg_max_val > 50 else 50
+    norm = mcolors.Normalize(vmin=0, vmax=avg_max)
+    cmap = cm.get_cmap('Reds') # Using a different cmap for contrast on the boxe
 
 
-for index, row in summary.iterrows():
-    avg = row["Avg Runs/Wicket"]
-    wkts = int(row["Wickets"])
+    for index, row in summary.iterrows():
+        avg = row["Avg Runs/Wicket"]
+        wkts = int(row["Wickets"])
     
-    # --- Conditional Logic for N/A Average (Wickets = 0) ---
-    if np.isnan(avg) or avg == np.inf:
-        # Rule: If average is N/A, use white bar and black text
-        color = 'white'
-        text_color = 'black'
-        avg_display = 'N/A'
-    else:
-        # Rule: If average is valid, color based on heatmap and check luminosity
-        color = cmap(norm(avg))
-        avg_display = f"{avg:.1f}"
+        # --- Conditional Logic for N/A Average (Wickets = 0) ---
+        if np.isnan(avg) or avg == np.inf:
+            # Rule: If average is N/A, use white bar and black text
+             color = 'white'
+            text_color = 'black'
+            avg_display = 'N/A'
+        else:
+            # Rule: If average is valid, color based on heatmap and check luminosity
+             color = cmap(norm(avg))
+            avg_display = f"{avg:.1f}"
 
-        # Calculate text color for contrast
-        r, g, b, a = color
-        luminosity = 0.2126 * r + 0.7152 * g + 0.0722 * b
-        text_color = 'white' if luminosity < 0.5 else 'black'
+            # Calculate text color for contrast
+            r, g, b, a = color
+             luminosity = 0.2126 * r + 0.7152 * g + 0.0722 * b
+            text_color = 'white' if luminosity < 0.5 else 'black'
         
-    # Draw the Rectangle
-    ax_boxes.add_patch(
-        patches.Rectangle((left, 0), box_width, box_height, 
-                          edgecolor="black", facecolor=color, linewidth=1)
-    )
+        # Draw the Rectangle
+        ax_boxes.add_patch(
+            patches.Rectangle((left, 0), box_width, box_height, 
+                              edgecolor="black", facecolor=color, linewidth=1)
+        )
     
-    # Label 1: Zone Name (Above the box)
-    ax_boxes.text(left + box_width / 2, box_height + 0.1, 
-                  index, 
-                  ha='center', va='bottom', fontsize=7, color='black')
+        # Label 1: Zone Name (Above the box)
+        ax_boxes.text(left + box_width / 2, box_height + 0.1, 
+                         index, 
+                      ha='center', va='bottom', fontsize=7, color='black')
     
-    # Label 2: Wickets and Average (Middle of the box)
-    label_wkts_avg = f"{wkts}W - Ave {avg_display}"
-    ax_boxes.text(left + box_width / 2, box_height * 0.5, 
-                  label_wkts_avg,
-                  ha='center', va='center', fontsize=9, fontweight='bold', color=text_color)
+        # Label 2: Wickets and Average (Middle of the box)
+        label_wkts_avg = f"{wkts}W - Ave {avg_display}"
+        ax_boxes.text(left + box_width / 2, box_height * 0.5, 
+                      label_wkts_avg,
+                      ha='center', va='center', fontsize=9, fontweight='bold', color=text_color)
     
-    left += box_width
+        left += box_width
 
-# Formatting
-ax_boxes.set_xlim(0, 1)
-ax_boxes.set_ylim(0, box_height + 0.3) 
-ax_boxes.axis('off')
-for spine in ax_boxes.spines.values():
-    spine.set_visible(False)
-ax_boxes.set_facecolor('white')
+    # Formatting
+    ax_boxes.set_xlim(0, 1)
+    ax_boxes.set_ylim(0, box_height + 0.3) 
+    ax_boxes.axis('off')
+    for spine in ax_boxes.spines.values():
+        spine.set_visible(False)
+    ax_boxes.set_facecolor('white')
 
     # -----------------------------------------------------------
     ## --- 4. DRAW SINGLE COMPACT BORDER AROUND THE ENTIRE FIGURE ---
@@ -297,7 +297,7 @@ ax_boxes.set_facecolor('white')
     ## --- 4. DRAW SINGLE COMPACT BORDER WITH PADDING ---
     
     # 1. Ensure plots are drawn tight
-plt.tight_layout(pad=0.2)
+    plt.tight_layout(pad=0.2)
     
     # Define Padding Value (in figure coordinates)
     PADDING = 0.008
