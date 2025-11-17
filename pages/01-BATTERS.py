@@ -73,7 +73,7 @@ def create_zonal_analysis(df_in, batsman_name, delivery_type):
             avg = summary.loc[z_key, "Avg Runs/Wicket"]
             sr = summary.loc[z_key, "StrikeRate"]
         
-        color = cmap(norm(avg)) if avg > 0 else 'white'
+        color = cmap(norm(avg)) if avg > 0 else 'grey'
 
         ax.add_patch(patches.Rectangle((x1, y1), w, h, edgecolor="black", facecolor=color, linewidth=0.8))
 
