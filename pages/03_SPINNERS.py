@@ -1049,9 +1049,9 @@ def create_spinner_hitting_missing(df_in, handedness_label):
     ax_map.text(0.98, 1.3, f"Hitting: {hitting_pct:.0f}%",
                 transform=ax_map.transData, ha='right', va='top',
                 fontsize=14, color='red', weight='bold')
-    ax_map.text(0.98, 1.18, f"Missing: {missing_pct:.0f}%",
+    ax_map.text(2, 1.3, f"Missing: {missing_pct:.0f}%",
                 transform=ax_map.transData, ha='right', va='top',
-                fontsize=14, color='#D3D3D3', weight='bold')
+                fontsize=10, color='#D3D3D3', weight='bold')
 
     # 5. SUMMARY TABLE
     summary = df_map.groupby("HittingCategory").agg(
