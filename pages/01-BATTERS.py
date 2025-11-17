@@ -1310,6 +1310,13 @@ if 'data_df' not in st.session_state:
 # Retrieve the full raw DataFrame
 df_raw = st.session_state['data_df']
 
+# Ensure columns exist before attempting to convert them
+if "BatsmanName" in df_raw.columns:
+    df_raw["BatsmanName"] = df_raw["BatsmanName"].astype(str).str.upper()
+if "BowlerName" in df_raw.columns:
+    # Assuming 'BowlerName' is used elsewhere, convert it here too for consistency
+    df_raw["BowlerName"] = df_raw["BowlerName"].astype(str).str.upper()
+# NOTE: BattingTeam is often case-sensitive, but converting Batsman/Bowler is key here.
 # =========================================================
 # 🌟 FILTERS 🌟
 # =========================================================
