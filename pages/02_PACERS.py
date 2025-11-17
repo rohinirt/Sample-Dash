@@ -272,7 +272,7 @@ def create_pacer_zonal_analysis(df_in, handedness_label):
             bowling_avg = summary.loc[z_key, "Avg Runs/Wicket"]
             bowling_sr = summary.loc[z_key, "BowlingSR"]
             
-        color = cmap(norm(bowling_avg)) if summary.loc[z_key, "Balls"] > 0 else 'white'
+        color = cmap(norm(wkts))
 
         ax.add_patch(patches.Rectangle((x1, y1), w, h, edgecolor="black", facecolor=color, linewidth=0.8))
         
