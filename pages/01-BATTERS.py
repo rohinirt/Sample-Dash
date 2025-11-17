@@ -256,12 +256,12 @@ def create_crease_beehive(df_in, delivery_type):
         else:
             # Rule: If average is valid, color based on heatmap and check luminosity
              color = cmap(norm(avg))
-            avg_display = f"{avg:.1f}"
+             avg_display = f"{avg:.1f}"
 
             # Calculate text color for contrast
-            r, g, b, a = color
+             r, g, b, a = color
              luminosity = 0.2126 * r + 0.7152 * g + 0.0722 * b
-            text_color = 'white' if luminosity < 0.5 else 'black'
+             text_color = 'white' if luminosity < 0.5 else 'black'
         
         # Draw the Rectangle
         ax_boxes.add_patch(
