@@ -51,8 +51,8 @@ def create_zonal_analysis(df_in, batsman_name, delivery_type):
         df_chart2.groupby("Zone").agg(Runs=("Runs", "sum"), Wickets=("Wicket", lambda x: (x == True).sum()), Balls=("Wicket", "count"))
         .reindex([f"Z{i}" for i in range(1, 7)]).fillna(0)
     )
-    summary["Avg Runs/Wicket"] = summary.apply(lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else 0, axis=1)
-    summary["StrikeRate"] = summary.apply(lambda row: (row["Runs"] / row["Balls"]) * 100 if row["Balls"] > 0 else 0, axis=1)
+    summary["Avg Runs/Wicket"] = summary.apply(lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else np.nan, axis=1)
+    summary["StrikeRate"] = summary.apply(lambda row: (row["Runs"] / row["Balls"]) * 100 if row["Balls"] > 0 else np.nan, axis=1)
 
     avg_values = summary["Avg Runs/Wicket"]
     avg_max = avg_values.max() if avg_values.max() > 0 else 1
