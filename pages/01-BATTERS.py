@@ -677,7 +677,11 @@ def create_interception_side_on(df_in, delivery_type):
         ax_scatter.axvline(x=x_val, color='lightgrey', linestyle='--', linewidth=0.8, alpha=0.7)  
         ax_scatter.axhline(y=0.5, color='lightgrey', linestyle='--', linewidth=0.8, alpha=0.7)   
         ax_scatter.text(x_val, 1.45, label.split(':')[-1].strip(), ha='center', va='center', fontsize=8, color='grey', bbox=dict(facecolor='white', alpha=0.7, edgecolor='none', pad=1))
-
+        
+    ax_scatter.axhline(y=0.78, color="grey", linestyle="-", linewidth=0.5)
+    # --- Annotation ---
+    ax_bh.text(-1.5, 0.78, "Stump line", ha='left', va='bottom', fontsize=8, color="grey", transform=ax_bh.transData)
+    
     # Set Y limit as fixed
     y_limit = 1.5
     
