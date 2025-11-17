@@ -139,7 +139,7 @@ def create_pacer_crease_beehive(df_in, handedness_label): # Renamed function and
         avg = row["Avg Runs/Wicket"]
         wkts = int(row["Wickets"])
         
-        color = cmap(norm(avg)) if row["Balls"] > 0 else 'whitesmoke' 
+        color = cmap(norm(wkts))
         
         # Draw the Rectangle
         ax_boxes.add_patch(
