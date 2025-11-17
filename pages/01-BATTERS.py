@@ -680,7 +680,7 @@ def create_interception_side_on(df_in, delivery_type):
         
     ax_scatter.axhline(y=0.78, color="grey", linestyle="-", linewidth=0.5)
     # --- Annotation ---
-    ax_scatter.text(-1.5, 0.78, "Stump line", ha='left', va='bottom', fontsize=8, color="grey", transform=ax_bh.transData)
+    ax_scatter.text(-1.5, 0.78, "Stump line", ha='left', va='bottom', fontsize=8, color="grey", transform=ax_scatter.transData)
     
     # Set Y limit as fixed
     y_limit = 1.5
