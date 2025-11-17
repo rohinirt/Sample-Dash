@@ -1037,9 +1037,9 @@ def create_spinner_hitting_missing(df_in, handedness_label):
     ax_map.scatter(df_missing_no_wicket["StumpsY"], df_missing_no_wicket["StumpsZ"],
                    color='#D3D3D3', s=45, edgecolor='white', linewidth=0.4, alpha=0.8)
     ax_map.scatter(df_hitting_no_wicket["StumpsY"], df_hitting_no_wicket["StumpsZ"],
-                   color='red', s=55, edgecolor='white', linewidth=0.4, alpha=0.9)
+                   color='#3b3b3b', s=55, edgecolor='white', linewidth=0.4, alpha=0.9)
     ax_map.scatter(df_wicket["StumpsY"], df_wicket["StumpsZ"],
-                   color='royalblue', s=65, edgecolor='white', linewidth=0.6, zorder=25)
+                   color='red', s=65, edgecolor='white', linewidth=0.6, zorder=25)
 
     ax_map.set_xlim(-1.1, 1.1)
     ax_map.set_ylim(0, 1.4)
@@ -1048,7 +1048,7 @@ def create_spinner_hitting_missing(df_in, handedness_label):
     # Labels
     ax_map.text(0.74, 1.4, f"Hitting: {hitting_pct:.0f}%",
                 transform=ax_map.transData, ha='right', va='top',
-                fontsize=10, color='red', weight='bold')
+                fontsize=10, color='#3b3b3b', weight='bold')
     ax_map.text(1.2, 1.4, f"Missing: {missing_pct:.0f}%",
                 transform=ax_map.transData, ha='right', va='top',
                 fontsize=10, color='#D3D3D3', weight='bold')
@@ -1082,7 +1082,7 @@ def create_spinner_hitting_missing(df_in, handedness_label):
         "SR": summary["SR"].replace([np.inf], np.nan).max() * 1.2 if summary["SR"].max() > 0 else 100,
     }
 
-    bar_colors = ["red", "#D3D3D3"]
+    bar_colors = ["#3b3b3b", "#D3D3D3"]
     y_labels = ["HITTING", "MISSING"]
     axes = [ax_wickets, ax_ba, ax_sr]
 
