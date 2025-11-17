@@ -1301,15 +1301,7 @@ st.set_page_config(
 st.title("BATTERS")
 col_title, col_legend = st.columns([1, 3]) 
 
-# Use st.markdown() to render the colored circles (emojis or HTML) and text.
-    # We use HTML/Markdown to align the text with the title.
-    legend_markdown = """
-<p style='font-size: 18px; margin-top: 0px;'> 
-    <span style='color: #FF0000;'>&#9679;</span> Wickets &nbsp;&nbsp;&nbsp;
-    <span style='color: royalblue;'>&#9679;</span> Boundries &nbsp;&nbsp;&nbsp;
-    <span style='color: #808080;'>&#9679;</span> Others
-</p>
-    """
+
     st.markdown(legend_markdown, unsafe_allow_html=True) 
 # =========================================================
 # 💥 1. CRITICAL: GET DATA FROM SESSION STATE
