@@ -1145,7 +1145,12 @@ if 'data_df' not in st.session_state:
     st.stop()
     
 df_raw = st.session_state['data_df']
-
+# Ensure columns exist before attempting to convert them
+if "BatsmanName" in df_raw.columns:
+    df_raw["BatsmanName"] = df_raw["BatsmanName"].astype(str).str.upper()
+if "BowlerName" in df_raw.columns:
+    # Assuming 'BowlerName' is used elsewhere, convert it here too for consistency
+    df_raw["BowlerName"] = df_raw["BowlerName"].astype(str).str.upper()
 # 2. BASE FILTER: ONLY SEAM DELIVERIES
 df_seam_base = df_raw[df_raw["DeliveryType"] == "Seam"]
 
