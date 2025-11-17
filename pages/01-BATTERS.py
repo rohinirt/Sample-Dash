@@ -516,7 +516,7 @@ def create_pitch_length_bars(df_in, delivery_type):
     
     # Calculate Metrics
     df_summary["Average"] = df_summary.apply(
-        lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else (row["Runs"] if row["Balls"] > 0 else 0), axis=1
+        lambda row: row["Runs"] / row["Wickets"] if row["Wickets"] > 0 else np.nan, axis=1
     )
     df_summary["StrikeRate"] = df_summary.apply(
         lambda row: (row["Runs"] / row["Balls"]) * 100 if row["Balls"] > 0 else 0, axis=1
