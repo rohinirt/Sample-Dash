@@ -83,7 +83,7 @@ def create_zonal_analysis(df_in, batsman_name, delivery_type):
         ha="center", 
         va="center", 
         fontsize=5,
-        color="black" if norm(avg) < 0 else "white", 
+        color="black" if norm(avg) < 0.6 else "grey", 
         linespacing=1.2)
          # 1. Set line style for all spines you want visible
         spine_color = 'black'
