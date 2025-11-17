@@ -1301,22 +1301,16 @@ st.set_page_config(
 st.title("BATTERS")
 col_title, col_legend = st.columns([1, 3]) 
 
-with col_title:
-    # This column is intentionally left empty to push the title to the left, 
-    # but we'll put the title in a separate st.title call above for better formatting.
-    pass 
-
-with col_legend:
-    # Use st.markdown() to render the colored circles (emojis or HTML) and text.
+# Use st.markdown() to render the colored circles (emojis or HTML) and text.
     # We use HTML/Markdown to align the text with the title.
     legend_markdown = """
-    <p style='font-size: 24px; margin-top: 0px;'> 
-        <span style='color: #FF0000;'>&#9679;</span> Wickets &nbsp;&nbsp;&nbsp;
-        <span style='color: royalblue;'>&#9679;</span> Boundries &nbsp;&nbsp;&nbsp;
-        <span style='color: #808080;'>&#9679;</span> Others
-    </p>
+<p style='font-size: 18px; margin-top: 0px;'> 
+    <span style='color: #FF0000;'>&#9679;</span> Wickets &nbsp;&nbsp;&nbsp;
+    <span style='color: royalblue;'>&#9679;</span> Boundries &nbsp;&nbsp;&nbsp;
+    <span style='color: #808080;'>&#9679;</span> Others
+</p>
     """
-    st.markdown(legend_markdown, unsafe_allow_html=True)
+    st.markdown(legend_markdown, unsafe_allow_html=True) 
 # =========================================================
 # 💥 1. CRITICAL: GET DATA FROM SESSION STATE
 # This check ensures the page cannot run without data uploaded via Home.py
