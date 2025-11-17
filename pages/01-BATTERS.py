@@ -251,8 +251,8 @@ def create_crease_beehive(df_in, delivery_type):
         if np.isnan(avg) or avg == np.inf:
             # Rule: If average is N/A, use white bar and black text
              color = 'white'
-            text_color = 'black'
-            avg_display = 'N/A'
+             text_color = 'black'
+             avg_display = 'N/A'
         else:
             # Rule: If average is valid, color based on heatmap and check luminosity
              color = cmap(norm(avg))
