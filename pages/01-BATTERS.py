@@ -752,7 +752,7 @@ def create_interception_side_on(df_in, delivery_type):
             height=0.6,        
             left=left,       
             color=color,
-            edgecolor='white', # Use black edge for consistency with image
+            edgecolor='black', # Use black edge for consistency with image
             linewidth=0.7
         )
         
