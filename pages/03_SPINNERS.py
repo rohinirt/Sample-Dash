@@ -744,7 +744,7 @@ def create_swing_distribution_histogram(df_in, handedness_label):
         return fig
 
     df_data = df_in["Swing"].dropna().astype(float)
-    
+    df_data = df_data[(df_data >= -10) & (df_data <= 10)]
     if df_data.empty:
         fig, ax = plt.subplots(figsize=FIG_SIZE)
         ax.text(0.5, 0.5, f"No valid Swing data for ({handedness_label})", ha='center', va='center', fontsize=12)
