@@ -611,6 +611,7 @@ def create_pacer_release_speed_distribution(df_in, handedness_label):
 
     # 1. Prepare Data and Determine Histogram Parameters
     speeds = df_in["ReleaseSpeed"].dropna().values
+    speeds = speeds[(speeds >= 50) & (speeds <= 160)]
     total_balls = len(speeds)
     
     if total_balls == 0:
@@ -893,12 +894,13 @@ def create_swing_distribution_histogram(df_in, handedness_label):
         return fig
 
     df_data = df_in["Swing"].dropna().astype(float)
+    df_data = df_data[(df_data >= -10) & (df_data <= 10)]
     if df_data.empty:
         fig, ax = plt.subplots(figsize=FIG_SIZE)
         ax.text(0.5, 0.5, f"No valid Swing data for ({handedness_label})", ha='center', va='center', fontsize=12)
         ax.axis('off')
         return fig
-
+    
     # --- 1. Histogram Data Preparation (Top Chart) ---
     min_Swing = np.floor(df_data.min())
     max_Swing = np.ceil(df_data.max())
@@ -1018,6 +1020,7 @@ def create_deviation_distribution_histogram(df_in, handedness_label):
         return fig
 
     df_data = df_in["Deviation"].dropna().astype(float)
+    df_data = df_data[(df_data >= -10) & (df_data <= 10)]
     if df_data.empty:
         fig, ax = plt.subplots(figsize=FIG_SIZE)
         ax.text(0.5, 0.5, f"No valid Deviation data for ({handedness_label})", ha='center', va='center', fontsize=12)
